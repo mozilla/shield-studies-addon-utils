@@ -1,0 +1,15 @@
+{
+  "name": "shield-studies-addon-utils",
+  "version": "1.0.0",
+  "description": "Utilities for building Shield-Study compataible addons.",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "jpm test"
+  },
+  "author": "Gregg Lind <glind@mozilla.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "jpm": "^1.0.7"
+  }
+}
