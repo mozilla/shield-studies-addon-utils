@@ -5,7 +5,9 @@ let prefs = require("sdk/simple-prefs").prefs;
 
 var xutils = require("../lib/");
 
-let { before, after } = require('sdk/test/utils');
+let { before, after } = require("sdk/test/utils");
+exports.only = {}
+exports.skip = {}
 
 // useful for local dev
 function setupEnv () {
@@ -13,6 +15,21 @@ function setupEnv () {
   prefSvc.set("shield.fakedie",true)
 }
 setupEnv()
+
+
+const tabs = require("sdk/tabs");
+function only1Tab () {
+  let first = true;
+  for (let tab of tabs) {
+    if (first) {
+      first = false;
+      continue;
+    }
+    tab.close();
+  };
+  console.log("only 1 tab", tabs.length);
+}
+
 
 
 // A Fake Experiment for these tests
@@ -35,9 +52,12 @@ const forSetup = {
   surveyUrl: "some url"
 };
 
-/* Tests Begin Here */
+const aConfig = xutils.xsetup(forSetup);
 
-exports['test Module has right keys and types'] = function (assert) {
+
+/** Tests Begin Here */
+
+exports["test Module has right keys and types"] = function (assert) {
   let expected = [
     ["chooseVariation", "function"],
     ["die", "function"],
@@ -46,26 +66,27 @@ exports['test Module has right keys and types'] = function (assert) {
     ["handleOnUnload", "function"],
     ["handleStartup", "function"],
     ["report", "function"],
+    ["Reporter", "object"],
     ["resetPrefs", "function"],
     ["studyManager", "object"],
+    ["Study", "function"],
     ["survey", "function"],
-    ["target", "function"],
     ["xsetup", "function"]
   ];
   let keys = expected.map((x)=>x[0]);
+  expected.forEach((e) => expect(xutils[e[0]]).to.be.a(e[1]));
   expect(xutils).to.have.all.keys(keys);
-  expected.forEach((e) => expect(xutils[e[0]]).to.be.a(e[1]))
 }
 
-exports['test resetPrefs actually resets'] = function (assert) {
-  prefs['firstrun'] = String(Date.now());
-  prefs['variation'] = "whatever";
-  ['firstrun', 'variation'].map((p) => expect(prefs[p]).to.not.be.undefined);
+exports["test resetPrefs actually resets"] = function (assert) {
+  prefs["firstrun"] = String(Date.now());
+  prefs["variation"] = "whatever";
+  ["firstrun", "variation"].map((p) => expect(prefs[p]).to.not.be.undefined);
   xutils.resetPrefs();
-  ['firstrun', 'variation'].map((p) => expect(prefs[p]).to.be.undefined);
+  ["firstrun", "variation"].map((p) => expect(prefs[p]).to.be.undefined);
 }
 
-exports['test xsetup'] = function (assert) {
+exports["test xsetup"] = function (assert) {
   //return {
   //  variation: variation,
   //  firstrun: prefs.firstrun,
@@ -75,14 +96,14 @@ exports['test xsetup'] = function (assert) {
   //}
 
   function checkXconfig(xconfig) {
-    let keys = ['variation', 'firstrun', 'name', 'surveyUrl', 'duration', 'who'];
+    let keys = ["variation", "firstrun", "name", "surveyUrl", "duration", "who"];
     expect(xconfig).to.have.keys(keys);
 
     expect(Number(prefs.firstrun)).to.be.an("number");
     expect(prefs.firstrun).to.equal(xconfig.firstrun);
 
     expect(prefs.variation).to.equal(xconfig.variation);
-    ['name', 'surveyUrl', 'duration'].map(
+    ["name", "surveyUrl", "duration"].map(
       (k) => expect(xconfig[k]).to.equal(forSetup[k])
     )
   }
@@ -103,95 +124,146 @@ exports['test xsetup'] = function (assert) {
 }
 
 
-// function handleStartup (options, xconfig, variationsMod) {
-function variationRan () {
-  expect(prefSvc.get(FAKEPREF)).to.be.true;
-}
-
-//exports['test handleStartup:install'] = function (assert) {
-//  // test all the cases
-//  variationsMod.cleanup();
-//  let options = {loadReason: 'install'};
-//  let xconfig = xutils.xsetup(forSetup);
-//
-//  // not checking eligible.
-//  // not checking telemetry
-//  expect(variationsMod.isEligible()).to.be.true;
-//  variationsMod.cleanup();
-//  xutils.handleStartup(options, xconfig, variationsMod);
-//  // the variation ran
-//  variationRan();
-//}
-//
-//exports['test handleStartup:startup'] = function (assert) {
-//  // test all the cases
-//  let options = {loadReason: 'startup'};
-//  let xconfig = xutils.xsetup(forSetup);
-//
-//  // not checking eligible.
-//  // not checking telemetry
-//  expect(variationsMod.isEligible()).to.be.true;
-//  variationsMod.cleanup();
-//  xutils.handleStartup(options, xconfig, variationsMod);
-//  // the variation ran
-//  variationRan();
-//}
-
+function hasVariationEffect() Boolean(prefSvc.get(FAKEPREF));
 
 function watchStates(statesExpected) {
   return
 }
 
-exports["test 1: install while eligible"] = function (assert) {
-  xutils.handleStartup({loadReason: "install"})
-  assert.equal(xutils.target.flags.ineligibleDie, undefined);
-  assert.equal(xutils.target.state, "running"); // passed through installed.
-
+function setupStartupTest () {
+  let thisStudy = new xutils.Study(aConfig, variationsMod);
+  let seen = {reports: [], states: []};
+  // what goes to telemetry
+  let R = xutils.Reporter.on("report",(d)=>seen.reports.push(d.msg));
+  thisStudy.on("change",(d)=>{console.log("test onChange", d); seen.states.push(d)});
+  return {seen: seen, R: R, thisStudy: thisStudy}
 }
 
-exports["test 2: install while ineligible"] = function (assert) {
-  xutils.target.isEligible = () =>false; // new change to nope.
-  xutils.handleStartup({loadReason: "install"})
+function teardownStartupTest (R) {
+  xutils.Reporter.off(R);
+}
 
-  assert.equal(xutils.target.flags.ineligibleDie, true);
-  assert.equal(xutils.target.state, "ineligible-die");
+// TODO eventTarget has all kinds of race conditions with it.
+// maybe either record states as an array in the object OR
+// consider doing it all promise/forward only?
+
+exports.only["test startup 1: install while eligible"] = function (assert, done) {
+  let {thisStudy, seen, R} = setupStartupTest();
+  // test
+  // expect seen states... right now in wrong order, for ???
+  thisStudy.once("final",function () {
+    console.log(JSON.stringify(seen));
+    expect(thisStudy.flags.ineligibleDie).to.be.undefined;
+    expect(thisStudy.state).to.equal("running"); // passed through installed.
+    expect(hasVariationEffect()).to.be.true;
+    teardownStartupTest(R);
+    done();
+  })
+
+  xutils.handleStartup({loadReason: "install"}, thisStudy);
+}
+
+exports["test startup 2: install while ineligible"] = function (assert, done) {
+  let {thisStudy, seen, R} = setupStartupTest();
+  thisStudy.variationsMod.isEligible = () => false; // new change to nope.
+
+  thisStudy.once("final",function () {
+    console.log(JSON.stringify(seen));
+    expect(thisStudy.flags.ineligibleDie, true);
+    expect(thisStudy.state, "ineligible-die");
+    expect(hasVariationEffect()).to.be.false;
+    teardownStartupTest(R);
+    done();
+  })
+
+  xutils.handleStartup({loadReason: "install"}, thisStudy);
 },
 
-exports["test 3a: user disables"] = function (assert) {
-  xutils.handleStartup({loadReason: "install"})
+exports["test startup 3a: user disables"] = function (assert, done) {
+  let {thisStudy, seen, R} = setupStartupTest();
+  // does this race?
+  thisStudy.once("final",function () {
+    expect(hasVariationEffect()).to.be.true;
 
-  xutils.handleOnUnload('disable');
+    // 2nd time!
+    thisStudy.once("final", function () {
+      console.log('2nd final', JSON.stringify(seen));
+      expect(thisStudy.flags.ineligibleDie, undefined);
+      expect(thisStudy.state, "user-uninstall-disable");
+      expect(hasVariationEffect()).to.be.false;
+      teardownStartupTest(R);
+      done();
+    })
 
-  assert.equal(xutils.target.flags.ineligibleDie, undefined);
-  assert.equal(xutils.target.state, "user-uninstall-disable");
+    // #2
+    xutils.handleOnUnload("disable", thisStudy);
+  })
+  // #1
+  xutils.handleStartup({loadReason: "install"}, thisStudy)
+
 }
 
-exports["test 3b: user uninstalls"] = function (assert) {
-  xutils.handleStartup({loadReason: "install"})
+exports["test startup 3b: user uninstalls"] = function (assert, done) {
+  let {thisStudy, seen, R} = setupStartupTest();
+  thisStudy.once("final",function () {
+    expect(hasVariationEffect()).to.be.true;
 
-  xutils.handleOnUnload('uninstall');
-
-  assert.equal(xutils.target.flags.ineligibleDie, undefined);
-  assert.equal(xutils.target.state, "user-uninstall-disable");
+    // 2nd time!
+    thisStudy.once("final", function () {
+      console.log(JSON.stringify(seen));
+      expect(thisStudy.flags.ineligibleDie, undefined);
+      expect(thisStudy.state, "user-uninstall-disable");
+      expect(hasVariationEffect()).to.be.false;
+      teardownStartupTest(R);
+      done();
+    })
+    //#2
+    xutils.handleOnUnload("uninstall", thisStudy);
+  })
+  // #1
+  xutils.handleStartup({loadReason: "install"}, thisStudy)
 }
 
-exports["test 4: normal handleOnUnload"] = function (assert) {
-  xutils.handleStartup({loadReason: "install"})
+exports["test 4: normal handleOnUnload"] = function (assert, done) {
+  let {thisStudy, seen, R} = setupStartupTest();
+  // does this race?
+  thisStudy.once("final",function () {
+    expect(hasVariationEffect()).to.be.true;
 
-  xutils.handleOnUnload('shutdown');
+    // 2nd time!
+    thisStudy.once("final", function () {
+      console.log(JSON.stringify(seen));
+      expect(thisStudy.flags.ineligibleDie, undefined);
+      expect(thisStudy.state, "user-uninstall-disable");
+      expect(hasVariationEffect()).to.be.false;
+      teardownStartupTest(R);
+      done();
+    })
 
-  assert.equal(xutils.target.flags.ineligibleDie, undefined);
-  assert.equal(xutils.target.state, "normal-handleOnUnload");
+    xutils.handleOnUnload("uninstall", thisStudy);
+  })
+
+  // first install
+  xutils.handleStartup({loadReason: "install"}, thisStudy)
+
 }
+
+/* other tests:
+  - handleStartup and Shutdown init the study otherwise.
+*/
+
 
 before(exports, function (name, assert) {
-  xutils.target.reset();
   variationsMod.cleanup();
 });
 
 after(exports, function (name, assert) {
   variationsMod.cleanup();
+  only1Tab();
 });
 
 
-require("sdk/test").run(exports);
+// if anything in "only", run those instead
+module.exports = (Object.keys(exports.only).length >= 1) ? exports.only : exports;
+console.log(Object.keys(module.exports))
+require("sdk/test").run(module.exports);
