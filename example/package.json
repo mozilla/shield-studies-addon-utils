@@ -1,0 +1,22 @@
+{
+  "title": "Shield-study-example-1",
+  "name": "Shield-study-example-1",
+  "version": "0.0.1",
+  "description": "Example study, that sets a pref",
+  "main": "index.js",
+  "author": "Gregg Lind <glind@mozilla.com>",
+  "engines": {
+    "firefox": ">=38.0a1",
+    "fennec": ">=38.0a1"
+  },
+  "license": "MIT",
+  "keywords": [
+    "jetpack",
+    "shield-study"
+  ],
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "jpm": "^1.0.7",
+    "shield-studies-addon-utils": "^1.0.0"
+  }
+}

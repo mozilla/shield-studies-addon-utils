@@ -5,18 +5,11 @@ Build Shield Study (Normandy) compatible addons without having to think very muc
 
 ## Example usage
 
-```javascript
-// index.js
-
-
-
-
-```
-
-
-`VariationsMod` should have this signature.
+See `example` directory.
 
 
 ## Gotchas, Opinions, Side Effects, and Misfeatures
 
-These prefs will be set and running during an experiment.
+Some prefs will be set and running during an experiment.
+
+Undoubtedly, there are others.
