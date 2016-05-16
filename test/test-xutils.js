@@ -2,13 +2,21 @@ var { expect } = require("chai");
 
 const { merge } = require("sdk/util/object");
 const { setTimeout } = require("sdk/timers");
+const { emit } = require("sdk/event/core");
+const querystring = require("sdk/querystring");
+const { URL } = require("sdk/url");
 
 let prefSvc = require("sdk/preferences/service");
 let prefs = require("sdk/simple-prefs").prefs;
 
-var xutils = require("../lib/");
+var xutils = require("../coverage/instrument/lib/");
 
 let { before, after } = require("sdk/test/utils");
+
+const self = require("sdk/self");
+
+const DAY = 86400*1000;
+
 exports.only = {}
 exports.skip = {}
 
@@ -63,11 +71,11 @@ const forSetup = {
   name: "study-blah",
   choices: Object.keys(variationsMod.variations), // names of branches.
   duration: 7,   // in days,
-  surveyUrl: "some url"
+  surveyUrl: self.data.url("some-url")
 };
 
 const aConfig = xutils.xsetup(forSetup);
-
+console.log(aConfig);
 function hasVariationEffect() Boolean(prefSvc.get(FAKEPREF));
 
 /** Tests Begin Here */
@@ -83,7 +91,6 @@ exports["test Module has right keys and types"] = function (assert, done) {
     ["report", "function"],
     ["Reporter", "object"],
     ["resetPrefs", "function"],
-    ["studyManager", "object"],
     ["Study", "function"],
     ["survey", "function"],
     ["xsetup", "function"]
@@ -162,6 +169,14 @@ function promiseFinalizedStartup (aStudy, reason="install") {
   })
 }
 
+function promiseFinalizedShutdown(aStudy, reason="shutdown") {
+  return new Promise((res, rej) => {
+    aStudy.once("final",res);
+    xutils.handleOnUnload(reason, aStudy);
+  })
+}
+
+
 // TODO eventTarget has all kinds of race conditions with it.
 // maybe either record states as an array in the object OR
 // consider doing it all promise/forward only?
@@ -179,7 +194,7 @@ exports["test startup 1: install while eligible"] = function (assert, done) {
     expect(thisStudy.states).to.deep.equal(["installing","modifying","running"])
     // no surveys open!
     waitABit().then(()=>{
-      expect(hasTabWithUrlLike("some url")).to.be.false;
+      expect(hasTabWithUrlLike("some-url")).to.be.false;
       teardownStartupTest(R);
       done();
     })
@@ -200,7 +215,7 @@ exports["test startup 2: install while ineligible"] = function (assert, done) {
     expect(thisStudy.states).to.deep.equal(["installing","ineligible-die"])
     // no surveys open!
     waitABit().then(()=>{
-      expect(hasTabWithUrlLike("some url")).to.be.false;
+      expect(hasTabWithUrlLike("some-url")).to.be.false;
       teardownStartupTest(R);
       done();
     })
@@ -277,7 +292,7 @@ exports["test 4: normal handleOnUnload (fx shutdown)"] = function (assert, done)
       expect(seen.reports).to.deep.equal(["install","running","shutdown"])
       expect(thisStudy.states).to.deep.equal(["installing","modifying","running","normal-shutdown"])
       waitABit().then(()=>{
-        expect(hasTabWithUrlLike("some url")).to.be.false;
+        expect(hasTabWithUrlLike("some-url")).to.be.false;
         teardownStartupTest(R);
         done();
       })
@@ -303,11 +318,11 @@ exports['test 5: startup REVIVING a previous config keeps that config'] = functi
     "e":  () => prefSvc.set(FAKEPREF,'e')
   }
 
-  mySetup = {
+  let mySetup = {
     name: "special-blah",
     choices: Object.keys(myVariations.variations), // names of branches.
     duration: 7,   // in days,
-    surveyUrl: "some url"
+    surveyUrl: "resource://some-url"
   };
 
   let xconfig;
@@ -376,14 +391,246 @@ exports['test 6b: install while expired installs a study, then immediately kills
   })
 };
 
+exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done) {
+  let testConfig = xutils.xsetup(forSetup);
+  let wanted = {
+    reports: ["install","running","shutdown","running"],
+    states: ["installing","modifying","running","normal-shutdown","starting","modifying","running"]
+  }
+  let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
+  promiseFinalizedStartup(thisStudy).then(waitABit).then(
+  () => promiseFinalizedShutdown(thisStudy, "shutdown")).then(waitABit).then(
+  () => promiseFinalizedStartup(thisStudy,"startup")).then(
+  ()=>{
+    expect(hasTabWithUrlLike("end-of-study")).to.be.false;
+    expect(seen.reports).to.deep.equal(wanted.reports);
+    expect(thisStudy.states).to.deep.equal(wanted.states);
+    teardownStartupTest(R);
+    done();
+  })
+};
 
 
-/* MOAR TESTS */
-// 'time's up'
-// simulate several install uninstalls?
-// test all the utility functions?
+["enable", "upgrade", "downgrade", "startup"].map(function (reason, i) {
+  exports[`test 8-${reason}: all synonyms for startup: ${reason}`] = function (assert, done) {
+    let testConfig = xutils.xsetup(forSetup);
+    let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
+    let wanted = {
+      reports: ["running"],
+      states:  ["starting","modifying","running"]
+    }
+    promiseFinalizedStartup(thisStudy, reason).then(waitABit).then(
+    ()=>{
+      expect(hasTabWithUrlLike("end-of-study")).to.be.false;
+      expect(seen.reports).to.deep.equal(wanted.reports);
+      expect(thisStudy.states).to.deep.equal(wanted.states)
+      teardownStartupTest(R);
+      done();
+    })
+  }
+  exports[`test 9-${reason}: all synonyms for startup die if expired: ${reason}`] = function (assert, done) {
+    prefs["firstrun"] = String(500); // 1970!
+    let testConfig = xutils.xsetup(forSetup);
+    let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
+    let wanted = {
+      reports: ["end-of-study"],
+      states:  ["end-of-study"]
+    }
+    promiseFinalizedStartup(thisStudy, reason).then(waitABit).then(
+    ()=>{
+      expect(hasTabWithUrlLike("end-of-study")).to.be.true;
+      expect(seen.reports).to.deep.equal(wanted.reports);
+      expect(thisStudy.states).to.deep.equal(wanted.states)
+      teardownStartupTest(R);
+      done();
+    })
+  }
+});
+
+['uninstall', 'disable'].map(function (reason) {
+  exports[`test 10-${reason}: unload during ineligibleDie doesnt send user-uninstall-disable`] = function (assert, done) {
+    let testConfig = xutils.xsetup(forSetup);
+    let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
+    emit(thisStudy, "change", "ineligible-die");
+    let wanted = {
+      reports: ["ineligible"],
+      states:  ["ineligible-die"]
+    }
+    waitABit().then(
+    ()=> {
+      expect(thisStudy.flags.ineligibleDie, 'should have ineligibleDie').to.be.true;
+      xutils.handleOnUnload(reason, thisStudy);
+      waitABit().then(
+      ()=> {
+        expect(hasTabWithUrlLike(forSetup.surveyUrl)).to.be.false;
+        expect(seen.reports).to.deep.equal(wanted.reports);
+        expect(thisStudy.states).to.deep.equal(wanted.states)
+        teardownStartupTest(R);
+        done();
+      })
+    })
+  }
+});
+
+["shutdown", "upgrade", "downgrade"].map(function (reason, i) {
+  exports[`test 10-${reason}: unload during ineligibleDie doesnt send normal-shutdown`] = function (assert, done) {
+    let testConfig = xutils.xsetup(forSetup);
+    let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
+    emit(thisStudy, "change", "ineligible-die");
+    let wanted = {
+      reports: ["ineligible"],
+      states:  ["ineligible-die"]
+    }
+    waitABit().then(
+    ()=> {
+      expect(thisStudy.flags.ineligibleDie).to.be.true;
+      xutils.handleOnUnload(reason, thisStudy);
+      waitABit().then(
+      ()=> {
+        expect(hasTabWithUrlLike(forSetup.surveyUrl)).to.be.false;
+        expect(seen.reports).to.deep.equal(wanted.reports);
+        expect(thisStudy.states).to.deep.equal(wanted.states)
+        teardownStartupTest(R);
+        done();
+      })
+    }
+    )
+  }
+});
+
+exports["test aliveness 1, been a day, study is expired, phone home and die"] = function (assert, done) {
+  let config = merge({}, aConfig);
+  config.firstrun = 500;  // 1970
+  let {thisStudy, seen, R} = setupStartupTest(config, variationsMod);
+  let wanted = {
+    reports: ["running", "end-of-study"],
+    states:  ["running", "end-of-study"]
+  }
+  thisStudy.alivenessPulse(Date.now() - 2*DAY);
+  waitABit().then(
+  ()=>{
+    expect(seen.reports).to.deep.equal(wanted.reports);
+    expect(thisStudy.states).to.deep.equal(wanted.states);
+    teardownStartupTest(R);
+    done();
+  })
+};
+
+exports["test aliveness 2, been a day, study NOT expired, will phone home"] = function (assert, done) {
+  let config = merge({}, aConfig);
+  let {thisStudy, seen, R} = setupStartupTest(config, variationsMod);
+  let wanted = {
+    reports: ["running"],
+    states:  ["running"]
+  }
+  thisStudy.alivenessPulse(Date.now() - 2*DAY);
+  waitABit().then(
+  ()=>{
+    expect(seen.reports).to.deep.equal(wanted.reports);
+    expect(thisStudy.states).to.deep.equal(wanted.states);
+    teardownStartupTest(R);
+    done();
+  })
+};
 
 
+exports["test aliveness 3, < 24 hours, not expired, do nothing"] = function (assert, done) {
+  let config = merge({}, aConfig);
+  let {thisStudy, seen, R} = setupStartupTest(config, variationsMod);
+  let wanted = {
+    reports: [],
+    states: []
+  }
+  thisStudy.alivenessPulse(Date.now() - .1 * DAY); // a wee bit ago
+  waitABit().then(
+  ()=>{
+    expect(seen.reports).to.deep.equal(wanted.reports);
+    expect(thisStudy.states).to.deep.equal(wanted.states);
+    teardownStartupTest(R);
+    done();
+  })
+};
+
+exports["test aliveness 4, < 24 hours, IS expired, die"] = function (assert, done) {
+  let config = merge({}, aConfig);
+  config.firstrun = 500;  // 1970
+  let {thisStudy, seen, R} = setupStartupTest(config, variationsMod);
+  let wanted = {
+    reports: ['end-of-study'],
+    states: ['end-of-study']
+  }
+  thisStudy.alivenessPulse(Date.now() - .1 * DAY);  // a week bit
+  waitABit().then(
+  ()=>{
+    expect(seen.reports).to.deep.equal(wanted.reports);
+    expect(thisStudy.states).to.deep.equal(wanted.states);
+    teardownStartupTest(R);
+    done();
+  })
+};
+
+exports['test survey with various queryArg things'] = function (assert, done) {
+  // combos: [url has qa's or not, with or without extras]
+  let ans = [
+    ['resource://a', {b:'junk'}, {b:'junk'}, 'extra vars works' ],
+    ['resource://a', {}, {'b': undefined}, 'extra vars wont appear'],
+    ['resource://a?b=some%40thing', {}, {'b': 'some@thing'}, 'no escaping or unescaping, mostly'],
+    ['resource://a?b=first', {'b': 'second'}, {'b': 'second'}, 'normal vars: the extra override the survey one'],
+    ['resource://a?b=first&b=second', {}, {'b[0]': 'first', 'b[1]': 'second'}, "arrays are handled 'as arrays' only if in the survey url"],
+    ['resource://a?b=first&b=second', {'b': 'third'}, {'b': 'third'}, "later string vars override earlier 'arrays' "],
+    // this are for the special 'xname' key
+    ['resource://a?xname=first', {xname: 'second'}, {xname: aConfig.name}, 'config wins on "special" keys'],
+    ['resource://a?xname=first', {}, {xname: aConfig.name}, 'config wins or "special" keys'],
+  ];
+
+  function toArgs(url) {
+    let U = new URL(url);
+    let q = U.search;
+    q = querystring.parse(querystring.unescape(q.slice(1)));
+    return q
+  }
+  let alwaysKeys = ["variation",'xname','who','updateChannel','fxVersion'];
+  for (let row of ans) {
+    let config = merge({}, aConfig);
+    config.surveyUrl = row[0];
+    let extra = row[1];
+    let theTest = row[2];
+    let msg = row[3];
+    console.log(row, xutils.survey(config, extra));
+    let builtUrl = xutils.survey(config, extra);
+    let qa = toArgs(builtUrl);
+
+    // actual tests.
+    expect(qa).to.include.keys(alwaysKeys);
+    for (let k in theTest) {
+      expect(qa[k],msg).to.deep.equal(theTest[k])
+    }
+  }
+  waitABit().then(waitABit).then(done)
+}
+
+
+exports['test new Study has undefined state var'] = function (assert, done) {
+  let thisStudy = new xutils.Study(
+    merge({},aConfig),      // copy
+    merge({},variationsMod)  // copy
+  );
+  expect(thisStudy.xconfig).to.deep.equal(aConfig);
+  expect(thisStudy.variationsMod).to.deep.equal(variationsMod);
+  expect(thisStudy.state).to.be.undefined;
+  expect(thisStudy.states).to.deep.equal([]);
+  done();
+};
+
+exports['test generateTelemetryIdIfNeeded'] = function (assert, done) {
+  CLIENTIDPREF = "toolkit.telemetry.cachedClientID";
+
+  xutils.generateTelemetryIdIfNeeded().then((clientId)=>{
+    expect(clientId).to.be.a("string");
+    expect(clientId).to.equal(prefSvc.get(CLIENTIDPREF));
+    done();
+  });
+};
 
 
 // WHICH TESTS TO RUN.
