@@ -47,6 +47,16 @@ function hasTabWithUrlLike(aRegexp) {
   return false;
 }
 
+function countTabsLike (aRegexp) {
+  if (typeof aRegexp  === 'string') aRegexp = new RegExp(aRegexp)
+  let n = 0;
+  for (let tab of tabs) {
+    let u = tab.url;
+    if (aRegexp.test(tab.url)) n += 1
+  }
+  return n;
+}
+
 
 function waitABit (val) {
   return new Promise(function(resolve, reject) {
@@ -239,7 +249,8 @@ exports["test startup 3a: user disables (which uninstalls)"] = function (assert,
       expect(seen.reports).to.deep.equal(["install","running","user-ended-study"])
       expect(thisStudy.states).to.deep.equal(["installing","modifying","running","user-uninstall-disable"])
       waitABit().then(()=>{
-        expect(hasTabWithUrlLike("user-ended-study")).to.be.true;
+        expect(countTabsLike("user-ended-study")).to.equal(1);
+        expect(hasTabWithUrlLike("end-of-study")).to.be.false;
         teardownStartupTest(R);
         done();
       })
@@ -266,7 +277,8 @@ exports["test startup 3b: user uninstalls"] = function (assert, done) {
       expect(seen.reports).to.deep.equal(["install","running","user-ended-study"])
       expect(thisStudy.states).to.deep.equal(["installing","modifying","running","user-uninstall-disable"])
       waitABit().then(()=>{
-        expect(hasTabWithUrlLike("user-ended-study")).to.be.true;
+        expect(countTabsLike("user-ended-study")).to.equal(1);
+        expect(hasTabWithUrlLike("end-of-study")).to.be.false;
         teardownStartupTest(R);
         done();
       })
@@ -365,6 +377,8 @@ exports['test 6a: startup while expired kills a study, fires state and UT'] = fu
   promiseFinalizedStartup(thisStudy, "startup").then(waitABit).then(
   ()=>{
     expect(hasTabWithUrlLike("end-of-study")).to.be.true;
+    expect(hasTabWithUrlLike("user-ended-study")).to.be.false;
+
     expect(seen.reports).to.deep.equal(["end-of-study"]);
     expect(thisStudy.states).to.deep.equal(["end-of-study"])
     teardownStartupTest(R);
@@ -384,6 +398,7 @@ exports['test 6b: install while expired installs a study, then immediately kills
   promiseFinalizedStartup(thisStudy).then(waitABit).then(
   ()=>{
     expect(hasTabWithUrlLike("end-of-study")).to.be.true;
+    expect(hasTabWithUrlLike("user-ended-study")).to.be.false;
     expect(seen.reports).to.deep.equal(["end-of-study"]);
     expect(thisStudy.states).to.deep.equal(["end-of-study"])
     teardownStartupTest(R);
@@ -403,6 +418,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
   () => promiseFinalizedStartup(thisStudy,"startup")).then(
   ()=>{
     expect(hasTabWithUrlLike("end-of-study")).to.be.false;
+    expect(hasTabWithUrlLike("user-ended-study")).to.be.false;
     expect(seen.reports).to.deep.equal(wanted.reports);
     expect(thisStudy.states).to.deep.equal(wanted.states);
     teardownStartupTest(R);
@@ -422,6 +438,8 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
     promiseFinalizedStartup(thisStudy, reason).then(waitABit).then(
     ()=>{
       expect(hasTabWithUrlLike("end-of-study")).to.be.false;
+      expect(hasTabWithUrlLike("user-ended-study")).to.be.false;
+
       expect(seen.reports).to.deep.equal(wanted.reports);
       expect(thisStudy.states).to.deep.equal(wanted.states)
       teardownStartupTest(R);
@@ -439,6 +457,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
     promiseFinalizedStartup(thisStudy, reason).then(waitABit).then(
     ()=>{
       expect(hasTabWithUrlLike("end-of-study")).to.be.true;
+      expect(hasTabWithUrlLike("user-ended-study")).to.be.false;
       expect(seen.reports).to.deep.equal(wanted.reports);
       expect(thisStudy.states).to.deep.equal(wanted.states)
       teardownStartupTest(R);
@@ -497,6 +516,57 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
     )
   }
 });
+
+exports[`test Study states: end-of-study: call all you want, only does one survey`] = function (assert, done) {
+  let testConfig = xutils.xsetup(forSetup);
+  let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
+  emit(thisStudy, "change", "end-of-study");
+  emit(thisStudy, "change", "end-of-study");
+  emit(thisStudy, "change", "end-of-study");
+  emit(thisStudy, "change", "end-of-study");
+  let wanted = {
+    reports: ["end-of-study"],
+    states:  ["end-of-study", "end-of-study", "end-of-study", "end-of-study"]
+  }
+  waitABit().then(
+  ()=> {
+    expect(thisStudy.flags.expired).to.be.true;
+    expect(hasTabWithUrlLike('user-ended-study')).to.be.false;
+    expect(countTabsLike("end-of-study"),'exactly 1 survey').to.equal(1);
+    expect(countTabsLike(testConfig.surveyUrl),'exactly 1 survey').to.equal(1);
+    expect(seen.reports).to.deep.equal(wanted.reports);
+    expect(thisStudy.states).to.deep.equal(wanted.states)
+    teardownStartupTest(R);
+    done();
+  }
+  )
+}
+
+exports[`test Study states: user-uninstall-disable: call all you want, only does one survey`] = function (assert, done) {
+  let testConfig = xutils.xsetup(forSetup);
+  let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
+  emit(thisStudy, "change", "user-uninstall-disable");
+  emit(thisStudy, "change", "user-uninstall-disable");
+  emit(thisStudy, "change", "user-uninstall-disable");
+  emit(thisStudy, "change", "user-uninstall-disable");
+  let wanted = {
+    reports: ["user-ended-study"],
+    states:  ["user-uninstall-disable", "user-uninstall-disable", "user-uninstall-disable", "user-uninstall-disable"]
+  }
+  waitABit().then(
+  ()=> {
+    expect(thisStudy.flags.dying).to.be.true;
+    expect(hasTabWithUrlLike('end-of-study')).to.be.false;
+    expect(countTabsLike("user-ended-study"),'exactly 1 survey').to.equal(1);
+    expect(countTabsLike(testConfig.surveyUrl),'exactly 1 survey').to.equal(1);
+    expect(seen.reports).to.deep.equal(wanted.reports);
+    expect(thisStudy.states).to.deep.equal(wanted.states)
+    teardownStartupTest(R);
+    done();
+  }
+  )
+}
+
 
 exports["test aliveness 1, been a day, study is expired, phone home and die"] = function (assert, done) {
   let config = merge({}, aConfig);
@@ -596,7 +666,6 @@ exports['test survey with various queryArg things'] = function (assert, done) {
     let extra = row[1];
     let theTest = row[2];
     let msg = row[3];
-    console.log(row, xutils.survey(config, extra));
     let builtUrl = xutils.survey(config, extra);
     let qa = toArgs(builtUrl);
 
@@ -623,7 +692,7 @@ exports['test new Study has undefined state var'] = function (assert, done) {
 };
 
 exports['test generateTelemetryIdIfNeeded'] = function (assert, done) {
-  CLIENTIDPREF = "toolkit.telemetry.cachedClientID";
+  let CLIENTIDPREF = "toolkit.telemetry.cachedClientID";
 
   xutils.generateTelemetryIdIfNeeded().then((clientId)=>{
     expect(clientId).to.be.a("string");
