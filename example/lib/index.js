@@ -37,10 +37,8 @@ function main (options, callback) {
   console.debug(JSON.stringify(addonPrefs, null, 2))
 }
 
-var currentlyUnloading = false;    // force only 1st unload to count
 function onUnload (reason) {
-  if (currentlyUnloading) return;  // already unloading, dont double call.
-  currentlyUnloading = true;
+  console.debug(`special addon unloading code: ${reason}`)
   xutils.handleOnUnload(reason, thisStudy);
 
   // special unload code, specific to addon if any.
