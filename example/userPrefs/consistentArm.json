@@ -1,0 +1,6 @@
+{
+ "toolkit.telemetry.server": "http://localhost:5000",
+ "toolkit.telemetry.cachedClientID": "00000000-0000-0000-0000-aed0866e9fc0",
+ "extensions.sdk.console.logLevel": "debug",
+ "extensions.@shield-study-example-1.variation": "strong"
+}
