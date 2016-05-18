@@ -8,6 +8,9 @@ module.exports = function(grunt) {
         shell: {
             jpmTest: {
                 command: 'jpm test',
+            },
+            jpmTestTravis: {
+                command: 'jpm test -b /usr/local/bin/firefox',
             }
         },
         instrument: {
@@ -43,9 +46,12 @@ module.exports = function(grunt) {
         grunt.log.ok("Read __coverage__ global");
     });
 
-    //grunt.registerTask('test', ['babel', 'instrument', 'shell:jpmTest', 'readcoverageglobal', 'storeCoverage', 'makeReport']);
-    grunt.registerTask('test', ['instrument', 'shell:jpmTest', 'readcoverageglobal', 'storeCoverage', 'makeReport']);
-
+    if (process.env.TRAVIS) {
+        grunt.log.ok("testing with travis path for fx");
+        grunt.registerTask('test', ['instrument', 'shell:jpmTestTravis', 'readcoverageglobal', 'storeCoverage', 'makeReport']);
+    } else {
+        grunt.registerTask('test', ['instrument', 'shell:jpmTest', 'readcoverageglobal', 'storeCoverage', 'makeReport']);
+    }
 };
 
 
