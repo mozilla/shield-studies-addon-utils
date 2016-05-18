@@ -1,4 +1,4 @@
-# Shield Studies Addon Utils
+# Shield Studies Addon Utils [![Build Status](https://travis-ci.org/tombell/travis-ci-status.svg?branch=master)](https://travis-ci.org/tombell/travis-ci-status)
 
 Build Shield Study (Normandy) compatible addons without having to think very much.
 
