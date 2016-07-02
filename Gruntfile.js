@@ -5,6 +5,9 @@ module.exports = function(grunt) {
     // gross, put this in the process
     process.env.coveragedir = require("os").tmpdir();
     grunt.initConfig({
+        eslint: {
+            files: '{,lib/,test/}*.js'
+        },
         shell: {
             jpmTest: {
                 command: 'jpm test',
@@ -37,6 +40,7 @@ module.exports = function(grunt) {
     });
 
 
+    grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-babel');
     grunt.loadNpmTasks('grunt-shell');
     grunt.loadNpmTasks('grunt-istanbul');
@@ -48,9 +52,9 @@ module.exports = function(grunt) {
 
     if (process.env.TRAVIS) {
         grunt.log.ok("testing with travis path for fx");
-        grunt.registerTask('test', ['instrument', 'shell:jpmTestTravis', 'readcoverageglobal', 'storeCoverage', 'makeReport']);
+        grunt.registerTask('test', ['eslint', 'instrument', 'shell:jpmTestTravis', 'readcoverageglobal', 'storeCoverage', 'makeReport']);
     } else {
-        grunt.registerTask('test', ['instrument', 'shell:jpmTest', 'readcoverageglobal', 'storeCoverage', 'makeReport']);
+        grunt.registerTask('test', ['eslint', 'instrument', 'shell:jpmTest', 'readcoverageglobal', 'storeCoverage', 'makeReport']);
     }
 };
 
