@@ -36,7 +36,7 @@ function only1Tab () {
       continue;
     }
     tab.close();
-  };
+  }
 }
 
 function hasTabWithUrlLike(aRegexp) {
@@ -51,7 +51,6 @@ function countTabsLike (aRegexp) {
   if (typeof aRegexp  === 'string') aRegexp = new RegExp(aRegexp)
   let n = 0;
   for (let tab of tabs) {
-    let u = tab.url;
     if (aRegexp.test(tab.url)) n += 1
   }
   return n;
@@ -86,7 +85,9 @@ const forSetup = {
 
 const aConfig = xutils.xsetup(forSetup);
 console.log(aConfig);
-function hasVariationEffect() Boolean(prefSvc.get(FAKEPREF));
+function hasVariationEffect() {
+  return Boolean(prefSvc.get(FAKEPREF));
+}
 
 /** Tests Begin Here */
 
@@ -356,7 +357,7 @@ exports['test 5: startup REVIVING a previous config keeps that config'] = functi
   expect(xconfig.variation).to.equal("e");
 
   // #3, do an install, and prove it did 'e'
-  let {thisStudy, seen, R} = setupStartupTest(xconfig, myVariations);
+  let {thisStudy, R} = setupStartupTest(xconfig, myVariations);
   promiseFinalizedStartup(thisStudy).then(waitABit).then(
   ()=>{
     expect(prefSvc.get(FAKEPREF)).to.be.equal("e");

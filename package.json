@@ -8,18 +8,29 @@
   },
   "author": "Gregg Lind <glind@mozilla.com>",
   "license": "ISC",
+  "dependencies": {
+  },
   "devDependencies": {
     "chai": "^3.5.0",
     "grunt": "^1.0.1",
     "grunt-babel": "^6.0.0",
     "grunt-cli": "^1.2.0",
+    "grunt-eslint": "^18.1.0",
     "grunt-istanbul": "^0.7.0",
     "grunt-shell": "^1.3.0",
-    "istanbul-jpm": "0.0.1",
+    "istanbul-jpm": "^0.0.1",
     "jpm": "^1.0.7"
   },
-  "bugs": "https://github.com/gregglind/shield-studies-addon-utils/issues",
+  "bugs": {
+    "url": "https://github.com/gregglind/shield-studies-addon-utils/issues"
+  },
   "files": [
     "lib/"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gregglind/shield-studies-addon-utils.git"
+  },
+  "keywords": [],
+  "homepage": "https://github.com/gregglind/shield-studies-addon-utils#readme"
 }
