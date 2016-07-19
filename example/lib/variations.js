@@ -7,7 +7,6 @@
   */
 
 let prefSvc = require("sdk/preferences/service");
-let prefs = require("sdk/simple-prefs").prefs;
 
 const OURPREF = 'some.experimental.pref';
 

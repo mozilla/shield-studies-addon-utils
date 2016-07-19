@@ -6,7 +6,7 @@ module.exports = function(grunt) {
     process.env.coveragedir = require("os").tmpdir();
     grunt.initConfig({
         eslint: {
-            files: '{,lib/,test/}*.js'
+            files: '{,lib/,test/,example/lib/, example/test/}*.js'
         },
         shell: {
             jpmTest: {
