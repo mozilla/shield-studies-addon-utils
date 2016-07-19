@@ -158,14 +158,30 @@ exports["test xsetup"] = function (assert, done) {
   done();
 }
 
+exports['test Reporter: testing flag works'] = function (assert, done) {
+  let reports = [];
+  let R = xutils.Reporter.on("report", (d)=>reports.push(d.testing));
+
+  xutils.report({});  // false
+  prefSvc.set('shield.testing', true);
+  xutils.report({});  // true
+  prefSvc.set('shield.testing', false);
+  xutils.report({});  // false
+  waitABit().then(function () {
+    expect(reports).to.deep.equal([undefined, true, undefined]);
+    xutils.Reporter.off(R);
+    done()
+  })
+}
+
 function setupStartupTest (aConfig, variationsMod) {
   let thisStudy = new xutils.Study(
-    merge({},aConfig),      // copy
-    merge({},variationsMod)  // copy
+    merge({}, aConfig),      // copy
+    merge({}, variationsMod)  // copy
   );
   let seen = {reports: []};
   // what goes to telemetry
-  let R = xutils.Reporter.on("report",(d)=>seen.reports.push(d.msg));
+  let R = xutils.Reporter.on("report",(d)=>seen.reports.push(d.study_state));
   return {seen: seen, R: R, thisStudy: thisStudy}
 }
 
@@ -186,7 +202,6 @@ function promiseFinalizedShutdown(aStudy, reason="shutdown") {
     xutils.handleOnUnload(reason, aStudy);
   })
 }
-
 
 // TODO eventTarget has all kinds of race conditions with it.
 // maybe either record states as an array in the object OR
@@ -503,7 +518,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
     }
     waitABit().then(
     ()=> {
-      expect(thisStudy.flags.ineligibleDie).to.be.true;
+      expect(thisStudy.flags.ineligibleDie, "ineligibleDie should be true").to.be.true;
       xutils.handleOnUnload(reason, thisStudy);
       waitABit().then(
       ()=> {
@@ -666,14 +681,14 @@ exports['test survey with various queryArg things'] = function (assert, done) {
     config.surveyUrl = row[0];
     let extra = row[1];
     let theTest = row[2];
-    let msg = row[3];
+    let what_test = row[3];
     let builtUrl = xutils.survey(config, extra);
     let qa = toArgs(builtUrl);
 
     // actual tests.
     expect(qa).to.include.keys(alwaysKeys);
     for (let k in theTest) {
-      expect(qa[k],msg).to.deep.equal(theTest[k])
+      expect(qa[k], what_test).to.deep.equal(theTest[k])
     }
   }
   waitABit().then(waitABit).then(done)

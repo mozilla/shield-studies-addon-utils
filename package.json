@@ -1,6 +1,6 @@
 {
   "name": "shield-studies-addon-utils",
-  "version": "1.0.1",
+  "version": "1.2.0",
   "description": "Utilities for building Shield-Study compataible addons.",
   "main": "lib/index.js",
   "scripts": {
@@ -8,8 +8,7 @@
   },
   "author": "Gregg Lind <glind@mozilla.com>",
   "license": "ISC",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "chai": "^3.5.0",
     "grunt": "^1.0.1",
@@ -18,7 +17,7 @@
     "grunt-eslint": "^18.1.0",
     "grunt-istanbul": "^0.7.0",
     "grunt-shell": "^1.3.0",
-    "istanbul-jpm": "^0.0.1",
+    "istanbul-jpm": "^0.1.0",
     "jpm": "^1.0.7"
   },
   "bugs": {
