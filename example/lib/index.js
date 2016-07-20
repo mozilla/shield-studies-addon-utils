@@ -11,7 +11,7 @@ const addonPrefs = require("sdk/simple-prefs").prefs;
  *  These are only ones needed, or supported
  */
 const forSetup = {
-  name: "Example Study 1", // unique for Telemetry
+  name: require("sdk/self").id, // unique for Telemetry
   choices: Object.keys(variationsMod.variations), // names of branches.
   duration: 7,   // in days,
   /* Get surveyUrl from Strategy + Insights */
