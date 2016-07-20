@@ -121,6 +121,51 @@ exports["test resetPrefs actually resets"] = function (assert, done) {
   done()
 }
 
+exports.only["test shadowPref"] = function (assert, done) {
+  let p = "some.pref";
+  let sh = p + ".shadow"  // internals, gross.
+  let v = "value";
+
+  // 1.  no existing value
+  expect(xutils.shadowPref.isShadowed(p)).to.be.false;
+
+  // set it
+  xutils.shadowPref.set(p,v);
+  expect(xutils.shadowPref.isShadowed(p)).to.be.true;
+  expect(xutils.shadowPref.get(p)).to.equal(v);
+  expect(xutils.shadowPref.original(p)).to.be.undefined;
+  expect(prefSvc.isSet(sh)).to.be.true;
+
+  // reset
+  xutils.shadowPref.reset(p);
+  expect(xutils.shadowPref.isShadowed(p)).to.be.false;
+  expect(xutils.shadowPref.get(p)).to.be.undefined;
+  expect(xutils.shadowPref.original(p)).to.be.undefined;
+  expect(prefSvc.isSet(sh)).to.be.false;
+
+  // 2.  but with a existing value
+  prefSrv.set(p, "original");
+  expect(prefSrv.get(p)).to.equal("original");
+
+  // set it
+  xutils.shadowPref.set(p,"value");
+  expect(xutils.shadowPref.isShadowed(p)).to.be.true;
+  expect(xutils.shadowPref.get(p)).to.equal(v);
+  expect(xutils.shadowPref.original(p)).to.equal("original");
+  expect(prefSvc.isSet(sh)).to.be.true;
+
+  // reset
+  xutils.shadowPref.reset(p);
+  expect(xutils.shadowPref.isShadowed(p)).to.be.false;
+  expect(xutils.shadowPref.get(p)).to.equal("original");
+  expect(xutils.shadowPref.original(p)).to.be.undefined;
+  expect(prefSvc.isSet(sh)).to.be.false;
+  done();
+}
+
+
+
+
 exports["test xsetup"] = function (assert, done) {
   //return {
   //  variation: variation,
