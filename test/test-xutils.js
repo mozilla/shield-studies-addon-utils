@@ -173,10 +173,10 @@ exports['test Reporter: testing flag works'] = function (assert, done) {
 }
 
 function setupStartupTest (aConfig, variationsMod) {
-  let thisStudy = new xutils.Study(
-    merge({}, aConfig),      // copy
-    merge({}, variationsMod)  // copy
-  );
+  let thisStudy = new xutils.Study(merge({},
+    aConfig,      // copy
+    variationsMod  // copy
+  ));
   let seen = {reports: []};
   // what goes to telemetry
   let R = xutils.Reporter.on("report",(d)=>seen.reports.push(d.study_state));
@@ -229,7 +229,7 @@ exports["test startup 1: install while eligible"] = function (assert, done) {
 
 exports["test startup 2: install while ineligible"] = function (assert, done) {
   let {thisStudy, seen, R} = setupStartupTest(aConfig, variationsMod);
-  thisStudy.variationsMod.isEligible = () => false; // new change to nope.
+  thisStudy.config.isEligible = () => false; // new change to nope.
 
   thisStudy.once("final",function () {
     expect(thisStudy.flags.ineligibleDie, true);
@@ -693,12 +693,13 @@ exports['test survey with various queryArg things'] = function (assert, done) {
 
 
 exports['test new Study has undefined state var'] = function (assert, done) {
-  let thisStudy = new xutils.Study(
+  let config = merge({},
     merge({},aConfig),      // copy
     merge({},variationsMod)  // copy
   );
-  expect(thisStudy.xconfig).to.deep.equal(aConfig);
-  expect(thisStudy.variationsMod).to.deep.equal(variationsMod);
+
+  let thisStudy = new xutils.Study(config);
+  expect(thisStudy.config).to.deep.equal(config);
   expect(thisStudy.state).to.be.undefined;
   expect(thisStudy.states).to.deep.equal([]);
   done();
