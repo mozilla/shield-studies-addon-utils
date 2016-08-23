@@ -111,11 +111,11 @@ exports["test Module has right keys and types"] = function (assert, done) {
 }
 
 exports["test resetPrefs actually resets"] = function (assert, done) {
-  prefs["firstrun"] = String(Date.now());
-  prefs["variation"] = "whatever";
-  ["firstrun", "variation"].map((p) => expect(prefs[p]).to.not.be.undefined);
+  prefs["shield.firstrun"] = String(Date.now());
+  prefs["shield.variation"] = "whatever";
+  ["shield.firstrun", "shield.variation"].map((p) => expect(prefs[p]).to.not.be.undefined);
   xutils.resetPrefs();
-  ["firstrun", "variation"].map((p) => expect(prefs[p]).to.be.undefined);
+  ["shield.firstrun", "shield.variation"].map((p) => expect(prefs[p]).to.be.undefined);
   done()
 }
 
@@ -131,18 +131,18 @@ exports["test xsetup"] = function (assert, done) {
     let keys = ["variation", "firstrun", "name", "surveyUrl", "duration", "who"];
     expect(xconfig).to.have.keys(keys);
 
-    expect(Number(prefs.firstrun)).to.be.an("number");
-    expect(prefs.firstrun).to.equal(xconfig.firstrun);
+    expect(Number(prefs['shield.firstrun'])).to.be.an("number");
+    expect(Number(prefs['shield.firstrun'])).to.equal(xconfig.firstrun);
 
-    expect(prefs.variation).to.equal(xconfig.variation);
+    expect(prefs['shield.variation']).to.equal(xconfig.variation);
     ["name", "surveyUrl", "duration"].map(
       (k) => expect(xconfig[k]).to.equal(forSetup[k])
     )
   }
 
   // A. precheck, empty prefs.
-  expect(prefs.firstrun).to.be.undefined;
-  expect(prefs.variation).to.be.undefined;
+  expect(prefs['shield.firstrun']).to.be.undefined;
+  expect(prefs['shield.variation']).to.be.undefined;
 
   // run xsetup.
   let xconfig = xutils.xsetup(forSetup);
@@ -358,7 +358,7 @@ exports['test 5: startup REVIVING a previous config keeps that config'] = functi
     expect(prefSvc.get(FAKEPREF)).to.be.undefined;
 
     // #2 xconfig picks the existing.
-    prefs["variation"] = v;
+    prefs["shield.variation"] = v;
     xconfig = xutils.xsetup(mySetup);
     expect(xconfig.variation).to.equal(v);
   })
@@ -380,11 +380,11 @@ exports['test 5: startup REVIVING a previous config keeps that config'] = functi
 
 exports['test 6a: startup while expired kills a study, fires state and UT'] = function (assert, done) {
   // pretend we have been running a long time!
-  prefs["firstrun"] = String(500); // 1970!
+  prefs["shield.firstrun"] = String(500); // 1970!
   // claim: setup should pick up the existing firstrun
   let testConfig = xutils.xsetup(forSetup);
-  expect(testConfig.firstrun).to.equal(String(500));
-  expect(testConfig.firstrun).to.equal(prefs["firstrun"])
+  expect(testConfig.firstrun).to.equal(500);
+  expect(testConfig.firstrun).to.equal(Number(prefs["shield.firstrun"]))
 
   let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
   promiseFinalizedStartup(thisStudy, "startup").then(waitABit).then(
@@ -401,11 +401,11 @@ exports['test 6a: startup while expired kills a study, fires state and UT'] = fu
 
 exports['test 6b: install while expired installs a study, then immediately kills it, fires state and UT'] = function (assert, done) {
   // pretend we have been running a long time!
-  prefs["firstrun"] = String(500); // 1970!
+  prefs["shield.firstrun"] = String(500); // 1970!
   // claim: setup should pick up the existing firstrun
   let testConfig = xutils.xsetup(forSetup);
-  expect(testConfig.firstrun).to.equal(String(500));
-  expect(testConfig.firstrun).to.equal(prefs["firstrun"])
+  expect(testConfig.firstrun).to.equal(500);
+  expect(testConfig.firstrun).to.equal(Number(prefs["shield.firstrun"]));
 
   let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
   promiseFinalizedStartup(thisStudy).then(waitABit).then(
@@ -460,7 +460,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
     })
   }
   exports[`test 9-${reason}: all synonyms for startup die if expired: ${reason}`] = function (assert, done) {
-    prefs["firstrun"] = String(500); // 1970!
+    prefs["shield.firstrun"] = String(500); // 1970!
     let testConfig = xutils.xsetup(forSetup);
     let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
     let wanted = {
