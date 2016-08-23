@@ -97,8 +97,6 @@ exports["test Module has right keys and types"] = function (assert, done) {
     ["die", "function"],
     ["expired", "function"],
     ["generateTelemetryIdIfNeeded", "function"],
-    ["handleOnUnload", "function"],
-    ["handleStartup", "function"],
     ["report", "function"],
     ["Reporter", "object"],
     ["resetPrefs", "function"],
@@ -192,14 +190,14 @@ function teardownStartupTest (R) {
 function promiseFinalizedStartup (aStudy, reason="install") {
   return new Promise((res, rej) => {
     aStudy.once("final",res);
-    xutils.handleStartup({loadReason: reason}, aStudy);
+    aStudy.startup(reason);
   })
 }
 
 function promiseFinalizedShutdown(aStudy, reason="shutdown") {
   return new Promise((res, rej) => {
     aStudy.once("final",res);
-    xutils.handleOnUnload(reason, aStudy);
+    aStudy.shutdown(reason);
   })
 }
 
@@ -226,7 +224,7 @@ exports["test startup 1: install while eligible"] = function (assert, done) {
     })
   })
 
-  xutils.handleStartup({loadReason: "install"}, thisStudy);
+  thisStudy.startup("install");
 }
 
 exports["test startup 2: install while ineligible"] = function (assert, done) {
@@ -248,7 +246,7 @@ exports["test startup 2: install while ineligible"] = function (assert, done) {
 
   })
 
-  xutils.handleStartup({loadReason: "install"}, thisStudy);
+  thisStudy.startup("install");
 },
 
 exports["test startup 3a: user disables (which uninstalls)"] = function (assert, done) {
@@ -273,11 +271,10 @@ exports["test startup 3a: user disables (which uninstalls)"] = function (assert,
     })
 
     // #2
-    xutils.handleOnUnload("disable", thisStudy);
+    thisStudy.shutdown("disable");
   })
   // #1
-  xutils.handleStartup({loadReason: "install"}, thisStudy)
-
+  thisStudy.startup("install");
 }
 
 exports["test startup 3b: user uninstalls"] = function (assert, done) {
@@ -300,13 +297,13 @@ exports["test startup 3b: user uninstalls"] = function (assert, done) {
       })
     })
     //#2
-    xutils.handleOnUnload("uninstall", thisStudy);
+    thisStudy.shutdown("uninstall");
   })
   // #1
-  xutils.handleStartup({loadReason: "install"}, thisStudy)
+  thisStudy.startup("install");
 }
 
-exports["test 4: normal handleOnUnload (fx shutdown)"] = function (assert, done) {
+exports["test 4: normal shutdown (fx shutdown)"] = function (assert, done) {
   let {thisStudy, seen, R} = setupStartupTest(aConfig, variationsMod);
   // does this race?
   thisStudy.once("final",function () {
@@ -326,11 +323,11 @@ exports["test 4: normal handleOnUnload (fx shutdown)"] = function (assert, done)
       })
     })
 
-    xutils.handleOnUnload("shutdown", thisStudy);
+    thisStudy.shutdown("shutdown");
   })
 
   // first install
-  xutils.handleStartup({loadReason: "install"}, thisStudy)
+  thisStudy.startup("install");
 }
 
 
@@ -494,7 +491,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
     waitABit().then(
     ()=> {
       expect(thisStudy.flags.ineligibleDie, 'should have ineligibleDie').to.be.true;
-      xutils.handleOnUnload(reason, thisStudy);
+      thisStudy.shutdown(reason);
       waitABit().then(
       ()=> {
         expect(hasTabWithUrlLike(forSetup.surveyUrl)).to.be.false;
@@ -519,7 +516,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
     waitABit().then(
     ()=> {
       expect(thisStudy.flags.ineligibleDie, "ineligibleDie should be true").to.be.true;
-      xutils.handleOnUnload(reason, thisStudy);
+      thisStudy.shutdown(reason);
       waitABit().then(
       ()=> {
         expect(hasTabWithUrlLike(forSetup.surveyUrl)).to.be.false;
