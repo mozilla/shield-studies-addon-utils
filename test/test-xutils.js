@@ -9,7 +9,7 @@ const { URL } = require("sdk/url");
 let prefSvc = require("sdk/preferences/service");
 let prefs = require("sdk/simple-prefs").prefs;
 
-var xutils = require("../coverage/instrument/lib/");
+var xutils = require("../lib/");
 
 let { before, after } = require("sdk/test/utils");
 
