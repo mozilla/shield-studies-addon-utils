@@ -24,13 +24,19 @@ thisStudy.on("change",(newState)=>console.info("newState:", newState));
 function orientation () {
   require("sdk/panel").Panel({
     width: 400, height: 400,
-    contentURL: "https://mozilla.github.io/shield-studies-docs/"
+    contentURL: "data:text/html,Some orientation content"
   }).show()
   // (optional) extra probe
   shield.report({action: "orientation"})
 }
 
+function ineligible () {
+  // panel won't work, because addon will uninstall
+  require("sdk/tabs").open("data:text/html,You are ineligible, sorry!  Next time?")
+}
+
 thisStudy.once("installed", orientation)
+thisStudy.once("ineligible-die", ineligible)
 
 thisStudy.startup(self.loadReason);
 
