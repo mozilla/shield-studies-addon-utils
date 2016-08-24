@@ -23,5 +23,5 @@ shield.generateTelemetryIdIfNeeded().then(
 /* 5. unload */
 unload((reason) => {
   console.debug(`special addon unloading code: ${reason}`)
-  thisStudy.shutdown(reason, thisStudy);
+  thisStudy.shutdown(reason);
 })
