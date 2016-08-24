@@ -3,15 +3,16 @@ module.exports = function(grunt) {
     // gross, put this in the process
     process.env.coveragedir = require("os").tmpdir();
 
-    var fxBinary;
-    if (process.env.TRAVIS) {
-        grunt.log.ok("testing with travis path for fx");
-        fxBinary = "  -b /usr/local/bin/firefox";
-    } else {
-        if (process.env.firefox) {
-            fxBinary = "  -b " + process.env.firefox
-        }
-    }
+    var fxBinary = process.env.JPM_FIREFOX_BINARY || 'Aurora';
+    //if (process.env.JPM_FIREFOX_BINARY) fxBinary =
+    //if (process.env.TRAVIS) {
+    //    grunt.log.ok("testing with travis path for fx");
+    //    fxBinary = "  -b /usr/local/bin/firefox";
+    //} else {
+    //    if (process.env.firefox) {
+    //        fxBinary = "  -b " + process.env.firefox
+    //    }
+    //}
 
     console.log(process.env.coveragedir, fxBinary);
     grunt.initConfig({
@@ -36,7 +37,7 @@ module.exports = function(grunt) {
                 //command: 'rm -rf testing-env && mkdir testing-env && cd testing-env && cat ../.jpmignore ../.jpmignore-testing-env > .jpmignore && ln -s ../Gruntfile.js . && ln -s ../node_modules . && ln -s ../lib . && ln -s ../package.json . && ln -s ../test .',
             },
             jpmTest: {
-                command: 'cd testing-env && jpm test ' + fxBinary,
+                command: 'cd testing-env && jpm test -b ' + fxBinary
             }
         },
         instrument: {
@@ -47,6 +48,7 @@ module.exports = function(grunt) {
                 instrumenter: istanbulJpm.Instrumenter
             }
         },
+
         storeCoverage: {
             options: {
                 dir: 'coverage/reports'
@@ -79,7 +81,7 @@ module.exports = function(grunt) {
         'instrument',
         'shell:makeCoverageTest',
         'shell:makeTestEnv',
-        'shell:jpmTest',  //knows about travis
+        'shell:jpmTest',
         'readcoverageglobal',
         'storeCoverage',
         'makeReport'

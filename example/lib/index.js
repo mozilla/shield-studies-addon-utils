@@ -12,7 +12,7 @@ const shield = require("shield-studies-addon-utils");
 const studyInfo = require("./studyInfo");
 
 // 3. Study Object (module singleton);
-let thisStudy = new shield.Study(studyInfo);
+const thisStudy = new shield.Study(studyInfo);
 
 // 3a (DEBUG optional). Watch for changes and reporting
 shield.Reporter.on("report",(d)=>console.info("telemetry", d));
