@@ -19,7 +19,17 @@ shield.Reporter.on("report",(d)=>console.info("telemetry", d));
 thisStudy.on("change",(newState)=>console.info("newState:", newState));
 
 /* 4. inlined main function */
+
+// (optional) orientation example function
+thisStudy.once("installed", function orientation () {
+  require("sdk/panel").Panel({
+    width: 400, height: 400,
+    contentURL: "https://mozilla.github.io/shield-studies-docs/"
+  }).show()
+})
+
 thisStudy.startup(self.loadReason);
+
 
 /* 5. unload */
 unload((reason) => {

@@ -211,7 +211,7 @@ exports["test startup 1: install while eligible"] = function (assert, done) {
     expect(hasVariationEffect()).to.be.true;
     teardownStartupTest(R);
     expect(seen.reports).to.deep.equal(["install","running"])
-    expect(thisStudy.states).to.deep.equal(["installing","modifying","running"])
+    expect(thisStudy.states).to.deep.equal(["maybe-installing","installed","modifying","running"])
     // no surveys open!
     waitABit().then(()=>{
       expect(hasTabWithUrlLike("some-url")).to.be.false;
@@ -232,7 +232,7 @@ exports["test startup 2: install while ineligible"] = function (assert, done) {
     expect(thisStudy.state, "ineligible-die");
     expect(hasVariationEffect()).to.be.false;
     expect(seen.reports).to.deep.equal(["ineligible"])
-    expect(thisStudy.states).to.deep.equal(["installing","ineligible-die"])
+    expect(thisStudy.states).to.deep.equal(["maybe-installing","ineligible-die"])
     // no surveys open!
     waitABit().then(()=>{
       expect(hasTabWithUrlLike("some-url")).to.be.false;
@@ -257,7 +257,7 @@ exports["test startup 3a: user disables (which uninstalls)"] = function (assert,
       expect(thisStudy.state, "user-uninstall-disable");
       expect(hasVariationEffect()).to.be.false;
       expect(seen.reports).to.deep.equal(["install","running","user-ended-study"])
-      expect(thisStudy.states).to.deep.equal(["installing","modifying","running","user-uninstall-disable"])
+      expect(thisStudy.states).to.deep.equal(["maybe-installing","installed","modifying","running","user-uninstall-disable"])
       waitABit().then(()=>{
         expect(countTabsLike("user-ended-study")).to.equal(1);
         expect(hasTabWithUrlLike("end-of-study")).to.be.false;
@@ -284,7 +284,7 @@ exports["test startup 3b: user uninstalls"] = function (assert, done) {
       expect(thisStudy.state, "user-uninstall-disable");
       expect(hasVariationEffect()).to.be.false;
       expect(seen.reports).to.deep.equal(["install","running","user-ended-study"])
-      expect(thisStudy.states).to.deep.equal(["installing","modifying","running","user-uninstall-disable"])
+      expect(thisStudy.states).to.deep.equal(["maybe-installing","installed","modifying","running","user-uninstall-disable"])
       waitABit().then(()=>{
         expect(countTabsLike("user-ended-study")).to.equal(1);
         expect(hasTabWithUrlLike("end-of-study")).to.be.false;
@@ -311,7 +311,7 @@ exports["test 4: normal shutdown (fx shutdown)"] = function (assert, done) {
       expect(thisStudy.state, "normal-shutdown");
       expect(hasVariationEffect()).to.be.true; // still true
       expect(seen.reports).to.deep.equal(["install","running","shutdown"])
-      expect(thisStudy.states).to.deep.equal(["installing","modifying","running","normal-shutdown"])
+      expect(thisStudy.states).to.deep.equal(["maybe-installing","installed","modifying","running","normal-shutdown"])
       waitABit().then(()=>{
         expect(hasTabWithUrlLike("some-url")).to.be.false;
         teardownStartupTest(R);
@@ -419,7 +419,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
   let testConfig = xutils.decideAndPersistConfig(studyInfo);
   let wanted = {
     reports: ["install","running","shutdown","running"],
-    states: ["installing","modifying","running","normal-shutdown","starting","modifying","running"]
+    states: ["maybe-installing","installed","modifying","running","normal-shutdown","starting","modifying","running"]
   }
   let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
   promiseFinalizedStartup(thisStudy).then(waitABit).then(
