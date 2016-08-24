@@ -7,7 +7,6 @@
   */
 
 let prefSvc = require("sdk/preferences/service");
-
 const OURPREF = 'some.experimental.pref';
 
 const variations = {
@@ -33,7 +32,11 @@ function cleanup () {
 }
 
 module.exports = {
+  name: require("sdk/self").id, // unique for Telemetry
+  duration: 7,   // in days,
+  /* Get surveyUrl from Strategy + Insights */
+  surveyUrl: "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey",
   isEligible: isEligible,
   cleanup: cleanup,
   variations: variations,
-}
+};

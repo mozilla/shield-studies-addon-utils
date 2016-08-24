@@ -24,6 +24,7 @@ exports.skip = {}
 function setupEnv () {
   prefSvc.set("toolkit.telemetry.server","http://localhost:5000")
   prefSvc.set("shield.fakedie",true)
+  prefSvc.set("browser.selfsupport.url","")
 }
 setupEnv()
 
@@ -65,26 +66,22 @@ function waitABit (val) {
 
 // A Fake Experiment for these tests
 const FAKEPREF = "fake.variations.pref";
-var variationsMod = {
+var studyInfo = {
   cleanup:  () => {
     xutils.resetPrefs();
     prefSvc.reset(FAKEPREF);
   },
-  variations: {
+  variations: {  // just one brach 'a'
     "a":  () => prefSvc.set(FAKEPREF,"a")
   },
   isEligible: () => true,
-}
-
-const forSetup = {
   name: "study-blah",
-  choices: Object.keys(variationsMod.variations), // names of branches.
   duration: 7,   // in days,
   surveyUrl: self.data.url("some-url")
 };
 
-const aConfig = xutils.xsetup(forSetup);
-console.log(aConfig);
+function studyInfoCopy () { return merge({}, studyInfo)}
+
 function hasVariationEffect() {
   return Boolean(prefSvc.get(FAKEPREF));
 }
@@ -102,7 +99,7 @@ exports["test Module has right keys and types"] = function (assert, done) {
     ["resetPrefs", "function"],
     ["Study", "function"],
     ["survey", "function"],
-    ["xsetup", "function"]
+    ["decideAndPersistConfig", "function"]
   ];
   let keys = expected.map((x)=>x[0]);
   expected.forEach((e) => expect(xutils[e[0]]).to.be.a(e[1]));
@@ -119,24 +116,24 @@ exports["test resetPrefs actually resets"] = function (assert, done) {
   done()
 }
 
-exports["test xsetup"] = function (assert, done) {
+exports["test decideAndPersistConfig"] = function (assert, done) {
   //return {
   //  variation: variation,
   //  firstrun: prefs.firstrun,
-  //  name: xSetupConfig.name,
-  //  surveyUrl: xSetupConfig.surveyUrl,
-  //  duration: xSetupConfig.duration
+  //  name: decideAndPersistConfigConfig.name,
+  //  surveyUrl: decideAndPersistConfigConfig.surveyUrl,
+  //  duration: decideAndPersistConfigConfig.duration
   //}
   function checkXconfig(xconfig) {
-    let keys = ["variation", "firstrun", "name", "surveyUrl", "duration", "who"];
-    expect(xconfig).to.have.keys(keys);
+    let keys = ["variation", "firstrun", "name"];
+    expect(xconfig).to.contain.keys(keys);
 
     expect(Number(prefs['shield.firstrun'])).to.be.an("number");
     expect(Number(prefs['shield.firstrun'])).to.equal(xconfig.firstrun);
 
     expect(prefs['shield.variation']).to.equal(xconfig.variation);
     ["name", "surveyUrl", "duration"].map(
-      (k) => expect(xconfig[k]).to.equal(forSetup[k])
+      (k) => expect(xconfig[k]).to.equal(studyInfo[k])
     )
   }
 
@@ -144,13 +141,15 @@ exports["test xsetup"] = function (assert, done) {
   expect(prefs['shield.firstrun']).to.be.undefined;
   expect(prefs['shield.variation']).to.be.undefined;
 
-  // run xsetup.
-  let xconfig = xutils.xsetup(forSetup);
+  // run decideAndPersistConfig.
+  let C = studyInfoCopy();
+
+  let xconfig = xutils.decideAndPersistConfig(C);
   let firstrun = xconfig.firstrun;
   checkXconfig(xconfig);
 
   // run twice, idempotent
-  xconfig = xutils.xsetup(forSetup);
+  xconfig = xutils.decideAndPersistConfig(C);
   checkXconfig(xconfig);
   expect(xconfig.firstrun, "firstrun still same.").to.equal(firstrun)
   done();
@@ -172,11 +171,8 @@ exports['test Reporter: testing flag works'] = function (assert, done) {
   })
 }
 
-function setupStartupTest (aConfig, variationsMod) {
-  let thisStudy = new xutils.Study(merge({},
-    aConfig,      // copy
-    variationsMod  // copy
-  ));
+function setupStartupTest (aConfig) {
+  let thisStudy = new xutils.Study(aConfig);
   let seen = {reports: []};
   // what goes to telemetry
   let R = xutils.Reporter.on("report",(d)=>seen.reports.push(d.study_state));
@@ -206,7 +202,7 @@ function promiseFinalizedShutdown(aStudy, reason="shutdown") {
 // consider doing it all promise/forward only?
 
 exports["test startup 1: install while eligible"] = function (assert, done) {
-  let {thisStudy, seen, R} = setupStartupTest(aConfig, variationsMod);
+  let {thisStudy, seen, R} = setupStartupTest(studyInfoCopy());
   // test
   // expect seen states... right now in wrong order, for ???
   thisStudy.once("final",function () {
@@ -228,7 +224,7 @@ exports["test startup 1: install while eligible"] = function (assert, done) {
 }
 
 exports["test startup 2: install while ineligible"] = function (assert, done) {
-  let {thisStudy, seen, R} = setupStartupTest(aConfig, variationsMod);
+  let {thisStudy, seen, R} = setupStartupTest(studyInfoCopy());
   thisStudy.config.isEligible = () => false; // new change to nope.
 
   thisStudy.once("final",function () {
@@ -250,7 +246,7 @@ exports["test startup 2: install while ineligible"] = function (assert, done) {
 },
 
 exports["test startup 3a: user disables (which uninstalls)"] = function (assert, done) {
-  let {thisStudy, seen, R} = setupStartupTest(aConfig, variationsMod);
+  let {thisStudy, seen, R} = setupStartupTest(studyInfoCopy());
   // does this race?
   thisStudy.once("final",function () {
     expect(hasVariationEffect()).to.be.true;
@@ -278,7 +274,7 @@ exports["test startup 3a: user disables (which uninstalls)"] = function (assert,
 }
 
 exports["test startup 3b: user uninstalls"] = function (assert, done) {
-  let {thisStudy, seen, R} = setupStartupTest(aConfig, variationsMod);
+  let {thisStudy, seen, R} = setupStartupTest(studyInfoCopy());
   thisStudy.once("final",function () {
     expect(hasVariationEffect()).to.be.true;
 
@@ -304,7 +300,7 @@ exports["test startup 3b: user uninstalls"] = function (assert, done) {
 }
 
 exports["test 4: normal shutdown (fx shutdown)"] = function (assert, done) {
-  let {thisStudy, seen, R} = setupStartupTest(aConfig, variationsMod);
+  let {thisStudy, seen, R} = setupStartupTest(studyInfoCopy());
   // does this race?
   thisStudy.once("final",function () {
     expect(hasVariationEffect()).to.be.true;
@@ -332,10 +328,10 @@ exports["test 4: normal shutdown (fx shutdown)"] = function (assert, done) {
 
 
 exports['test 5: startup REVIVING a previous config keeps that config'] = function (assert, done) {
-  let myVariations = merge({}, variationsMod); // copy
+  let myStudyInfo = studyInfoCopy();
   // setup
 
-  myVariations.variations = {
+  myStudyInfo.variations = {
     "a":  () => prefSvc.set(FAKEPREF,'a'),
     "b":  () => prefSvc.set(FAKEPREF,'b'),
     "c":  () => prefSvc.set(FAKEPREF,'c'),
@@ -343,36 +339,36 @@ exports['test 5: startup REVIVING a previous config keeps that config'] = functi
     "e":  () => prefSvc.set(FAKEPREF,'e')
   }
 
-  let mySetup = {
-    name: "special-blah",
-    choices: Object.keys(myVariations.variations), // names of branches.
-    duration: 7,   // in days,
-    surveyUrl: "resource://some-url"
-  };
+  myStudyInfo = merge (
+    myStudyInfo,
+    {
+      name: "special-blah",
+      duration: 7,   // in days,
+      surveyUrl: "resource://some-url"
+    }
+  );
 
-  let xconfig;
   ['a','b','c','d','e'].map((v) => {
     // simulate previous runs
-    myVariations.cleanup();
+    myStudyInfo.cleanup();
     // #1: no effect yet
     expect(prefSvc.get(FAKEPREF)).to.be.undefined;
 
     // #2 xconfig picks the existing.
     prefs["shield.variation"] = v;
-    xconfig = xutils.xsetup(mySetup);
+    let xconfig = xutils.decideAndPersistConfig(myStudyInfo);
     expect(xconfig.variation).to.equal(v);
   })
 
   // reset
-  myVariations.cleanup();
+  myStudyInfo.cleanup();
   expect(prefSvc.get(FAKEPREF)).to.be.undefined;
-  expect(xconfig.variation).to.equal("e");
 
-  // #3, do an install, and prove it did 'e'
-  let {thisStudy, R} = setupStartupTest(xconfig, myVariations);
+  // #3, do an install, and prove it did SOMETHING
+  let {thisStudy, R} = setupStartupTest(myStudyInfo);
   promiseFinalizedStartup(thisStudy).then(waitABit).then(
   ()=>{
-    expect(prefSvc.get(FAKEPREF)).to.be.equal("e");
+    expect(prefSvc.get(FAKEPREF)).to.not.be.undefined;
     teardownStartupTest(R);
     done();
   })
@@ -382,11 +378,11 @@ exports['test 6a: startup while expired kills a study, fires state and UT'] = fu
   // pretend we have been running a long time!
   prefs["shield.firstrun"] = String(500); // 1970!
   // claim: setup should pick up the existing firstrun
-  let testConfig = xutils.xsetup(forSetup);
+  let testConfig = xutils.decideAndPersistConfig(studyInfo);
   expect(testConfig.firstrun).to.equal(500);
   expect(testConfig.firstrun).to.equal(Number(prefs["shield.firstrun"]))
 
-  let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
+  let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
   promiseFinalizedStartup(thisStudy, "startup").then(waitABit).then(
   ()=>{
     expect(hasTabWithUrlLike("end-of-study")).to.be.true;
@@ -403,11 +399,11 @@ exports['test 6b: install while expired installs a study, then immediately kills
   // pretend we have been running a long time!
   prefs["shield.firstrun"] = String(500); // 1970!
   // claim: setup should pick up the existing firstrun
-  let testConfig = xutils.xsetup(forSetup);
+  let testConfig = xutils.decideAndPersistConfig(studyInfo);
   expect(testConfig.firstrun).to.equal(500);
   expect(testConfig.firstrun).to.equal(Number(prefs["shield.firstrun"]));
 
-  let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
+  let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
   promiseFinalizedStartup(thisStudy).then(waitABit).then(
   ()=>{
     expect(hasTabWithUrlLike("end-of-study")).to.be.true;
@@ -420,12 +416,12 @@ exports['test 6b: install while expired installs a study, then immediately kills
 };
 
 exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done) {
-  let testConfig = xutils.xsetup(forSetup);
+  let testConfig = xutils.decideAndPersistConfig(studyInfo);
   let wanted = {
     reports: ["install","running","shutdown","running"],
     states: ["installing","modifying","running","normal-shutdown","starting","modifying","running"]
   }
-  let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
+  let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
   promiseFinalizedStartup(thisStudy).then(waitABit).then(
   () => promiseFinalizedShutdown(thisStudy, "shutdown")).then(waitABit).then(
   () => promiseFinalizedStartup(thisStudy,"startup")).then(
@@ -442,8 +438,8 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
 
 ["enable", "upgrade", "downgrade", "startup"].map(function (reason, i) {
   exports[`test 8-${reason}: all synonyms for startup: ${reason}`] = function (assert, done) {
-    let testConfig = xutils.xsetup(forSetup);
-    let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
+    let testConfig = xutils.decideAndPersistConfig(studyInfo);
+    let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
     let wanted = {
       reports: ["running"],
       states:  ["starting","modifying","running"]
@@ -461,8 +457,8 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
   }
   exports[`test 9-${reason}: all synonyms for startup die if expired: ${reason}`] = function (assert, done) {
     prefs["shield.firstrun"] = String(500); // 1970!
-    let testConfig = xutils.xsetup(forSetup);
-    let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
+    let testConfig = xutils.decideAndPersistConfig(studyInfo);
+    let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
     let wanted = {
       reports: ["end-of-study"],
       states:  ["end-of-study"]
@@ -481,8 +477,8 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
 
 ['uninstall', 'disable'].map(function (reason) {
   exports[`test 10-${reason}: unload during ineligibleDie doesnt send user-uninstall-disable`] = function (assert, done) {
-    let testConfig = xutils.xsetup(forSetup);
-    let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
+    let testConfig = xutils.decideAndPersistConfig(studyInfo);
+    let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
     emit(thisStudy, "change", "ineligible-die");
     let wanted = {
       reports: ["ineligible"],
@@ -494,7 +490,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
       thisStudy.shutdown(reason);
       waitABit().then(
       ()=> {
-        expect(hasTabWithUrlLike(forSetup.surveyUrl)).to.be.false;
+        expect(hasTabWithUrlLike(studyInfo.surveyUrl)).to.be.false;
         expect(seen.reports).to.deep.equal(wanted.reports);
         expect(thisStudy.states).to.deep.equal(wanted.states)
         teardownStartupTest(R);
@@ -506,8 +502,8 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
 
 ["shutdown", "upgrade", "downgrade"].map(function (reason, i) {
   exports[`test 10-${reason}: unload during ineligibleDie doesnt send normal-shutdown`] = function (assert, done) {
-    let testConfig = xutils.xsetup(forSetup);
-    let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
+    let testConfig = xutils.decideAndPersistConfig(studyInfo);
+    let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
     emit(thisStudy, "change", "ineligible-die");
     let wanted = {
       reports: ["ineligible"],
@@ -519,7 +515,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
       thisStudy.shutdown(reason);
       waitABit().then(
       ()=> {
-        expect(hasTabWithUrlLike(forSetup.surveyUrl)).to.be.false;
+        expect(hasTabWithUrlLike(studyInfo.surveyUrl)).to.be.false;
         expect(seen.reports).to.deep.equal(wanted.reports);
         expect(thisStudy.states).to.deep.equal(wanted.states)
         teardownStartupTest(R);
@@ -531,8 +527,8 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
 });
 
 exports[`test Study states: end-of-study: call all you want, only does one survey`] = function (assert, done) {
-  let testConfig = xutils.xsetup(forSetup);
-  let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
+  let testConfig = xutils.decideAndPersistConfig(studyInfo);
+  let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
   emit(thisStudy, "change", "end-of-study");
   emit(thisStudy, "change", "end-of-study");
   emit(thisStudy, "change", "end-of-study");
@@ -556,8 +552,8 @@ exports[`test Study states: end-of-study: call all you want, only does one surve
 }
 
 exports[`test Study states: user-uninstall-disable: call all you want, only does one survey`] = function (assert, done) {
-  let testConfig = xutils.xsetup(forSetup);
-  let {thisStudy, seen, R} = setupStartupTest(testConfig, variationsMod);
+  let testConfig = xutils.decideAndPersistConfig(studyInfo);
+  let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
   emit(thisStudy, "change", "user-uninstall-disable");
   emit(thisStudy, "change", "user-uninstall-disable");
   emit(thisStudy, "change", "user-uninstall-disable");
@@ -582,9 +578,9 @@ exports[`test Study states: user-uninstall-disable: call all you want, only does
 
 
 exports["test aliveness 1, been a day, study is expired, phone home and die"] = function (assert, done) {
-  let config = merge({}, aConfig);
-  config.firstrun = 500;  // 1970
-  let {thisStudy, seen, R} = setupStartupTest(config, variationsMod);
+  let config = merge({}, studyInfo);
+  prefs["shield.firstrun"] = String(500); // 1970!
+  let {thisStudy, seen, R} = setupStartupTest(config);
   let wanted = {
     reports: ["running", "end-of-study"],
     states:  ["running", "end-of-study"]
@@ -600,8 +596,8 @@ exports["test aliveness 1, been a day, study is expired, phone home and die"] = 
 };
 
 exports["test aliveness 2, been a day, study NOT expired, will phone home"] = function (assert, done) {
-  let config = merge({}, aConfig);
-  let {thisStudy, seen, R} = setupStartupTest(config, variationsMod);
+  let config = merge({}, studyInfo);
+  let {thisStudy, seen, R} = setupStartupTest(config);
   let wanted = {
     reports: ["running"],
     states:  ["running"]
@@ -618,8 +614,8 @@ exports["test aliveness 2, been a day, study NOT expired, will phone home"] = fu
 
 
 exports["test aliveness 3, < 24 hours, not expired, do nothing"] = function (assert, done) {
-  let config = merge({}, aConfig);
-  let {thisStudy, seen, R} = setupStartupTest(config, variationsMod);
+  let config = merge({}, studyInfo);
+  let {thisStudy, seen, R} = setupStartupTest(config);
   let wanted = {
     reports: [],
     states: []
@@ -635,9 +631,9 @@ exports["test aliveness 3, < 24 hours, not expired, do nothing"] = function (ass
 };
 
 exports["test aliveness 4, < 24 hours, IS expired, die"] = function (assert, done) {
-  let config = merge({}, aConfig);
-  config.firstrun = 500;  // 1970
-  let {thisStudy, seen, R} = setupStartupTest(config, variationsMod);
+  let config = merge({}, studyInfo);
+  prefs["shield.firstrun"] = String(500); // 1970!
+  let {thisStudy, seen, R} = setupStartupTest(config);
   let wanted = {
     reports: ['end-of-study'],
     states: ['end-of-study']
@@ -662,8 +658,8 @@ exports['test survey with various queryArg things'] = function (assert, done) {
     ['resource://a?b=first&b=second', {}, {'b[0]': 'first', 'b[1]': 'second'}, "arrays are handled 'as arrays' only if in the survey url"],
     ['resource://a?b=first&b=second', {'b': 'third'}, {'b': 'third'}, "later string vars override earlier 'arrays' "],
     // this are for the special 'xname' key
-    ['resource://a?xname=first', {xname: 'second'}, {xname: aConfig.name}, 'config wins on "special" keys'],
-    ['resource://a?xname=first', {}, {xname: aConfig.name}, 'config wins or "special" keys'],
+    ['resource://a?xname=first', {xname: 'second'}, {xname: studyInfo.name}, 'config wins on "special" keys'],
+    ['resource://a?xname=first', {}, {xname: studyInfo.name}, 'config wins or "special" keys'],
   ];
 
   function toArgs(url) {
@@ -674,7 +670,7 @@ exports['test survey with various queryArg things'] = function (assert, done) {
   }
   let alwaysKeys = ["variation",'xname','who','updateChannel','fxVersion'];
   for (let row of ans) {
-    let config = merge({}, aConfig);
+    let config = merge({}, studyInfo);
     config.surveyUrl = row[0];
     let extra = row[1];
     let theTest = row[2];
@@ -692,14 +688,42 @@ exports['test survey with various queryArg things'] = function (assert, done) {
 }
 
 
-exports['test new Study has undefined state var'] = function (assert, done) {
-  let config = merge({},
-    merge({},aConfig),      // copy
-    merge({},variationsMod)  // copy
-  );
-
+exports['test new studies make arm, firstrun decision during init'] = function (assert, done) {
+  let config = studyInfoCopy();
   let thisStudy = new xutils.Study(config);
-  expect(thisStudy.config).to.deep.equal(config);
+  // equal there there is overlap!
+  Object.keys(config).map(
+    (k) => expect(thisStudy.config[k]).to.deep.equal(config[k])
+  )
+  expect(thisStudy.config).to.not.deep.equal(config); // no!
+
+  expect(config.firstrun).to.be.undefined;
+  expect(config.variation).to.be.undefined;
+
+  expect(thisStudy.config.firstrun).to.not.be.undefined;
+  expect(thisStudy.config.variation).to.not.be.undefined;
+
+  done();
+}
+
+exports['test new studies respect arm, firstrun decision during init'] = function (assert, done) {
+  let config = xutils.decideAndPersistConfig(studyInfoCopy());  // decided!
+  let thisStudy = new xutils.Study(config);
+  // equal there there is overlap!
+
+  expect(thisStudy.config).to.deep.equal(config);  // yes!
+  expect(config.firstrun).to.not.be.undefined;
+  expect(config.variation).to.not.be.undefined;
+
+  expect(thisStudy.config.firstrun).to.not.be.undefined;
+  expect(thisStudy.config.variation).to.not.be.undefined;
+
+  done();
+}
+
+exports['test new Study has undefined state var'] = function (assert, done) {
+  let config = studyInfoCopy();
+  let thisStudy = new xutils.Study(config);
   expect(thisStudy.state).to.be.undefined;
   expect(thisStudy.states).to.deep.equal([]);
   done();
@@ -722,12 +746,12 @@ module.exports = (Object.keys(exports.only).length >= 1) ? exports.only : export
 
 before(module.exports, function (name, assert, done) {
   console.log("***", name);
-  variationsMod.cleanup();
+  studyInfo.cleanup();
   done();
 });
 
 after(module.exports, function (name, assert, done) {
-  variationsMod.cleanup();
+  studyInfo.cleanup();
   only1Tab();
   done();
 });

@@ -9,7 +9,7 @@ jpm run --prefs userPrefs/localPrefs.json  # or in that dir.
 
 ## The work:
 
-### `lib/variations.js`
+### `lib/studyInfo.js`
 
 Must export:
 
@@ -35,4 +35,4 @@ Main caller for startup, shutdown.
 ## Side effects
 
 - A timer to check for 'day rollover' and expiry runs every 5 minutes.
-- sets a few prefs in the addon-specific prefs tree.  If you use `variation` and `firstrun` this may surprise you.
+- sets a few prefs in the addon-specific prefs tree.  If you use `shield.variation` and `shield.firstrun` this may surprise you.

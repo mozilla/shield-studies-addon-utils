@@ -1,0 +1,5 @@
+.*
+*
+!/package.json
+!/lib/**
+!/node_modules/shield-studies-addon-utils/**
