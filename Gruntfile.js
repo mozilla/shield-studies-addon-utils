@@ -25,20 +25,22 @@ module.exports = function(grunt) {
             addonLintTest: {
                 command: 'jpm xpi; addons-linter --output json --pretty *xpi | node scripts/addon-lint-consumer.js',
             },
+            cleanCoverage: {
+                command: 'rm -rf coverage'
+            },
             makeCoverageTest: {
                 command: "echo > test/z-ensure-coverage.js; git ls-tree -r HEAD --name-only lib | grep \"js$\" | xargs -I '{}' echo 'require(\"../{}\");' | egrep -v \"(jetpack|main.js)\" >> test/z-ensure-coverage.js",
             },
             makeTestEnv: {
                 command: 'rm -rf testing-env && mkdir testing-env && cd testing-env && cat ../.jpmignore ../.jpmignore-testing-env > .jpmignore && ln -s ../Gruntfile.js . && ln -s ../node_modules . && ln -s ../coverage/instrument/lib . && ln -s ../package.json . && ln -s ../test .',
                 //command: 'rm -rf testing-env && mkdir testing-env && cd testing-env && cat ../.jpmignore ../.jpmignore-testing-env > .jpmignore && ln -s ../Gruntfile.js . && ln -s ../node_modules . && ln -s ../lib . && ln -s ../package.json . && ln -s ../test .',
-
             },
             jpmTest: {
                 command: 'cd testing-env && jpm test ' + fxBinary,
             }
         },
         instrument: {
-            files: 'lib/**/*.js',
+            files: ['lib/**/*.js'],
             options: {
                 lazy: false,
                 basePath: 'coverage/instrument',
@@ -72,6 +74,7 @@ module.exports = function(grunt) {
 
     grunt.registerTask('test', [
         'eslint',
+        'shell:cleanCoverage',
         //'shell:addonLintTest',
         'instrument',
         'shell:makeCoverageTest',
