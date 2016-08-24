@@ -20,13 +20,17 @@ thisStudy.on("change",(newState)=>console.info("newState:", newState));
 
 /* 4. inlined main function */
 
-// (optional) orientation example function
-thisStudy.once("installed", function orientation () {
+// (optional) orientation example function, with a probe
+function orientation () {
   require("sdk/panel").Panel({
     width: 400, height: 400,
     contentURL: "https://mozilla.github.io/shield-studies-docs/"
   }).show()
-})
+  // (optional) extra probe
+  shield.report({action: "orientation"})
+}
+
+thisStudy.once("installed", orientation)
 
 thisStudy.startup(self.loadReason);
 
