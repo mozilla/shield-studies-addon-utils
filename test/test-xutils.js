@@ -688,6 +688,14 @@ exports['test survey with various queryArg things'] = function (assert, done) {
 }
 
 
+
+exports['test survey with empty urls give empty answers'] = function (assert, done) {
+  expect(xutils.survey({}),"undefined").to.be.undefined;
+  expect(xutils.survey({surveyUrl: ''}, 'empty string')).to.be.undefined;
+  done();
+}
+
+
 exports['test new studies make arm, firstrun decision during init'] = function (assert, done) {
   let config = studyInfoCopy();
   let thisStudy = new xutils.Study(config);
