@@ -1,3 +1,5 @@
+"use strict";
+
 const self = require("sdk/self");
 const { when: unload } = require("sdk/system/unload");
 
@@ -17,8 +19,7 @@ shield.Reporter.on("report",(d)=>console.info("telemetry", d));
 thisStudy.on("change",(newState)=>console.info("newState:", newState));
 
 /* 4. inlined main function */
-shield.generateTelemetryIdIfNeeded().then(
-  () => thisStudy.startup(self.loadReason));
+thisStudy.startup(self.loadReason);
 
 /* 5. unload */
 unload((reason) => {

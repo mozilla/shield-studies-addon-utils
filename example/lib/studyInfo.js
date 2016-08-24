@@ -6,6 +6,8 @@
   *
   */
 
+"use strict";
+
 const prefSvc = require("sdk/preferences/service");
 const OURPREF = 'some.newfeature.design';
 
