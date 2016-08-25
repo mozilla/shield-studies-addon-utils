@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title> | ExplainJS by grunt-explainjs</title>
+  <link rel="stylesheet" type="text/css" href="css/unsemantic.css"/>
+  <link rel="stylesheet" type="text/css" href="css/explain.css"/>
+  <link href='http://fonts.googleapis.com/css?family=Inconsolata|Open+Sans:300italic,300,700' rel='stylesheet' type='text/css'>
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1" />
+</head>
+
+<body>
+  <div class='page-menu'>
+    <div class='grid-container'>
+      <div class='grid-60 mobile-grid-100'>
+        <a class='logo' href='http://www.explainjs.com'>ExplainJS</a> by <a class='logo' href='https://github.com/collinforrester/grunt-explainjs'>grunt-explainjs</a>
+        
+      </div>
+    </div>
+  </div>
+  <div class='sections grid-container'>
+    <div class='code-bg hide-on-mobile'>
+    </div>
+    <br />
+    <br />
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <hr /> <p>Filename: <code>index.js</code></p> <h3>Example Shield Study Addon</h3> <p>(using <code>shield-studies-addon-utils</code>)</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre></pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>preamble, imports</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>"use strict";
+
+const self = require("sdk/self");
+const { when: unload } = require("sdk/system/unload");
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>1: Shield Addons module needed for the STUDY</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>const shield = require("shield-studies-addon-utils");
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>2: Configuration for the study.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>const studyConfig = require("./studyConfig");
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>3: Study Object.</p> <p>Instatiation sets or reuses existing addon-specific prefs:</p> <ul> <li><code>addonId.shield.firstrun</code>  - epoch</li> <li><code>addonId.shield.variation</code> - which variation user has</li> </ul>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>const thisStudy = new shield.Study(studyConfig);
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>4: (Optional). Debug: watch for study and reporting</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>shield.Reporter.on("report",(d)=>console.info("telemetry", d));
+thisStudy.on("change",(newState)=>console.info("newState:", newState));
+
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>5: (Optional) Example Orientation and Ineligible UI</p> <ul> <li>(optional) orientation example UI, with an &#39;extra&#39; telemetry probe</li> <li><p>(optional) when ineligible UI</p> <p>Note: panel won&#39;t work for <code>ineligible</code>, because addon will unload panel module.</p></li> </ul>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>function orientationMsg () {
+  require("sdk/panel").Panel({
+    width: 400, height: 400,
+    contentURL: "data:text/html,Some orientation content"
+  }).show()
+  shield.report({action: "orientation-showed"})
+}
+
+function ineligibleMsg () {
+  require("sdk/tabs").open("data:text/html,You are ineligible, sorry!  Next time?")
+}
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Listen to the correct study events.  There exist others</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>thisStudy.once("installed", orientationMsg)
+thisStudy.once("ineligible-die", ineligibleMsg)
+
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>6: Actually Startup the Study</p> <p>Cases for <code>self.loadReason</code>:</p> <ul> <li><code>install</code> <ul><li>checks eligibility, won&#39;t install if <code>isElibible()</code> fails</li> <li>otherwise <code>install</code> and run variation code</li></ul></li> <li><p><code>startup</code> | <code>upgrade</code></p> <ul><li>run specific variation code</li></ul> <p>Starts watcher for study-expiry after <code>config.duration</code> days.</p></li> </ul>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>thisStudy.startup(self.loadReason);</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>7: Unload Study</p> <p>Cases:  <code>reason</code></p> <ul> <li><p><code>disable</code> | <code>uninstall</code></p> <ul><li>calls <code>thisStudy.cleanup()</code>, knowing user-initiated | study expired</li></ul></li> </ul>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>unload((reason) => {
+  thisStudy.shutdown(reason);
+})
+, //!</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <hr /> <p>Filename: <code>studyConfig.js</code></p> <h3>This (particular) example study</h3> <ul> <li>will expire after 7 days</li> <li><p>what will change:</p> <ul><li>4 variations: strong, subtle, observe-only, ut</li> <li>(note: this pref is fake and does nothing)</li></ul></li> <li><p>isEligible for study IFF the preference is not already user set</p></li> <li>cleanup plan:  reset the pref.</li> <li>survey on SurveyGizmo</li> </ul> <h3>General Study Configuration</h3> <p>Study configuration requires an object with these 6 keys (explained below):</p> <ul> <li><code>name</code>:  <strong>string</strong> telemetry probe name</li> <li><code>duration</code>: <strong>number</strong> in days, time before study &#39;finishes&#39; and uninstalls</li> <li><code>surveyUrl</code>: <strong>string</strong> (optional) a url for post-expiry and post-study survey</li> <li><code>isEligible</code>: <strong>function</strong> should study install?</li> <li><code>cleanup</code>: <strong>functiion</strong> repair/reset on uninstall / finish</li> <li><p><code>variations</code>: <strong>object</strong> of &#39;implemntation&#39; functions</p> <p>In this example file, we export an object for use by <code>index.js</code></p></li> </ul>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre></pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>preamble, imports</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>"use strict";
+
+const prefSvc = require("sdk/preferences/service");
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>a hypothetical pref that controls the ui/settings for your feature</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>const OURPREF = 'some.newfeature.design';
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>1: <code>name</code>: a string for use by Telemetry to track the study.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>const name = require("sdk/self").id;
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>2: <code>duration</code>:  length of study in days (on user local clock)</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>const duration = 7;
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>3: <code>surveyUrl</code>:  Get surveyUrl from Firefox Strategy + Insights</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>const surveyUrl = "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey";
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>4: <code>variations</code>:  Object to implement feature</p> <p><code>name</code>: <code>function</code> pairs to DO THE ACTION</p> <ul> <li>specific user variation will be randomly chosen from the NAMES in this object, with equal probability</li> <li>specific function will be called for user to implement variation</li> <li>called at each startup.</li> <li>functions must be multi-callable safely</li> </ul>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>const variations = {
+  'strong':       () => {prefSvc.set(OURPREF, 'strong')},
+  'subtle':       () => {prefSvc.set(OURPREF, 'subtle')},
+  'observe-only': () => {prefSvc.set(OURPREF, 'observe-only')},
+  'ut': () => {}  // "usual treatment" => "control", less obvious name
+}
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>5: <code>isEligible</code>: is the User Eligible to participate at all ?</p> <p>Called during INSTALL startups only.</p> <p>Could be any function of user state, history, addons, etc.</p> <p>Useful to exclude users with known incompatible or irrelevant  configurations, such as:</p> <ul> <li>users with a password manager from a pw study</li> <li>users with some incompatible pref settings</li> <li>users with telemetry disabled</li> </ul>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>function isEligible () {
+  return !prefSvc.isSet('some.pref.that.if.set.excludes.user');
+}
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>6: <code>cleanup</code>: Cleanup to run during uninstall, disable, and end-of-study-period.</p> <p>Should attempt to reset the user to original state.</p> <p>If these <code>throw</code>, uninstall will continue.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>function cleanup () {
+  prefSvc.reset(OURPREF);
+}
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>create the config (verbose)</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>const aStudyConfig = {
+  name: name,
+  duration: duration,
+  surveyUrl: surveyUrl,
+  isEligible: isEligible,
+  cleanup: cleanup,
+  variations: variations,
+};
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>use it elsewhere:</p> <p><code>js   var shield = require(&amp;quot;shield-study-addon-utils&amp;quot;);   var aStudyConfig = require(&amp;quot;./studyInfo&amp;quot;);   var ourStudy = shield.Study(aStudyConfig) </code></p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>module.exports = aStudyConfig;
+.</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+  </div>
+</body>
+</html>
