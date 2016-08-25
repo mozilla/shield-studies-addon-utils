@@ -64,13 +64,26 @@ module.exports = function(grunt) {
                 dir: 'coverage/reports',
                 print: 'detail'
             }
-        }
+        },
+        explainjs: {
+            dist: {
+              options: {
+                showFilename: false // default is false
+              },
+              files: [{
+                src: ['example/lib/{index,studyConfig}.js'],
+                dest: 'docs/exmaple.html'
+              }]
+            },
+        },
     });
 
     grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-babel');
     grunt.loadNpmTasks('grunt-shell');
     grunt.loadNpmTasks('grunt-istanbul');
+
+    grunt.loadNpmTasks('grunt-explainjs');
 
     grunt.registerTask('readcoverageglobal', 'Reads the coverage global JPM wrote', function() {
         global.__coverage__ = require("istanbul-jpm/global-node").global.__coverage__;

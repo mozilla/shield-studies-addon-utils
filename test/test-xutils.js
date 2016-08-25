@@ -24,7 +24,7 @@ exports.skip = {}
 function setupEnv () {
   prefSvc.set("toolkit.telemetry.server","http://localhost:5000")
   prefSvc.set("shield.fakedie",true)
-  prefSvc.set("browser.selfsupport.url","")
+  prefSvc.set("browser.selfsuppport.enabled", false)
 }
 setupEnv()
 
