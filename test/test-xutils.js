@@ -382,7 +382,7 @@ exports['test 6a: startup while expired kills a study, fires state and UT'] = fu
   expect(testConfig.firstrun).to.equal(500);
   expect(testConfig.firstrun).to.equal(Number(prefs["shield.firstrun"]))
 
-  let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
+  let {thisStudy, seen, R} = setupStartupTest(testConfig);
   promiseFinalizedStartup(thisStudy, "startup").then(waitABit).then(
   ()=>{
     expect(hasTabWithUrlLike("end-of-study")).to.be.true;
@@ -403,7 +403,7 @@ exports['test 6b: install while expired installs a study, then immediately kills
   expect(testConfig.firstrun).to.equal(500);
   expect(testConfig.firstrun).to.equal(Number(prefs["shield.firstrun"]));
 
-  let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
+  let {thisStudy, seen, R} = setupStartupTest(testConfig);
   promiseFinalizedStartup(thisStudy).then(waitABit).then(
   ()=>{
     expect(hasTabWithUrlLike("end-of-study")).to.be.true;
@@ -421,7 +421,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
     reports: ["install","running","shutdown","running"],
     states: ["maybe-installing","installed","modifying","running","normal-shutdown","starting","modifying","running"]
   }
-  let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
+  let {thisStudy, seen, R} = setupStartupTest(testConfig);
   promiseFinalizedStartup(thisStudy).then(waitABit).then(
   () => promiseFinalizedShutdown(thisStudy, "shutdown")).then(waitABit).then(
   () => promiseFinalizedStartup(thisStudy,"startup")).then(
@@ -439,7 +439,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
 ["enable", "upgrade", "downgrade", "startup"].map(function (reason, i) {
   exports[`test 8-${reason}: all synonyms for startup: ${reason}`] = function (assert, done) {
     let testConfig = xutils.decideAndPersistConfig(studyInfo);
-    let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
+    let {thisStudy, seen, R} = setupStartupTest(testConfig);
     let wanted = {
       reports: ["running"],
       states:  ["starting","modifying","running"]
@@ -458,7 +458,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
   exports[`test 9-${reason}: all synonyms for startup die if expired: ${reason}`] = function (assert, done) {
     prefs["shield.firstrun"] = String(500); // 1970!
     let testConfig = xutils.decideAndPersistConfig(studyInfo);
-    let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
+    let {thisStudy, seen, R} = setupStartupTest(testConfig);
     let wanted = {
       reports: ["end-of-study"],
       states:  ["end-of-study"]
@@ -478,7 +478,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
 ['uninstall', 'disable'].map(function (reason) {
   exports[`test 10-${reason}: unload during ineligibleDie doesnt send user-uninstall-disable`] = function (assert, done) {
     let testConfig = xutils.decideAndPersistConfig(studyInfo);
-    let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
+    let {thisStudy, seen, R} = setupStartupTest(testConfig);
     emit(thisStudy, "change", "ineligible-die");
     let wanted = {
       reports: ["ineligible"],
@@ -503,7 +503,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
 ["shutdown", "upgrade", "downgrade"].map(function (reason, i) {
   exports[`test 10-${reason}: unload during ineligibleDie doesnt send normal-shutdown`] = function (assert, done) {
     let testConfig = xutils.decideAndPersistConfig(studyInfo);
-    let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
+    let {thisStudy, seen, R} = setupStartupTest(testConfig);
     emit(thisStudy, "change", "ineligible-die");
     let wanted = {
       reports: ["ineligible"],
@@ -526,9 +526,41 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
   }
 });
 
+
+exports['test cleanup: bad cleanup function wont stop uninstall'] = function (assert, done) {
+  let brokenCleanupConfig = studyInfoCopy();
+  let errorFn = function x () { throw new Error() };
+
+  // check that we didn't typo, and setup is ok.
+  expect(brokenCleanupConfig, "right name").to.contain.keys(['cleanup']);
+  brokenCleanupConfig.cleanup = errorFn;
+  expect(brokenCleanupConfig.cleanup, "and it throws").to.throw(Error);
+
+  let testConfig = xutils.decideAndPersistConfig(brokenCleanupConfig);
+
+  let {thisStudy, seen, R} = setupStartupTest(testConfig);
+  let wanted = {
+    reports: ["user-ended-study"],
+    states:  ["user-uninstall-disable"]
+  }
+  waitABit().then(
+  ()=> {
+    thisStudy.shutdown("uninstall");
+    waitABit().then(
+    ()=> {
+      expect(seen.reports).to.deep.equal(wanted.reports);
+      expect(thisStudy.states).to.deep.equal(wanted.states);
+      teardownStartupTest(R);
+      done();
+    })
+  }
+  )
+}
+
+
 exports[`test Study states: end-of-study: call all you want, only does one survey`] = function (assert, done) {
   let testConfig = xutils.decideAndPersistConfig(studyInfo);
-  let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
+  let {thisStudy, seen, R} = setupStartupTest(testConfig);
   emit(thisStudy, "change", "end-of-study");
   emit(thisStudy, "change", "end-of-study");
   emit(thisStudy, "change", "end-of-study");
@@ -553,7 +585,7 @@ exports[`test Study states: end-of-study: call all you want, only does one surve
 
 exports[`test Study states: user-uninstall-disable: call all you want, only does one survey`] = function (assert, done) {
   let testConfig = xutils.decideAndPersistConfig(studyInfo);
-  let {thisStudy, seen, R} = setupStartupTest(testConfig, studyInfo);
+  let {thisStudy, seen, R} = setupStartupTest(testConfig);
   emit(thisStudy, "change", "user-uninstall-disable");
   emit(thisStudy, "change", "user-uninstall-disable");
   emit(thisStudy, "change", "user-uninstall-disable");
@@ -746,6 +778,7 @@ exports['test generateTelemetryIdIfNeeded'] = function (assert, done) {
     done();
   });
 };
+
 
 exports['test obligatory exercise the event-target code, grrrrr'] = function (assert, done) {
   // until istanbul /* ignore next */ works with class statements

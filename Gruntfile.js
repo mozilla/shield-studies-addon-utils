@@ -45,7 +45,10 @@ module.exports = function(grunt) {
             options: {
                 lazy: false,
                 basePath: 'coverage/instrument',
-                instrumenter: istanbulJpm.Instrumenter
+                instrumenter: istanbulJpm.Instrumenter,
+                // from https://github.com/gotwarlost/istanbul/blob/master/lib/instrumenter.js
+                noCompact: true,
+                //preserveComments: true
             }
         },
 
