@@ -7,7 +7,7 @@
     "test": "grunt test && istanbul check-coverage --statements 100 --functions 100 --branches 100 --lines 100 coverage/reports/coverage.json"
   },
   "author": "Gregg Lind <glind@mozilla.com>",
-  "license": "ISC",
+  "license": "MPL-2.0",
   "dependencies": {},
   "devDependencies": {
     "chai": "^3.5.0",
