@@ -1,44 +1,52 @@
-/*!
- *## Example Shield Study Addon Using `shield-studies-addon-utils`
+/*
+ *---
+ * Filename: [index.js](https://github.com/mozilla/shield-studies-addon-utils/blob/refactor-to-classes/example/lib/index.js)`
  *
- *
+ *### Example Shield Study Addon
+ * (using `shield-studies-addon-utils`)
  *
  */
 
+
+/* preamble, imports */
 "use strict";
 
 const self = require("sdk/self");
 const { when: unload } = require("sdk/system/unload");
 
-/*### 1. Shield Addons module needed for the STUDY */
+/* 1: Shield Addons module needed for the STUDY */
 const shield = require("shield-studies-addon-utils");
 
 /**
- *### 2. Configuration for the study. */
+ * 2: Configuration for the study. */
 const studyConfig = require("./studyConfig");
 
 /**
- *### 3. Study Object.
+ * 3: Study Object.
  *
- * Instatiation sets or reuses existing prefs:
+ * Instatiation sets or reuses existing addon-specific prefs:
  *
- * - `<addon>.shield.firstrun`  - epoch
- * - `<addon>.shield.variation` - which variation user has
+ * - `addonId.shield.firstrun`  - epoch
+ * - `addonId.shield.variation` - which variation user has
  *
  */
 const thisStudy = new shield.Study(studyConfig);
 
 /**
- *### 4. (DEBUG optional). Watch for study and reporting */
+ * 4: (Optional). Debug: watch for study and reporting
+ */
 shield.Reporter.on("report",(d)=>console.info("telemetry", d));
 thisStudy.on("change",(newState)=>console.info("newState:", newState));
 
 
 /**
- *### 5. (Optional) Example Orientation and Ineligible UI
+ * 5: (Optional) Example Orientation and Ineligible UI
  *
  * - (optional) orientation example UI, with an 'extra' telemetry probe
  * - (optional) when ineligible UI
+ *
+ *   Note: panel won't work for `ineligible`, because addon will unload panel module.
+ *
  */
 function orientationMsg () {
   require("sdk/panel").Panel({
@@ -49,7 +57,6 @@ function orientationMsg () {
 }
 
 function ineligibleMsg () {
-  // Note: panel won't work here, because addon will unload panel module.
   require("sdk/tabs").open("data:text/html,You are ineligible, sorry!  Next time?")
 }
 
@@ -59,14 +66,14 @@ thisStudy.once("ineligible-die", ineligibleMsg)
 
 
 /**
- *### 6. Actually Startup the Study
+ * 6: Actually Startup the Study
  *
- * Cases for self.loadReason:
+ * Cases for `self.loadReason`:
  *
- * * Install
+ * * `install`
  *   - checks eligibility, won't install if `isElibible()` fails
  *   - otherwise `install` and run variation code
- * * Startup | Upgrade
+ * * `startup` | `upgrade`
  *   - run specific variation code
  *
  * Starts watcher for study-expiry after `config.duration` days.
@@ -74,11 +81,11 @@ thisStudy.once("ineligible-die", ineligibleMsg)
 
 thisStudy.startup(self.loadReason);
 /**
- *### 7. Unload Study
+ * 7: Unload Study
  *
- * Cases:  reason
+ * Cases:  `reason`
  *
- * * disable | uninstall
+ * * `disable` | `uninstall`
  *
  *   - calls `thisStudy.cleanup()`, knowing user-initiated | study expired
  */
@@ -86,3 +93,5 @@ thisStudy.startup(self.loadReason);
 unload((reason) => {
   thisStudy.shutdown(reason);
 })
+
+/**/

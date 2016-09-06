@@ -37,7 +37,7 @@ module.exports = function(grunt) {
                 //command: 'rm -rf testing-env && mkdir testing-env && cd testing-env && cat ../.jpmignore ../.jpmignore-testing-env > .jpmignore && ln -s ../Gruntfile.js . && ln -s ../node_modules . && ln -s ../lib . && ln -s ../package.json . && ln -s ../test .',
             },
             jpmTest: {
-                command: 'cd testing-env && jpm test -b ' + fxBinary
+                command: 'cd testing-env && jpm test --tbpl -b ' + fxBinary
             }
         },
         instrument: {
@@ -72,7 +72,7 @@ module.exports = function(grunt) {
               },
               files: [{
                 src: ['example/lib/{index,studyConfig}.js'],
-                dest: 'docs/exmaple.html'
+                dest: 'docs/index.html'
               }]
             },
         },

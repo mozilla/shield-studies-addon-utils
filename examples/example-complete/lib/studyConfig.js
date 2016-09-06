@@ -1,7 +1,8 @@
-/**!
-  *## `studyConfig`
+/**
+  *---
+  * Filename: `studyConfig.js`
   *
-  *### About this (particular) example study:
+  *### This (particular) example study
   *
   * - will expire after 7 days
   * - what will change:
@@ -15,7 +16,7 @@
   *
   *### General Study Configuration
   *
-  *  Study configuration requires an object with these 6 keys (explained below):
+  * Study configuration requires an object with these 6 keys (explained below):
   *
   *  - `name`:  **string** telemetry probe name
   *  - `duration`: **number** in days, time before study 'finishes' and uninstalls
@@ -27,21 +28,24 @@
   *  In this example file, we export an object for use by `index.js`
   */
 
+/* preamble, imports */
 "use strict";
 
 const prefSvc = require("sdk/preferences/service");
+
+/* a hypothetical pref that controls the ui/settings for your feature*/
 const OURPREF = 'some.newfeature.design';
 
-/* `name`: a string for use by Telemetry to track the study. */
+/* 1: `name`: a string for use by Telemetry to track the study. */
 const name = require("sdk/self").id;
 
-/* `duration`:  length of study in days (on user local clock) */
+/* 2: `duration`:  length of study in days (on user local clock) */
 const duration = 7;
 
-/* `surveyUrl`:  Get surveyUrl from Firefox Strategy + Insights */
+/* 3: `surveyUrl`:  Get surveyUrl from Firefox Strategy + Insights */
 const surveyUrl = "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey";
 
-/** `variations`:  Object to implement feature
+/** 4: `variations`:  Object to implement feature
   *
   * `name`: `function` pairs to DO THE ACTION
   *
@@ -58,7 +62,7 @@ const variations = {
   'ut': () => {}  // "usual treatment" => "control", less obvious name
 }
 
-/** `isEligible`: is the User Eligible to participate at all ?
+/** 5: `isEligible`: is the User Eligible to participate at all ?
   *
   * Called during INSTALL startups only.
   *
@@ -75,7 +79,7 @@ function isEligible () {
   return !prefSvc.isSet('some.pref.that.if.set.excludes.user');
 }
 
-/** `cleanup`: Cleanup to run during uninstall, disable, and end-of-study-period.
+/** 6: `cleanup`: Cleanup to run during uninstall, disable, and end-of-study-period.
   *
   * Should attempt to reset the user to original state.
   *
@@ -104,3 +108,5 @@ const aStudyConfig = {
   ```
 */
 module.exports = aStudyConfig;
+
+/**/
