@@ -238,7 +238,7 @@ exports["test Catch throw"] = function () {
 
 }
 
-exports.only["test method overrides 1: whenInstalled"] = function (assert) {
+exports["test method overrides 1: whenInstalled"] = function (assert) {
   let override = false;
   class OverrideStudy extends xutils.Study {
     whenInstalled () {
