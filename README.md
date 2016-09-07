@@ -11,7 +11,7 @@ npm install --save-dev shield-studies-addon-utils
 
 ## Tutorial and Full Usage
 
-[fully worked tutorial - How To Shield Study][./howToShieldStudy.md]
+[fully worked tutorial - How To Shield Study](./howToShieldStudy.md)
 
 ## Examples
 
