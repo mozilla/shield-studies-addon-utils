@@ -17,7 +17,8 @@ module.exports = function(grunt) {
     console.log(process.env.coveragedir, fxBinary);
     grunt.initConfig({
         eslint: {
-            files: '{lib,data,test}/**/*.js{,on}',
+            files: ['{lib,data,test}/**/*.js{,on}',
+                'example/**/{lib,data,test}/**/*.js{,on}'],
             options: {
                 quiet: true
             }

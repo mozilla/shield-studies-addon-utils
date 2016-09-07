@@ -1,35 +1,48 @@
 # Shield Studies Addon Utils [![Build Status](https://travis-ci.org/tombell/travis-ci-status.svg?branch=master)](https://travis-ci.org/tombell/travis-ci-status)
 
-Instrumented your Firefox Addon!
+- Instrument your Firefox Addon!
+- Build Shield Study (Normandy) compatible addons without having to think very much.
 
-Build Shield Study (Normandy) compatible addons without having to think very much.
+## install
 
-In particular, this has 100% test coverage for lots of **startup** and **shutdown** cases, so that your addon does the Right Thing across restarts.
+```
+npm install --save-dev shield-studies-addon-utils
+```
 
-- maintains same variation across restarts
-- testable, tested code
-- doesn't care much about your variations, so long as they are 'multi-callable' safely.
+## Tutorial and Full Usage
 
-## Design Case
+[fully worked tutorial - How To Shield Study][./howToShieldStudy.md]
 
-Your experiment is:
+## Examples
+
+See `examples` directory.
+
+## Summary
+
+### Design Case
+
+Your Study is:
 
 - side-by-side variations (1 or more)
 - 'one-phase'.  No warm up periods.  If you want that stuff, handle it yourself, or file bugs
 
-## Benefits
+### Benefits
 
 Using this, you get this analysis FOR FREE (and it's fast!)
 
 - Branch x channel x VARIATION x experiment-id x PHASE (install, reject, alive etc) using UNIFIED TELEMETRY
 
-## Example usage
+- In particular, this library has 100% test coverage for lots of **startup** and **shutdown** cases, so that your addon does the Right Thing across restarts.
 
-See `example` directory, for a simple "single-pref" app, with
+  - maintains same variation across restarts
+  - testable, tested code
+  - doesn't care much about your variations, so long as they are 'multi-callable' safely.
 
-- `isEligible`
-- `cleanup`
-- `variations`
+
+## Development
+
+- open an issue
+- hack and file a PR
 
 
 ## Gotchas, Opinions, Side Effects, and Misfeatures
@@ -44,3 +57,5 @@ See `example` directory, for a simple "single-pref" app, with
 3.  Disable also uninstalls (and cleans up)
 
 4.  Undoubtedly, there are others.  It scratches my itch.  I have built a lot of things in the past.
+
+

@@ -8,8 +8,8 @@ exports.which = function (val) {
   return val;
 }
 
-exports.ineligible = function () {
-  return prefSvc.isset(ourpref);
+exports.isEligible = function () {
+  return !prefSvc.isSet(ourpref);
 }
 
 exports.reset = function () {
