@@ -1,0 +1,8 @@
+*
+.*
+!/data/**
+!/*.js
+!/lib/**
+!/README.md
+!/package.json
+!/node_modules/shield-studies-addon-utils/**/*

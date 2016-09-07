@@ -1,3 +1,5 @@
 node_modules
 *.xpi
 coverage
+testing-env
+test/z-ensure-coverage.js
