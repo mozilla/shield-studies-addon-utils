@@ -2,7 +2,7 @@
 
 ## Key Ideas - Knowing Answers Using Studies
 
--  :crystal_ball: Shield Studies are addons with instrumentation  to help you <span id='knowing-back'>[see the future](#knowing)</span> and make decisions about features
+-  :crystal_ball: Shield Studies are addons with instrumentation  to help you <a id='knowing-back'></a>[see the future](#knowing) and make decisions about features
 - :bar_chart: Shield Studies compare user response to feature variations
 - :seedling: This tutorial builds a study addon from the ground up
 - :floppy_disk: See [full tutorial code below](#final-code)
@@ -11,7 +11,7 @@
 
 ## Example: Puppies Up In Your Browser :dog: :arrow_up: :computer:
 
-[Fake!] VP of Firefox has a <span id='notsorry-back'>[pet theory](#notsorry)</span> that users love theming their browser with puppy images.
+[Fake!] VP of Firefox has a <a id='notsorry-back'></a><span id='notsorry-back'>[pet theory](#notsorry) that users love theming their browser with puppy images.
 
 You want to please the VP of Firefox.
 
@@ -107,7 +107,7 @@ A Shield Study is an addon that some useful behaviours built-in to help answer r
 
 ## Dogs, Cats, or Nothing (Variations)
 
-Together with the Weird Science Team<sup id='weird-science-back'>[*](#weird-science)</sup>, you decide on 3 variations to try:
+Together with the <a id='weird-science-back'></a>[Weird Science Team](#weird-science), you decide on 3 variations to try:
 
 - :dog: puppies
 - :cat: kittens
