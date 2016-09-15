@@ -232,7 +232,7 @@ While we are here, we give the study a `config.name`.
 
 	const { feature } = require("./feature");
 
-	const config = {
+	const studyConfig = {
 	  name: self.addonId,
 	  variations = {
 	    "notheme": () => feature("notheme"),
