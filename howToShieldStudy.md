@@ -141,7 +141,7 @@ exports.variations = {
 /** index.js */
 
 /* give a theme to the user */
-require("./theme").puppies()
+require("./theme").variations.puppies()
 ```
 
 ### More Themes Makes New Problems
