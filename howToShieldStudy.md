@@ -386,13 +386,15 @@ exports.isEligible = function () {
 **study.js**
 
 ```js
+const { feature, isEligible } = require('./feature')
+
 class OurStudy extends shield.Study {
   constructor (config) {
 	// ...
   }
   isEligible () {
     // bool Already Has the feature.  Stops install if true
-    return super.isEligible() && feature.isEligible()
+    return super.isEligible() && isEligible()
   }
   whenIneligible () {
   	  super();
