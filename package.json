@@ -1,15 +1,12 @@
 {
   "name": "shield-studies-addon-utils",
+  "description": "Utilities for building Shield-Study Mozilla Firefox add-ons.",
   "version": "2.0.0",
-  "description": "Utilities for building  Shield-Study Mozilla Firefox addons.",
-  "main": "lib/index.js",
-  "scripts": {
-    "test": "grunt test && istanbul check-coverage --statements 100 --functions 100 --branches 100 --lines 100 coverage/reports/coverage.json"
-  },
   "author": "Gregg Lind <glind@mozilla.com>",
-  "license": "MPL-2.0",
-  "dependencies": {
+  "bugs": {
+    "url": "https://github.com/mozilla/shield-studies-addon-utils/issues"
   },
+  "dependencies": {},
   "devDependencies": {
     "chai": "3.5.0",
     "grunt": "1.0.1",
@@ -22,16 +19,24 @@
     "istanbul-jpm": "0.1.0",
     "jpm": "1.1.4"
   },
-  "bugs": {
-    "url": "https://github.com/gregglind/shield-studies-addon-utils/issues"
-  },
   "files": [
     "lib/"
   ],
+  "homepage": "https://github.com/mozilla/shield-studies-addon-utils#readme",
+  "keywords": [
+    "mozilla",
+    "addon",
+    "shield",
+    "shield-study"
+  ],
+  "license": "MPL-2.0",
+  "main": "lib/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mozilla/shield-studies-addon-utils.git"
   },
-  "keywords": ["mozilla", "addon", "shield", "shield-study"],
-  "homepage": "https://github.com/mozilla/shield-studies-addon-utils#readme"
+  "scripts": {
+    "lint": "grunt eslint",
+    "test": "grunt test && istanbul check-coverage --statements 100 --functions 100 --branches 100 --lines 100 coverage/reports/coverage.json"
+  }
 }

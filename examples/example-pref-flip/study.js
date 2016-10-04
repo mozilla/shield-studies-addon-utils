@@ -1,26 +1,25 @@
 /** study.js **/
-const self = require("sdk/self");
-const prefSvc = require("sdk/preferences/service");
-const shield = require("shield-studies-addon-utils");
+const self = require('sdk/self');
+const shield = require('shield-studies-addon-utils');
 const tabs = require('sdk/tabs');
-const { when: unload } = require("sdk/system/unload");
+const { when: unload } = require('sdk/system/unload');
 
-const feature = require("./feature");
+const feature = require('./feature');
 
 const studyConfig = {
   name: self.addonId,
   duration: 14,
-  surveyUrls:  {
+  surveyUrls: {
     'end-of-study': 'some/url',
     'user-ended-study': 'some/url',
-    'ineligible':  null
+    'ineligible': null
   },
   variations: {
-    "v1": () => feature.which("v1"),
-    "v2": () => feature.which("v2"),
-    "v3": () => feature.which("v3")
+    'v1': () => feature.which('v1'),
+    'v2': () => feature.which('v2'),
+    'v3': () => feature.which('v3')
   }
-}
+};
 
 class OurStudy extends shield.Study {
   constructor (config) {
@@ -33,12 +32,12 @@ class OurStudy extends shield.Study {
   whenIneligible () {
     super.whenIneligible();
     // additional actions for 'user isn't eligible'
-    tabs.open(`data:text/html,Uninstalling, you are not eligible for this study`)
+    tabs.open('data:text/html,Uninstalling, you are not eligible for this study');
   }
   whenInstalled () {
     super.whenInstalled();
     // orientation, unless our branch is 'notheme'
-    if (this.variation == 'notheme') {}
+    if (this.variation === 'notheme') {} // eslint-disable-line no-empty
     feature.orientation(this.variation);
   }
   cleanup (reason) {
@@ -55,7 +54,7 @@ class OurStudy extends shield.Study {
     super.whenUninstalled();
   }
   decideVariation () {
-    return super.decideVariation() // chooses at random
+    return super.decideVariation(); // chooses at random
     // unequal or non random allocation for example
   }
 }
@@ -69,4 +68,4 @@ exports.studyConfig = studyConfig;
 // for use by index.js
 exports.study = thisStudy;
 
-unload((reason) => thisStudy.shutdown(reason))
+unload((reason) => thisStudy.shutdown(reason));

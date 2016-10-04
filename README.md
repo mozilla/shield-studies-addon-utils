@@ -1,11 +1,11 @@
-# Shield Studies Addon Utils [![Build Status](https://travis-ci.org/tombell/travis-ci-status.svg?branch=master)](https://travis-ci.org/tombell/travis-ci-status)
+# Shield Studies Add-on Utils [![Build Status](https://travis-ci.org/tombell/travis-ci-status.svg?branch=master)](https://travis-ci.org/tombell/travis-ci-status)
 
-- Instrument your Firefox Addon!
-- Build Shield Study (Normandy) compatible addons without having to think very much.
+- Instrument your Firefox Add-on!
+- Build Shield Study (Normandy) compatible add-ons without having to think very much.
 
 ## install
 
-```
+```sh
 npm install --save-dev shield-studies-addon-utils
 ```
 
@@ -32,7 +32,7 @@ Using this, you get this analysis FOR FREE (and it's fast!)
 
 - Branch x channel x VARIATION x experiment-id x PHASE (install, reject, alive etc) using UNIFIED TELEMETRY
 
-- In particular, this library has 100% test coverage for lots of **startup** and **shutdown** cases, so that your addon does the Right Thing across restarts.
+- In particular, this library has 100% test coverage for lots of **startup** and **shutdown** cases, so that your add-on does the Right Thing across restarts.
 
   - maintains same variation across restarts
   - testable, tested code
@@ -47,7 +47,7 @@ Using this, you get this analysis FOR FREE (and it's fast!)
 
 ## Gotchas, Opinions, Side Effects, and Misfeatures
 
-1.  This assumes `jetpack` (`jpm`) style addons, with
+1.  This assumes `jetpack` (`jpm`) style add-ons, with
 
     - `require`
     - `jpm` startup and shutdown semantics
