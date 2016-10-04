@@ -1,0 +1,25 @@
+env:
+  es6: true
+  node: true
+
+extends:
+  - eslint:recommended
+
+root: true
+
+rules:
+  arrow-spacing: error
+  comma-dangle: off
+  comma-spacing: error
+  eol-last: error
+  eqeqeq: error
+  handle-callback-err: error
+  indent: [error, 2]
+  key-spacing: error
+  no-console: off
+  no-multi-spaces: error
+  no-unused-vars: [warn, {vars: all, args: none}]
+  one-var: [error, never]
+  quotes: [error, single]
+  semi: [error, always]
+  space-infix-ops: error
