@@ -941,7 +941,7 @@ exports["test aliveness 4, < 24 hours, IS expired, die"] = function (assert) {
 // TODO got up to here!
 
 exports['test Study: surveyQueryArgs'] = function (assert) {
-  let alwaysKeys = ["variation",'xname','who','updateChannel','fxVersion'];
+  let alwaysKeys = ["variation",'xname','who','updateChannel','fxVersion','studyVersion'];
   let S = new xutils.Study(studyInfoCopy());
   expect(S.surveyQueryArgs).to.include.keys(alwaysKeys);
 }
