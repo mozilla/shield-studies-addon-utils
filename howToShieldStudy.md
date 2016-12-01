@@ -192,7 +192,7 @@ Use the `shield` cli command to run a particular variation for testing and demon
 1. demo "kittens" variation on Aurora (Developer Edition)
 
 	```
-	$ shield . kittens  -- -b Aurora
+	$ shield run . kittens  -- -b Aurora
 	```
 
 :gift: **Shield Bonus**: Arguments after the `--` are passed along to `jpm`.
@@ -270,12 +270,11 @@ While we are here, we give the study a `config.name`.
 
 	const studyConfig = {
 		name: self.addonId,
-	   variations: {
+	    variations: {
 	      "notheme": () => feature("notheme"),
 	      "puppies": () => feature("puppies"),
 	      "kittens": () => feature("kittens")
 	    }
-	  }
 	}
 
 	class OurStudy extends shield.Study {
@@ -846,5 +845,3 @@ Readers / feedback / wit:
 2. <a name="notsorry"></a> Sorry, not sorry. <a href="#notsorry-back">⇧</a>
 
 3. <a name="weird-science"></a> The Firefox Strategy + Insights "Weird Science" Subteam - Gregg Lind and friends.  <a href="#weird-science-back">⇧</a>
-
-
