@@ -25,7 +25,7 @@ module.exports = function(grunt) {
         },
         shell: {
             addonLintTest: {
-                command: 'jpm xpi; addons-linter --output json --pretty *xpi | node scripts/addon-lint-consumer.js',
+                command: './node_modules/.bin/jpm xpi; addons-linter --output json --pretty *xpi | node scripts/addon-lint-consumer.js',
             },
             cleanCoverage: {
                 command: 'rm -rf coverage'
@@ -38,7 +38,7 @@ module.exports = function(grunt) {
                 //command: 'rm -rf testing-env && mkdir testing-env && cd testing-env && cat ../.jpmignore ../.jpmignore-testing-env > .jpmignore && ln -s ../Gruntfile.js . && ln -s ../node_modules . && ln -s ../lib . && ln -s ../package.json . && ln -s ../test .',
             },
             jpmTest: {
-                command: 'cd testing-env && jpm test --tbpl -b ' + fxBinary
+                command: 'cd testing-env && ./node_modules/.bin/jpm test --tbpl -b ' + fxBinary
             }
         },
         instrument: {

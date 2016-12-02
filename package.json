@@ -1,10 +1,12 @@
 {
   "name": "shield-studies-addon-utils",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Utilities for building  Shield-Study Mozilla Firefox addons.",
   "main": "lib/index.js",
   "scripts": {
-    "test": "grunt test && istanbul check-coverage --statements 100 --functions 100 --branches 100 --lines 100 coverage/reports/coverage.json"
+    "test:grunt": "grunt test",
+    "test:coverage": "istanbul check-coverage --statements 100 --functions 100 --branches 100 --lines 100 coverage/reports/coverage.json",
+    "test": "npm-run-all test:*"
   },
   "author": "Gregg Lind <glind@mozilla.com>",
   "license": "MPL-2.0",
@@ -23,7 +25,7 @@
     "jpm": "1.1.4"
   },
   "bugs": {
-    "url": "https://github.com/gregglind/shield-studies-addon-utils/issues"
+    "url": "https://github.com/mozilla/shield-studies-addon-utils/issues"
   },
   "files": [
     "lib/"
