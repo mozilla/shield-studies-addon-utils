@@ -75,7 +75,8 @@ var studyInfo = {
   days: 7,
   surveyUrls: {
     'end-of-study': self.data.url("expired.html"),
-    'user-ended-study': self.data.url("uninstall.html")
+    'user-ended-study': self.data.url("uninstall.html"),
+    'custom-end-of-study': self.data.url("custom.html")
   }
 };
 
@@ -766,6 +767,37 @@ exports['test cleanup: bad cleanup function wont stop uninstall'] = function (as
   )
 }
 
+exports[`test Study states: custom-uninstall shuts down, presents survey`] = function (assert) {
+  let {thisStudy, seen, R} = setupStartupTest(studyInfoCopy());
+  thisStudy.shutdown("custom-end-of-study");
+  let wanted = {
+    reports: ["custom-end-of-study"],
+    states:  ["uninstall-custom-reason"]
+  }
+  return waitABit().then(
+  ()=> {
+    teardownStartupTest(R);
+    endsLike(
+      {
+        flags: {
+          ineligibleDie: undefined,
+          expired: undefined,
+          dying: true
+        },
+        state: "uninstall-custom-reason",
+        reports: wanted.reports,
+        states: wanted.states,
+        notUrls: [thisStudy.config.surveyUrls['end-of-study'],'end-of-study'],
+        urls: [thisStudy.config.surveyUrls['custom-end-of-study']]
+      },
+      thisStudy,
+      seen
+    )
+    expect(countTabsLike("custom-end-of-study"),'exactly 1 survey').to.equal(1);
+    expect(countTabsLike(thisStudy.config.surveyUrls['user-ended-study']),"custom-end-of-study").to.equal(1);
+  })
+}
+
 
 exports[`test Study states: end-of-study: call all you want, only does one survey`] = function (assert) {
   let {thisStudy, seen, R} = setupStartupTest(studyInfoCopy());
@@ -830,6 +862,40 @@ exports[`test Study states: user-uninstall-disable: call all you want, only does
     )
     expect(countTabsLike("user-ended-study"),'exactly 1 survey').to.equal(1);
     expect(countTabsLike(thisStudy.config.surveyUrls['user-ended-study']),'exactly 1 survey').to.equal(1);
+  })
+}
+
+exports[`test Study states: custom-uninstall: call all you want, only does one survey`] = function (assert) {
+  let {thisStudy, seen, R} = setupStartupTest(studyInfoCopy());
+  emit(thisStudy, "uninstall-custom-reason", "custom-end-of-study");
+  emit(thisStudy, "uninstall-custom-reason", "custom-end-of-study");
+  emit(thisStudy, "uninstall-custom-reason", "custom-end-of-study");
+  emit(thisStudy, "uninstall-custom-reason", "custom-end-of-study");
+  let wanted = {
+    reports: ["custom-end-of-study"],
+    states:  ["uninstall-custom-reason", "uninstall-custom-reason", "uninstall-custom-reason", "uninstall-custom-reason"]
+  }
+  return waitABit().then(
+  ()=> {
+    teardownStartupTest(R);
+    endsLike(
+      {
+        flags: {
+          ineligibleDie: undefined,
+          expired: undefined,
+          dying: true
+        },
+        state: "uninstall-custom-reason",
+        reports: wanted.reports,
+        states: wanted.states,
+        notUrls: [thisStudy.config.surveyUrls['end-of-study'],'end-of-study'],
+        urls: [thisStudy.config.surveyUrls['custom-end-of-study']]
+      },
+      thisStudy,
+      seen
+    )
+    expect(countTabsLike("custom-end-of-study"),'exactly 1 survey').to.equal(1);
+    expect(countTabsLike(thisStudy.config.surveyUrls['user-ended-study']),"custom-end-of-study").to.equal(1);
   })
 }
 
