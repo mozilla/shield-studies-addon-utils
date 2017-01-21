@@ -4,7 +4,18 @@ env:
   node: true
   es6: true
 
+root:
+  true
+
 rules:
   comma-dangle: 0
-  no-console: 0
-  no-unused-vars: [2, { vars: all, args: none }]
+  eol-last: error
+  eqeqeq: error
+  handle-callback-err: error
+  indent: [error, 2]
+  no-console: 1
+  no-unused-vars: [error, {vars: all, args: none}]
+  one-var: [error, never]
+  quotes: [error, single]
+  semi: [error, always]
+

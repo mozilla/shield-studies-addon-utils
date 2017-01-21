@@ -17,8 +17,8 @@ module.exports = function(grunt) {
     console.log(process.env.coveragedir, fxBinary);
     grunt.initConfig({
         eslint: {
-            files: ['{lib,data,test}/**/*.js{,on}',
-                'example/**/{lib,data,test}/**/*.js{,on}'],
+            files: ['{lib,data,test}/**/*.js',
+                'example/**/{lib,data,test}/**/*.js'],
             options: {
                 quiet: true
             }
@@ -31,10 +31,10 @@ module.exports = function(grunt) {
                 command: 'rm -rf coverage'
             },
             makeCoverageTest: {
-                command: "echo > test/z-ensure-coverage.js; git ls-tree -r HEAD --name-only lib | grep \"js$\" | xargs -I '{}' echo 'require(\"../{}\");' | egrep -v \"(jetpack|main.js)\" >> test/z-ensure-coverage.js",
+                command: "echo > test/z-ensure-coverage.js; git ls-tree -r HEAD --name-only lib | grep \"js$\" | xargs -I '{}' echo \"require('../{}');\" | egrep -v \'(jetpack|main.js)\' >> test/z-ensure-coverage.js",
             },
             makeTestEnv: {
-                command: 'rm -rf testing-env && mkdir testing-env && cd testing-env && cat ../.jpmignore ../.jpmignore-testing-env > .jpmignore && ln -s ../Gruntfile.js . && ln -s ../node_modules . && ln -s ../coverage/instrument/lib . && ln -s ../package.json . && ln -s ../test .',
+                command: 'rm -rf testing-env && mkdir testing-env && cd testing-env && cat ../.jpmignore ../.jpmignore-testing-env > .jpmignore && ln -s ../Gruntfile.js . && ln -s ../node_modules . && ln -s ../coverage/instrument/lib . && ln -s ../external && ln -s ../package.json . && ln -s ../test .',
                 //command: 'rm -rf testing-env && mkdir testing-env && cd testing-env && cat ../.jpmignore ../.jpmignore-testing-env > .jpmignore && ln -s ../Gruntfile.js . && ln -s ../node_modules . && ln -s ../lib . && ln -s ../package.json . && ln -s ../test .',
             },
             jpmTest: {
