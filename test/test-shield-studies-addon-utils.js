@@ -3,8 +3,8 @@ var { expect } = require('chai');
 const {Cu} = require('chrome');
 Cu.importGlobalProperties(['URL', 'URLSearchParams']);
 
-const { setTimeout } = require('sdk/timers');
-const { emit } = require('sdk/event/core');
+const { setTimeout } = require('../lib/jetpack/timers');
+const { emit } = require('../lib/jetpack/events-core');
 
 let { prefSvc } = require('../lib/not-jetpack');
 let { prefs } = require('../lib/not-jetpack');
@@ -264,13 +264,14 @@ function endsLike (wanted, aStudy, seen) {
   wanted = merge({}, defaultWanted, wanted); // override keys
 
   console.log('WANTED', JSON.stringify(wanted));
-  console.log('SEEN  ', JSON.stringify(seen), aStudy.states, JSON.stringify(aStudy.flags), JSON.stringify(aStudy.config) );
+  console.log('SEEN  ', JSON.stringify(seen), aStudy.states, 'flags:', JSON.stringify(aStudy.flags), JSON.stringify(aStudy.config) );
 
   function OK(...args){ console.log('OK', ...args);}
   let a;
   a = Object.keys(wanted.flags).map(function (flagName) {
     let flagSeen = aStudy.flags[flagName];
     let flagWanted = wanted.flags[flagName];
+    console.log(`want ${flagName} => ${flagWanted}`);
     expect(flagSeen, `want ${flagName} => ${flagWanted}`).to.deep.equal(flagWanted);
   });
 
@@ -756,7 +757,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
 });
 
 ['uninstall', 'disable'].map(function (reason) {
-  exports[`test 10-${reason}: unload during ineligibleDie doesnt send user-uninstall-disable`] = function (assert, done) {
+  exports.skip[`test 10-${reason}: unload during ineligibleDie doesnt send user-disable`] = function (assert, done) {
     let testConfig = studyInfoCopy();
     let {thisStudy, seen, R} = setupStartupTest(testConfig);
     emit(thisStudy, 'change', 'ineligible-die');
