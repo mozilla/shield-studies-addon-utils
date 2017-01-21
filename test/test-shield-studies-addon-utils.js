@@ -1,15 +1,16 @@
 var { expect } = require('chai');
 
-const { merge } = require('sdk/util/object');
+const {Cu} = require('chrome');
+Cu.importGlobalProperties(['URL', 'URLSearchParams']);
+
 const { setTimeout } = require('sdk/timers');
 const { emit } = require('sdk/event/core');
-const querystring = require('sdk/querystring');
-const { URL } = require('sdk/url');
 
 let prefSvc = require('sdk/preferences/service');
 let prefs = require('sdk/simple-prefs').prefs;
 
 var shield = require('../lib/');
+const { merge } = require('../lib/not-jetpack');
 
 let { before, after } = require('sdk/test/utils');
 
@@ -1108,17 +1109,19 @@ exports['test survey with various queryArg things'] = function (assert) {
   // combos: [url has qa's or not, with or without extras]
   let ans = [
     ['resource://a', {b:'junk'}, {b:'junk'}, 'extra vars works' ],
-    ['resource://a', {}, {'b': undefined}, 'extra vars wont appear'],
+    ['resource://a', {}, {'b': null}, 'extra vars wont appear'],
     ['resource://a?b=some%40thing', {}, {'b': 'some@thing'}, 'no escaping or unescaping, mostly'],
     ['resource://a?b=first', {'b': 'second'}, {'b': 'second'}, 'normal vars: the extra override the survey one'],
-    ['resource://a?b=first&b=second', {}, {'b[0]': 'first', 'b[1]': 'second'}, 'arrays are handled \'as arrays\' only if in the survey url'],
-    ['resource://a?b=first&b=second', {'b': 'third'}, {'b': 'third'}, 'later string vars override earlier \'arrays\' '],
+
+    // this test is too sophisticated. We always override. If people send us arrays, then don't do it in our special keys
+    //['resource://a?b=first&b=second', {}, {'b[0]': 'first', 'b[1]': 'second'}, 'arrays are handled \'as arrays\' only if in the survey url'],
+    ['resource://a?b=first&b=second', {'b': 'third'}, {'b': 'third'}, 'later string vars override earlier \'arrays\' ']
   ];
 
   function toArgs(url) {
     let U = new URL(url);
     let q = U.search;
-    q = querystring.parse(querystring.unescape(q.slice(1)));
+    q = new URLSearchParams(q);
     return q;
   }
   for (let row of ans) {
@@ -1131,7 +1134,7 @@ exports['test survey with various queryArg things'] = function (assert) {
 
     // actual tests.
     for (let k in theTest) {
-      expect(qa[k], what_test).to.deep.equal(theTest[k]);
+      expect(qa.get(k), what_test).to.deep.equal(theTest[k]);
     }
   }
 };
