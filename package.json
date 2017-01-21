@@ -42,7 +42,7 @@
   },
   "scripts": {
     "lint": "npm-run-all lint:*",
-    "lint:depcheck": "depcheck --ignores eslint,ajv,jpm,shield-study-schemas",
+    "lint:depcheck": "depcheck --ignores eslint,ajv,jpm,shield-study-schemas,chai",
     "lint:eslint": "eslint '{lib,data,test}/**/*.js' 'example/**/{lib,data,test}/**/*.js'",
     "lint:fixpack": "fixpack",
     "postinstall": "mkdir -p external && cp node_modules/ajv/dist/ajv.min.js external/ajv.min.js && cp -rp node_modules/shield-study-schemas/schemas/shield-schemas.json external/",

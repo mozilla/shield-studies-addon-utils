@@ -6,8 +6,8 @@ Cu.importGlobalProperties(['URL', 'URLSearchParams']);
 const { setTimeout } = require('sdk/timers');
 const { emit } = require('sdk/event/core');
 
-let prefSvc = require('sdk/preferences/service');
-let prefs = require('sdk/simple-prefs').prefs;
+let { prefSvc } = require('../lib/not-jetpack');
+let { prefs } = require('../lib/not-jetpack');
 
 var shield = require('../lib/');
 const { merge } = require('../lib/not-jetpack');
@@ -140,9 +140,20 @@ exports['test Module has right keys and types'] = function (assert, done) {
 exports['test resetShieldPrefs actually resets'] = function (assert, done) {
   prefs['shield.firstrun'] = String(Date.now());
   prefs['shield.variation'] = 'whatever';
-  ['shield.firstrun', 'shield.variation'].map((p) => expect(prefs[p]).to.not.be.undefined);
+  prefs['shield.lastactiveping'] = String(Date.now());
+
+  let shieldPrefs = ['shield.firstrun', 'shield.variation', 'shield.lastactiveping'];
+  shieldPrefs.map((k)=>{
+    let p = `extensions.${self.preferencesBranch}.${k}`;
+    expect(prefSvc.get(p)).to.not.be.undefined;
+  });
+  shieldPrefs.map((p) => expect(prefs[p]).to.not.be.undefined);
   shield.resetShieldPrefs();
-  ['shield.firstrun', 'shield.variation'].map((p) => expect(prefs[p]).to.be.undefined);
+  shieldPrefs.map((k)=>{
+    let p = `extensions.${self.preferencesBranch}.${k}`;
+    expect(prefSvc.get(p)).to.be.undefined;
+  });
+  shieldPrefs.map((p) => expect(prefs[p]).to.be.undefined);
   waitABit().then(done);
 };
 
