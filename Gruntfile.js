@@ -16,13 +16,6 @@ module.exports = function(grunt) {
 
     console.log(process.env.coveragedir, fxBinary);
     grunt.initConfig({
-        eslint: {
-            files: ['{lib,data,test}/**/*.js',
-                'example/**/{lib,data,test}/**/*.js'],
-            options: {
-                quiet: true
-            }
-        },
         shell: {
             addonLintTest: {
                 command: 'jpm xpi; addons-linter --output json --pretty *xpi | node scripts/addon-lint-consumer.js',
@@ -79,7 +72,6 @@ module.exports = function(grunt) {
         },
     });
 
-    grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-babel');
     grunt.loadNpmTasks('grunt-shell');
     grunt.loadNpmTasks('grunt-istanbul');
@@ -92,7 +84,6 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('test', [
-        'eslint',
         'shell:cleanCoverage',
         //'shell:addonLintTest',
         'instrument',

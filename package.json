@@ -10,11 +10,11 @@
     "ajv": "^4.10.4",
     "chai": "3.5.0",
     "depcheck": "^0.6.7",
+    "eslint": "^3.14.0",
     "fixpack": "^2.3.1",
     "grunt": "1.0.1",
     "grunt-babel": "6.0.0",
     "grunt-cli": "1.2.0",
-    "grunt-eslint": "18.1.0",
     "grunt-explainjs": "0.0.4",
     "grunt-istanbul": "0.7.0",
     "grunt-shell": "1.3.0",
@@ -26,6 +26,7 @@
   "files": [
     "lib/"
   ],
+  "hasEmbeddedWebExtension": true,
   "homepage": "https://github.com/mozilla/shield-studies-addon-utils#readme",
   "keywords": [
     "addon",
@@ -42,6 +43,7 @@
   "scripts": {
     "lint": "npm-run-all lint:*",
     "lint:depcheck": "depcheck --ignores eslint,ajv,jpm,shield-study-schemas",
+    "lint:eslint": "eslint '{lib,data,test}/**/*.js' 'example/**/{lib,data,test}/**/*.js'",
     "lint:fixpack": "fixpack",
     "postinstall": "mkdir -p external && cp node_modules/ajv/dist/ajv.min.js external/ajv.min.js && cp -rp node_modules/shield-study-schemas/schemas/shield-schemas.json external/",
     "prepublish": "npm shrinkwrap",
