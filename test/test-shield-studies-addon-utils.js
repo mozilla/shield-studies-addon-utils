@@ -24,7 +24,7 @@ exports.skip = {};
 var Ajv = require('../external/ajv.min.js');
 var ajv = new Ajv();
 
-function DEBUG(...args) { false && console.log(...args);}
+function DEBUG(...args) { prefSvc.get('shield.debug') && console.log(...args);}
 
 var jsonschema = {
   validate: function (data, schema) {
@@ -287,9 +287,18 @@ exports['test Telemetry: malformed error packets dont blow up / cascade'] = func
 
 function setupStartupTest (aConfig, klass = shield.Study) {
   let thisStudy = new klass(aConfig);
-  let seen = {reports: [], surveys: []};
+  let seen = {reports: [], surveys: [], errors: []};
   // what goes to telemetry
-  let R = shield.TelemetryWatcher.on('telemetry',(d)=>seen.reports.push(d[1].data.study_state));
+  let R = shield.TelemetryWatcher.on('telemetry',(d)=>{
+    switch (d[0]) {
+    case 'shield-study':
+      seen.reports.push(d[1].data.study_state);
+      break;
+    case 'shield-study-error':
+      seen.errors.push(d[1].data.error_id);
+      break;
+    }
+  });
   let S = shield.SurveyWatcher.on('survey', (d) => seen.surveys.push(d));
   return {seen: seen, R: R, S: S, thisStudy: thisStudy};
 }
@@ -329,7 +338,8 @@ function endsLike (wanted, aStudy, seen) {
     urls:  [],
     notUrls: [],
     reports:  [],
-    states:  []
+    states:  [],
+    errors:  []
   };
   wanted = merge({}, defaultWanted, wanted); // override keys
 
@@ -359,8 +369,13 @@ function endsLike (wanted, aStudy, seen) {
   if (wanted.reports.length) {
     expect(seen.reports, `reports: ${wanted.reports}`).to.deep.equal(wanted.reports);
   }
+
   if (wanted.states.length) {
     expect(aStudy.states, `states: ${wanted.states}`).to.deep.equal(wanted.states);
+  }
+
+  if (wanted.errors.length) {
+    expect(seen.errors, `reports: ${wanted.errors}`).to.deep.equal(wanted.errors);
   }
 
   a = wanted.urls.map((url) => {
@@ -886,63 +901,56 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
 });
 
 
-exports['test cleanup: bad cleanup function wont stop uninstall'] = function (assert, done) {
-  let wasCalled = false;
-  let errorFn = function x () { wasCalled = true; throw new Error(); };
+['user-disable', 'expired'].map(function (reason, i) {
+  exports[`test cleanup: bad cleanup function wont stop end-${reason}`] = function (assert, done) {
+    let wasCalled = false;
+    let errorFn = function x () { wasCalled = true; throw new Error(); };
 
-  class BrokenCleanupStudy extends shield.Study {
-    cleanup () { super.cleanup(); errorFn(); }
-  }
+    class BrokenCleanupStudy extends shield.Study {
+      cleanup () { super.cleanup(); errorFn(); }
+    }
+    // check that we didn't typo, and setup is ok.
+    expect(errorFn, 'and it throws').to.throw(Error);
+    expect(wasCalled, 'now set!').to.be.true;
 
-  // check that we didn't typo, and setup is ok.
-  expect(errorFn, 'and it throws').to.throw(Error);
-  expect(wasCalled, 'now set!').to.be.true;
+    // reset
+    wasCalled = false;
 
-  // reset
-  wasCalled = false;
+    let {thisStudy, seen, R, S} = setupStartupTest(studyInfoCopy(), BrokenCleanupStudy);
 
-  let {thisStudy, seen, R, S} = setupStartupTest(studyInfoCopy(), BrokenCleanupStudy);
+    // if called directly, still an issue!
+    expect(wasCalled, 'unset!').to.be.false;
+    expect(()=>thisStudy.cleanup(), 'gross').to.throw(Error);
 
-  // if called directly, still an issue!
-  expect(wasCalled, 'unset!').to.be.false;
-  expect(()=>thisStudy.cleanup(), 'gross').to.throw(Error);
+    expect(wasCalled, 'now set!').to.be.true;
+    wasCalled = false;
 
-  expect(wasCalled, 'now set!').to.be.true;
-  wasCalled = false;
+    // but but but, it will be called as part of the Study life-cycle
+    // which will catch it.
 
-  // but but but, it will be called as part of the Study life-cycle
-  // which will catch it.
-
-  let wanted = {
-    reports: ['user-disable', 'exit'],
-    states:  ['user-disable']
-  };
-  return waitABit().then(
-  ()=> {
-    thisStudy.shutdown('uninstall');
+    let wanted = {
+      reports: ['user-disable', 'exit'],
+      states:  ['user-disable'],
+      errors:  [`throws-${reason}-cleanup`]
+    };
     return waitABit().then(
     ()=> {
-      teardownStartupTest(R, S);
-      endsLike(
-        {
-          flags: {
-            ineligibleDie: undefined,
-            expired: undefined
+      emit(thisStudy, 'change', reason);
+      return waitABit().then(
+      ()=> {
+        teardownStartupTest(R, S);
+        endsLike(
+          {
+            errors: wanted.errors
           },
-          state: 'user-disable',
-          reports: wanted.reports,
-          states: wanted.states,
-          notUrls: [],
-          urls: [thisStudy.config.surveyUrls['user-disable']]
-        },
-        thisStudy,
-        seen
-      );
-      done();
+          thisStudy,
+          seen
+        );
+        done();
+      });
     });
-  }
-  );
-};
+  };
+});
 
 
 exports['test Study states: end-of-study: call all you want, only does one survey'] = function (assert, done) {
