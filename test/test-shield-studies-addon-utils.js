@@ -21,7 +21,7 @@ const ALIVENESS = 'shield.lastactiveping';
 exports.only = {};
 exports.skip = {};
 
-var Ajv = require('../external/ajv.min.js');
+var Ajv = require('ajv/dist/ajv.min.js');
 var ajv = new Ajv();
 
 function DEBUG(...args) { prefSvc.get('shield.debug') && console.log(...args);}
@@ -33,10 +33,10 @@ var jsonschema = {
   }
 };
 
-var schemas = {
-  'shield-study': require('../external/schemas/shield-study.schema.json'),
-  'shield-study-addon': require('../external/schemas/shield-study-addon.schema.json'),
-  'shield-study-error': require('../external/schemas/shield-study-error.schema.json')
+const schemas = {
+  'shield-study': require('shield-study-schemas/schemas-client/shield-study.schema.json'),
+  'shield-study-addon': require('shield-study-schemas/schemas-client/shield-study-addon.schema.json'),
+  'shield-study-error': require('shield-study-schemas/schemas-client/shield-study-error.schema.json')
 };
 
 exports['test validation works'] = function (assert)  {

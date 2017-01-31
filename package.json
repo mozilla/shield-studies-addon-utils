@@ -6,8 +6,11 @@
   "bugs": {
     "url": "https://github.com/mozilla/shield-studies-addon-utils/issues"
   },
+  "dependencies": {
+    "ajv": "^4.11.2",
+    "shield-study-schemas": "0.7.0"
+  },
   "devDependencies": {
-    "ajv": "^4.10.4",
     "chai": "3.5.0",
     "depcheck": "^0.6.7",
     "eslint": "^3.14.0",
@@ -22,11 +25,12 @@
     "jpm": "1.1.4",
     "json-loader": "^0.5.4",
     "npm-run-all": "^4.0.1",
-    "shield-study-schemas": "0.6.1",
     "webpack": "^1.14.0"
   },
   "files": [
-    "lib/"
+    "lib",
+    "external",
+    "jetpack"
   ],
   "hasEmbeddedWebExtension": true,
   "homepage": "https://github.com/mozilla/shield-studies-addon-utils#readme",
@@ -47,7 +51,6 @@
     "lint:depcheck": "depcheck --ignores eslint,ajv,jpm,shield-study-schemas,chai",
     "lint:eslint": "eslint '{lib,data,test}/**/*.js' 'example/**/{lib,data,test}/**/*.js'",
     "lint:fixpack": "fixpack",
-    "postinstall": "mkdir -p external && cp node_modules/ajv/dist/ajv.min.js external/ajv.min.js && cp -rp node_modules/shield-study-schemas/schemas external/",
     "prepublish": "npm shrinkwrap",
     "test": "npm run lint && grunt test && istanbul check-coverage --statements 100 --functions 100 --branches 100 --lines 100 coverage/reports/coverage.json"
   }
