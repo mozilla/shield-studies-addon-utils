@@ -24,6 +24,8 @@ exports.skip = {};
 var Ajv = require('../external/ajv.min.js');
 var ajv = new Ajv();
 
+function DEBUG(...args) { false && console.log(...args);}
+
 var jsonschema = {
   validate: function (data, schema) {
     var valid = ajv.validate(schema, data);
@@ -90,6 +92,23 @@ function countTabsLike (aRegexp) {
     if (aRegexp.test(tab.url)) n += 1;
   }
   return n;
+}
+
+function countSurveysLike (aRegexp, surveys) {
+  if (typeof aRegexp  === 'string') aRegexp = new RegExp(aRegexp);
+  return surveys.filter((s)=>aRegexp.test(s[1])).length;
+}
+
+
+function hasSurveyWithUrlLike(aRegexp, surveys) {
+  if (typeof aRegexp  === 'string') aRegexp = new RegExp(aRegexp);
+  let ans = false;
+  surveys.forEach((s) => {
+    if (aRegexp.test(s[1])) {
+      ans = true;
+    }
+  });
+  return ans;
 }
 
 function waitABit (val, ts=200) {
@@ -185,7 +204,7 @@ exports['test SurveyWatcher accurately (eventually) reflects surveys opened'] = 
     ]
   };
 
-  waitABit(null, 3000).then(function () {
+  waitABit(null, 1000).then(function () {
     shield.SurveyWatcher.off(W);
     expect(surveysOpened.length, 'length is').to.equal(2);
     expect(surveysOpened[0], 'o').to.deep.equal(['some random reason', null]);
@@ -314,37 +333,20 @@ function endsLike (wanted, aStudy, seen) {
   };
   wanted = merge({}, defaultWanted, wanted); // override keys
 
-  console.log('WANTED', JSON.stringify(wanted));
-  console.log('SEEN  ',
+  DEBUG('WANTED', JSON.stringify(wanted));
+  DEBUG('SEEN  ',
     JSON.stringify(seen),
     aStudy.states,
     'flags:', JSON.stringify(aStudy.flags),
     JSON.stringify(aStudy.config),
     seen.surveys );
 
-  function OK(...args){ console.log('OK', ...args);}
-
-  function hasSurveyWithUrlLike(aRegexp) {
-    if (typeof aRegexp  === 'string') aRegexp = new RegExp(aRegexp);
-    let ans = false;
-    seen.surveys.forEach((s) => {
-      console.log(aRegexp, s, aRegexp.test(s[1]));
-      if (aRegexp.test(s[1])) {
-        ans = true;
-      }
-    });
-    return ans;
-  }
-
   let a;
   a = Object.keys(wanted.flags).map(function (flagName) {
     let flagSeen = aStudy.flags[flagName];
     let flagWanted = wanted.flags[flagName];
-    console.log(`want ${flagName} => ${flagWanted}`);
     expect(flagSeen, `want ${flagName} => ${flagWanted}`).to.deep.equal(flagWanted);
   });
-
-  OK('flags');
 
   a = ['state', 'variation', 'firstrun'].map(function (aGetter) {
     let val = wanted[aGetter];
@@ -354,27 +356,20 @@ function endsLike (wanted, aStudy, seen) {
     }
   });
 
-  OK('vals');
-
   if (wanted.reports.length) {
     expect(seen.reports, `reports: ${wanted.reports}`).to.deep.equal(wanted.reports);
   }
-  OK('reports');
   if (wanted.states.length) {
     expect(aStudy.states, `states: ${wanted.states}`).to.deep.equal(wanted.states);
   }
-  OK('states');
 
   a = wanted.urls.map((url) => {
-    expect(hasSurveyWithUrlLike(url),`want ${url}`).to.be.true;
+    expect(hasSurveyWithUrlLike(url, seen.surveys),`want ${url}`).to.be.true;
   });
-  OK('urls');
   a = wanted.notUrls.map((url) => {
-    expect(hasSurveyWithUrlLike(url),`not want ${url}`).to.be.false;
+    expect(hasSurveyWithUrlLike(url, seen.surveys),`not want ${url}`).to.be.false;
   });
-  OK('not urls');
   a;
-  OK('-- ends like');
   return true;
 }
 
@@ -585,7 +580,6 @@ exports['test startup 2: install while ineligible'] = function (assert, done) {
 
       // 2nd time!  `${does}` (disable or uninstall)
       return promiseFinalizedShutdown(thisStudy, does).then(function () {
-        console.log(JSON.stringify(seen));
         teardownStartupTest(R, S);
 
         expect(hasVariationEffect()).to.be.false;
@@ -604,9 +598,9 @@ exports['test startup 2: install while ineligible'] = function (assert, done) {
           seen
         );
         // extra
-        waitABit(null, 1000).then(()=>{
-          expect(countTabsLike('user-disable')).to.equal(1);
-          expect(hasTabWithUrlLike('expired')).to.be.false;
+        waitABit().then(()=>{
+          expect(countSurveysLike('user-disable', seen.surveys)).to.equal(1);
+          expect(hasSurveyWithUrlLike('expired', seen.surveys)).to.be.false;
           done();
         });
       });
@@ -866,7 +860,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
     waitABit().then(
     ()=> {
       thisStudy.shutdown(reason);
-      waitABit(null, 1000).then(
+      waitABit().then(
       ()=> {
         teardownStartupTest(R, S);
         endsLike(
@@ -926,7 +920,7 @@ exports['test cleanup: bad cleanup function wont stop uninstall'] = function (as
   return waitABit().then(
   ()=> {
     thisStudy.shutdown('uninstall');
-    return waitABit(null, 1200).then(
+    return waitABit().then(
     ()=> {
       teardownStartupTest(R, S);
       endsLike(
@@ -961,7 +955,7 @@ exports['test Study states: end-of-study: call all you want, only does one surve
     reports: ['expired', 'exit'],
     states:  ['expired', 'expired', 'expired', 'expired']
   };
-  return waitABit(null, 1000).then(
+  return waitABit().then(
   ()=> {
     teardownStartupTest(R, S);
     endsLike(
@@ -979,7 +973,7 @@ exports['test Study states: end-of-study: call all you want, only does one surve
       thisStudy,
       seen
     );
-    expect(countTabsLike('expired'),'exactly 1 survey').to.equal(1);
+    expect(countSurveysLike('expired', seen.surveys),'exactly 1 survey').to.equal(1);
     done();
   });
 };
@@ -1013,8 +1007,8 @@ exports['test Study states: user-uninstall-disable: call all you want, only does
       thisStudy,
       seen
     );
-    expect(countTabsLike('user-disable'),'exactly 1 survey').to.equal(1);
-    expect(countTabsLike(thisStudy.config.surveyUrls['user-disable']),'exactly 1 survey').to.equal(1);
+    expect(countSurveysLike('user-disable', seen.surveys),'exactly 1 survey').to.equal(1);
+    expect(countSurveysLike(thisStudy.config.surveyUrls['user-disable'], seen.surveys),'exactly 1 survey').to.equal(1);
     done();
   });
 };
