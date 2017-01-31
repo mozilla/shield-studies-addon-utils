@@ -60,7 +60,7 @@ function setupEnv () {
   prefSvc.set('toolkit.telemetry.enabled', false);
   prefSvc.set('shield.fakedie', true);
   prefSvc.set('browser.selfsuppport.enabled', false);
-  prefSvc.set('shield.debug', true);
+  prefSvc.set('shield.debug', false);
   prefSvc.set('general.warnOnAboutConfig', false);
 }
 setupEnv();
@@ -111,7 +111,7 @@ function hasSurveyWithUrlLike(aRegexp, surveys) {
   return ans;
 }
 
-function waitABit (val, ts=200) {
+function waitABit (val, ts=10) {
   return new Promise(function(resolve, reject) {
     setTimeout(()=>resolve(val), ts);
   });
@@ -1279,7 +1279,6 @@ exports['test obligatory exercise the event-target code, grrrrr'] = function (as
   assert.pass();
   done();
 };
-
 
 // WHICH TESTS TO RUN.
 // if anything in "only", run those instead
