@@ -49,9 +49,8 @@ function merge(source, ...args) {
 const { AddonManager } = Cu.import('resource://gre/modules/AddonManager.jsm');
 function uninstall (addonId) {
   // the one in sdk is promise-like
-  AddonManager.getAddonBy(addonId, addon => addon.uninstall());
+  AddonManager.getAddonByID(addonId, addon => addon.uninstall());
 }
-
 
 // TODO I have no idea what to do with this.
 const self = require('sdk/self');

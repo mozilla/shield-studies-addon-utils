@@ -8,11 +8,12 @@
 ## install:
 
 ```npm install```
+```npm install -g shield-study-cli```
 
 ##run:
 
 ```
-./node_modules/.bin/shield run .
+shield run .
 ```
 
 at random
@@ -21,12 +22,3 @@ at random
 shield run  . --debug  -- -b Aurora
 ```
 
-with a known variation
-```
-shield run  kittens --debug  -- -b Aurora
-```
-
-with ineligible
-```
-shield run kittens --prefs ineligible.json --debug -- -b Aurora
-```
