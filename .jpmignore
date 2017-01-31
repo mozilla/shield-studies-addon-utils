@@ -1,5 +1,6 @@
 .*
 *
 !/lib/**
+!/jetpack/**
 !/external/**
 !/package.json

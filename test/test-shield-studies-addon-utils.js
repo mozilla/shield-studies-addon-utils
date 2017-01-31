@@ -3,14 +3,14 @@ var { expect } = require('chai');
 const {Cu} = require('chrome');
 Cu.importGlobalProperties(['URL', 'URLSearchParams']);
 
-const { setTimeout } = require('../lib/jetpack/timers');
-const { emit } = require('../lib/jetpack/events-core');
+const { setTimeout } = require('../jetpack/timers');
+const { emit } = require('../jetpack/events-core');
 
-let { prefSvc } = require('../lib/not-jetpack');
-let { prefs } = require('../lib/not-jetpack');
+let { prefSvc } = require('../jetpack/');
+let { prefs } = require('../jetpack/');
 
 var shield = require('../lib/');
-const { merge } = require('../lib/not-jetpack');
+const { merge } = require('../jetpack/');
 
 let { before, after } = require('sdk/test/utils');
 
@@ -20,8 +20,6 @@ const ALIVENESS = 'shield.lastactiveping';
 
 exports.only = {};
 exports.skip = {};
-
-const shieldSchema = require('../external/shield-schemas.json');
 
 var Ajv = require('../external/ajv.min.js');
 var ajv = new Ajv();
@@ -33,18 +31,24 @@ var jsonschema = {
   }
 };
 
+var schemas = {
+  'shield-study': require('../external/schemas/shield-study.schema.json'),
+  'shield-study-addon': require('../external/schemas/shield-study-addon.schema.json'),
+  'shield-study-error': require('../external/schemas/shield-study-error.schema.json')
+};
+
 exports['test validation works'] = function (assert)  {
   let d;
   let validation;
 
   // good data packet
-  d = {'version':3, 'study_name':'@shield-studies-addon-utils', 'branch':'observe-only', 'addon_version':'3.0.0', 'shield_version':'3.0.0', 'data':{'attributes':{}, 'packet':'shield-study-addon'}};
-  validation = jsonschema.validate(d, shieldSchema);
+  d = {'version':3,  'type':'shield-study-addon', 'study_name':'@shield-studies-addon-utils', 'branch':'observe-only', 'addon_version':'3.0.0', 'shield_version':'3.0.0', 'data':{'attributes':{},}};
+  validation = jsonschema.validate(d, schemas[d.type]);
   assert.ok(validation.valid, `${validation.errors}`);
 
   // bad data packet
-  d =  {'version':3, 'study_name':'@shield-studies-addon-utils', 'branch':'observe-only', 'addon_version':'3.0.0', 'shield_version':'3.0.0', 'data':{'packet':'shield-study-addon'}};
-  validation = jsonschema.validate(d, shieldSchema);
+  d =  {'version':3,  'type':'shield-study-addon', 'study_name':'@shield-studies-addon-utils', 'branch':'observe-only', 'addon_version':'3.0.0', 'shield_version':'3.0.0', 'data':{}};
+  validation = jsonschema.validate(d, schemas[d.type]);
   assert.ok(!validation.valid, `${validation.errors}`);
 };
 
@@ -74,7 +78,6 @@ function only1Tab () {
 function hasTabWithUrlLike(aRegexp) {
   if (typeof aRegexp  === 'string') aRegexp = new RegExp(aRegexp);
   for (let tab of tabs) {
-    console.log(tab.url, aRegexp);
     if (aRegexp.test(tab.url)) return true;
   }
   return false;
@@ -90,7 +93,6 @@ function countTabsLike (aRegexp) {
 }
 
 function waitABit (val, ts=200) {
-  //console.log(val,ts)
   return new Promise(function(resolve, reject) {
     setTimeout(()=>resolve(val), ts);
   });
@@ -129,6 +131,11 @@ exports['test Module has right keys and types'] = function (assert, done) {
     ['survey', 'function'],
     ['Study', 'function'],
     ['TelemetryWatcher', 'object'],
+    ['SurveyWatcher', 'object'],
+    ['EventTarget', 'function'],
+    ['emit', 'function'],
+    ['jsonschema', 'object'],
+    ['schemas', 'object']
   ];
 
   let keys = expected.map((x)=>x[0]);
@@ -157,6 +164,48 @@ exports['test resetShieldPrefs actually resets'] = function (assert, done) {
   waitABit().then(done);
 };
 
+exports['test SurveyWatcher accurately (eventually) reflects surveys opened'] = function (assert, done) {
+  // open a bunch, including some that don't have urls,
+  //
+  let S = new shield.Study(studyInfoCopy());
+  let surveyUrls = studyInfo.surveyUrls;
+  let surveysOpened = [];
+
+  let W = shield.SurveyWatcher.on('survey', (d)=>surveysOpened.push(d));
+
+  expect(S.showSurvey('some random reason')).to.be.undefined;
+  expect(S.showSurvey('expired')).to.not.be.undefined;
+
+  let wanted = {
+    urls: [
+      surveyUrls.expired
+    ],
+    notUrls: [
+      surveyUrls['user-disable']
+    ]
+  };
+
+  waitABit(null, 3000).then(function () {
+    shield.SurveyWatcher.off(W);
+    expect(surveysOpened.length, 'length is').to.equal(2);
+    expect(surveysOpened[0], 'o').to.deep.equal(['some random reason', null]);
+    expect(surveysOpened[1][0], 'expired').to.deep.equal('expired');
+    expect(countTabsLike('user-disable')).to.equal(0);
+    expect(countTabsLike('expired')).to.equal(1);
+
+    let a;
+    a = wanted.urls.map((url) => {
+      expect(hasTabWithUrlLike(url),`want ${url}`).to.be.true;
+    });
+    a = wanted.notUrls.map((url) => {
+      expect(hasTabWithUrlLike(url),`not want ${url}`).to.be.false;
+    });
+    a;
+
+    done();
+  });
+};
+
 exports['test TelemetryWatcher: testing flag works'] = function (assert, done) {
   let reports = [];
   let R = shield.TelemetryWatcher.on('telemetry', (d)=>reports.push(d[1].testing));
@@ -164,7 +213,6 @@ exports['test TelemetryWatcher: testing flag works'] = function (assert, done) {
   let aStudy = new shield.Study({});
   let data = {attributes: {}}; // valid data packet
 
-  console.log(aStudy.config);
   prefSvc.set('shield.testing', false);
   aStudy.telemetry(data);  // false
   prefSvc.set('shield.testing', true);
@@ -203,7 +251,6 @@ exports['test Telemetry: invalid data sends an error'] = function (assert, done)
   aStudy.telemetry({}); // empty packets aren't valid
 
   return waitABit().then(function () {
-    console.log('reports:', reports);
     expect(reports[0]).to.deep.equal('shield-study-error');
     shield.TelemetryWatcher.off(R);
     done();
@@ -221,14 +268,17 @@ exports['test Telemetry: malformed error packets dont blow up / cascade'] = func
 
 function setupStartupTest (aConfig, klass = shield.Study) {
   let thisStudy = new klass(aConfig);
-  let seen = {reports: []};
+  let seen = {reports: [], surveys: []};
   // what goes to telemetry
   let R = shield.TelemetryWatcher.on('telemetry',(d)=>seen.reports.push(d[1].data.study_state));
-  return {seen: seen, R: R, thisStudy: thisStudy};
+  let S = shield.SurveyWatcher.on('survey', (d) => seen.surveys.push(d));
+  return {seen: seen, R: R, S: S, thisStudy: thisStudy};
 }
 
-function teardownStartupTest (R) {
+function teardownStartupTest (R, S) {
   shield.TelemetryWatcher.off(R);
+  shield.SurveyWatcher.off(S);
+
 }
 
 function promiseFinalizedStartup (aStudy, reason='install') {
@@ -250,6 +300,7 @@ function urlsOf (urls) {
 }
 
 
+/* utility for the ending of a study state */
 function endsLike (wanted, aStudy, seen) {
   let defaultWanted = {
     flags:  {},
@@ -259,14 +310,32 @@ function endsLike (wanted, aStudy, seen) {
     urls:  [],
     notUrls: [],
     reports:  [],
-    states:  [],
+    states:  []
   };
   wanted = merge({}, defaultWanted, wanted); // override keys
 
   console.log('WANTED', JSON.stringify(wanted));
-  console.log('SEEN  ', JSON.stringify(seen), aStudy.states, 'flags:', JSON.stringify(aStudy.flags), JSON.stringify(aStudy.config) );
+  console.log('SEEN  ',
+    JSON.stringify(seen),
+    aStudy.states,
+    'flags:', JSON.stringify(aStudy.flags),
+    JSON.stringify(aStudy.config),
+    seen.surveys );
 
   function OK(...args){ console.log('OK', ...args);}
+
+  function hasSurveyWithUrlLike(aRegexp) {
+    if (typeof aRegexp  === 'string') aRegexp = new RegExp(aRegexp);
+    let ans = false;
+    seen.surveys.forEach((s) => {
+      console.log(aRegexp, s, aRegexp.test(s[1]));
+      if (aRegexp.test(s[1])) {
+        ans = true;
+      }
+    });
+    return ans;
+  }
+
   let a;
   a = Object.keys(wanted.flags).map(function (flagName) {
     let flagSeen = aStudy.flags[flagName];
@@ -297,15 +366,13 @@ function endsLike (wanted, aStudy, seen) {
   OK('states');
 
   a = wanted.urls.map((url) => {
-    expect(hasTabWithUrlLike(url),`want ${url}`).to.be.true;
+    expect(hasSurveyWithUrlLike(url),`want ${url}`).to.be.true;
   });
   OK('urls');
   a = wanted.notUrls.map((url) => {
-    expect(hasTabWithUrlLike(url),`not want ${url}`).to.be.false;
+    expect(hasSurveyWithUrlLike(url),`not want ${url}`).to.be.false;
   });
   OK('not urls');
-
-
   a;
   OK('-- ends like');
   return true;
@@ -446,14 +513,12 @@ exports['test method overrides 4b: decideVariation - Invalid'] = function (asser
   done();
 };
 
-
-
 exports['test startup 1: install while eligible'] = function (assert, done) {
-  let {thisStudy, seen, R} = setupStartupTest(studyInfoCopy());
+  let {thisStudy, seen, R, S} = setupStartupTest(studyInfoCopy());
   // expect seen states... right now in wrong order, for ???
   return promiseFinalizedStartup(thisStudy).then(
   function () {
-    teardownStartupTest(R);
+    teardownStartupTest(R, S);
     // no surveys open!
     waitABit().then(()=>{
       expect(hasVariationEffect(), 'effect happened').to.be.true;
@@ -480,12 +545,12 @@ exports['test startup 2: install while ineligible'] = function (assert, done) {
     isEligible () { return false;}
   }
 
-  let {thisStudy, seen, R} = setupStartupTest(studyInfoCopy(), IneligibleStudy);
+  let {thisStudy, seen, R, S} = setupStartupTest(studyInfoCopy(), IneligibleStudy);
   thisStudy.config.isEligible = () => false; // new change to nope.
 
   return promiseFinalizedStartup(thisStudy,'install').then(
   function () {
-    teardownStartupTest(R);
+    teardownStartupTest(R, S);
     // no surveys open!
     waitABit().then(()=>{
       expect(hasVariationEffect(), 'effect did not happen').to.be.false;
@@ -512,7 +577,7 @@ exports['test startup 2: install while ineligible'] = function (assert, done) {
     class TestStudy extends shield.Study {
       cleanup () { super.cleanup(); cleanup(); }
     }
-    let {thisStudy, seen, R} = setupStartupTest(studyInfoCopy(), TestStudy);
+    let {thisStudy, seen, R, S} = setupStartupTest(studyInfoCopy(), TestStudy);
 
     // install
     return promiseFinalizedStartup(thisStudy,'install').then(function () {
@@ -520,7 +585,8 @@ exports['test startup 2: install while ineligible'] = function (assert, done) {
 
       // 2nd time!  `${does}` (disable or uninstall)
       return promiseFinalizedShutdown(thisStudy, does).then(function () {
-        teardownStartupTest(R);
+        console.log(JSON.stringify(seen));
+        teardownStartupTest(R, S);
 
         expect(hasVariationEffect()).to.be.false;
         endsLike(
@@ -531,14 +597,14 @@ exports['test startup 2: install while ineligible'] = function (assert, done) {
             state: 'user-disable',
             reports: ['enter', 'installed', 'active', 'user-disable', 'exit'],
             states: ['maybe-installing', 'installed', 'modifying', 'running', 'user-disable'],
-            notUrls: [],
-            urls: []
+            urls: ['user-disable'],
+            notUrls: ['expired'],
           },
           thisStudy,
           seen
         );
         // extra
-        waitABit(null, 400).then(()=>{
+        waitABit(null, 1000).then(()=>{
           expect(countTabsLike('user-disable')).to.equal(1);
           expect(hasTabWithUrlLike('expired')).to.be.false;
           done();
@@ -549,13 +615,13 @@ exports['test startup 2: install while ineligible'] = function (assert, done) {
 });
 
 exports['test 4: normal shutdown (fx shutdown)'] = function (assert, done) {
-  let {thisStudy, seen, R} = setupStartupTest(studyInfoCopy());
+  let {thisStudy, seen, R, S} = setupStartupTest(studyInfoCopy());
   // does this race?
   thisStudy.once('final',function () {
     expect(hasVariationEffect()).to.be.true;
     // 2nd time!  interesting tests
     thisStudy.once('final', function () {
-      teardownStartupTest(R);
+      teardownStartupTest(R, S);
 
       expect(hasVariationEffect()).to.be.true;
       waitABit().then(() => {
@@ -619,11 +685,11 @@ exports['test 5: startup REVIVING a previous config keeps that config'] = functi
   expect(prefSvc.get(FAKEPREF)).to.be.undefined;
 
   // #3, do an install, and prove it did SOMETHING
-  let {thisStudy, R} = setupStartupTest(myStudyInfo);
+  let {thisStudy, R, S} = setupStartupTest(myStudyInfo);
   promiseFinalizedStartup(thisStudy).then(waitABit).then(
   ()=>{
     expect(prefSvc.get(FAKEPREF)).to.not.be.undefined;
-    teardownStartupTest(R);
+    teardownStartupTest(R, S);
     done();
   });
 };
@@ -632,16 +698,15 @@ exports['test 5: startup REVIVING a previous config keeps that config'] = functi
   exports[`test 6-${reason} while expired kills a study, fires state and UT`] = function (assert, done) {
     // pretend we have been running a long time!
     prefs['shield.firstrun'] = String(500); // 1970!
-    let {thisStudy, seen, R} = setupStartupTest(studyInfoCopy());
+    let {thisStudy, seen, R, S} = setupStartupTest(studyInfoCopy());
 
     // claim: setup should pick up the existing firstrun
     expect(thisStudy.firstrun).to.equal(500);
     expect(thisStudy.firstrun).to.equal(Number(prefs['shield.firstrun']));
 
-    promiseFinalizedStartup(thisStudy, reason).then(()=>waitABit(null, 1000)).then(
+    promiseFinalizedStartup(thisStudy, reason).then(waitABit).then(
     ()=>{
-      teardownStartupTest(R);
-      console.log(570, 'OK');
+      teardownStartupTest(R, S);
       endsLike(
         {
           flags: {
@@ -669,12 +734,12 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
     reports: ['enter', 'installed', 'active'],
     states: ['maybe-installing', 'installed', 'modifying', 'running', 'normal-shutdown', 'starting', 'modifying', 'running']
   };
-  let {thisStudy, seen, R} = setupStartupTest(studyInfoCopy());
+  let {thisStudy, seen, R, S} = setupStartupTest(studyInfoCopy());
   return promiseFinalizedStartup(thisStudy, 'install').then(waitABit).then(
   () => promiseFinalizedShutdown(thisStudy, 'shutdown')).then(waitABit).then(
   () => promiseFinalizedStartup(thisStudy, 'startup')).then(
   ()=>{
-    teardownStartupTest(R);
+    teardownStartupTest(R, S);
     endsLike(
       {
         flags: {
@@ -697,16 +762,15 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
 ['enable', 'upgrade', 'downgrade', 'startup'].map(function (reason, i) {
   exports[`test 8-${reason}: all synonyms for startup: ${reason}`] = function (assert, done) {
     let testConfig = studyInfoCopy();
-    let {thisStudy, seen, R} = setupStartupTest(testConfig);
+    let {thisStudy, seen, R, S} = setupStartupTest(testConfig);
     let wanted = {
       reports: ['active'],
       states:  ['starting', 'modifying', 'running']
     };
-    return promiseFinalizedStartup(thisStudy, reason).then(()=>console.log('mid 640')).
-      then(waitABit).then(()=>console.log('2nd 640')).then(
+    return promiseFinalizedStartup(thisStudy, reason).
+      then(waitABit).then(
     ()=>{
-      console.log('642');
-      teardownStartupTest(R);
+      teardownStartupTest(R, S);
       endsLike(
         {
           flags: {
@@ -727,15 +791,14 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
   exports[`test 9-${reason}: all synonyms for startup die if expired: ${reason}`] = function (assert, done) {
     prefs['shield.firstrun'] = String(500); // 1970!
     let testConfig = studyInfoCopy();
-    let {thisStudy, seen, R} = setupStartupTest(testConfig);
+    let {thisStudy, seen, R, S} = setupStartupTest(testConfig);
     let wanted = {
       reports: ['expired', 'exit'],
       states:  ['expired']
     };
     return promiseFinalizedStartup(thisStudy, reason).then(waitABit).then(
     ()=>{
-      console.log('673');
-      teardownStartupTest(R);
+      teardownStartupTest(R, S);
       endsLike(
         {
           flags: {
@@ -759,7 +822,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
 ['uninstall', 'disable'].map(function (reason) {
   exports.skip[`test 10-${reason}: unload during ineligibleDie doesnt send user-disable`] = function (assert, done) {
     let testConfig = studyInfoCopy();
-    let {thisStudy, seen, R} = setupStartupTest(testConfig);
+    let {thisStudy, seen, R, S} = setupStartupTest(testConfig);
     emit(thisStudy, 'change', 'ineligible-die');
     let wanted = {
       reports: ['ineligible', 'exit'],
@@ -770,7 +833,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
       thisStudy.shutdown(reason);
       waitABit().then(
       ()=> {
-        teardownStartupTest(R);
+        teardownStartupTest(R, S);
         endsLike(
           {
             flags: {
@@ -794,7 +857,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
 ['shutdown', 'upgrade', 'downgrade'].map(function (reason, i) {
   exports[`test 10-${reason}: unload during ineligibleDie doesnt send normal-shutdown`] = function (assert, done) {
     let testConfig = studyInfoCopy();
-    let {thisStudy, seen, R} = setupStartupTest(testConfig);
+    let {thisStudy, seen, R, S} = setupStartupTest(testConfig);
     emit(thisStudy, 'change', 'ineligible-die');
     let wanted = {
       reports: ['ineligible', 'exit'],
@@ -805,7 +868,7 @@ exports['test 7: install, shutdown, then 2nd startup'] = function (assert, done)
       thisStudy.shutdown(reason);
       waitABit(null, 1000).then(
       ()=> {
-        teardownStartupTest(R);
+        teardownStartupTest(R, S);
         endsLike(
           {
             flags: {
@@ -844,7 +907,7 @@ exports['test cleanup: bad cleanup function wont stop uninstall'] = function (as
   // reset
   wasCalled = false;
 
-  let {thisStudy, seen, R} = setupStartupTest(studyInfoCopy(), BrokenCleanupStudy);
+  let {thisStudy, seen, R, S} = setupStartupTest(studyInfoCopy(), BrokenCleanupStudy);
 
   // if called directly, still an issue!
   expect(wasCalled, 'unset!').to.be.false;
@@ -865,7 +928,7 @@ exports['test cleanup: bad cleanup function wont stop uninstall'] = function (as
     thisStudy.shutdown('uninstall');
     return waitABit(null, 1200).then(
     ()=> {
-      teardownStartupTest(R);
+      teardownStartupTest(R, S);
       endsLike(
         {
           flags: {
@@ -889,7 +952,7 @@ exports['test cleanup: bad cleanup function wont stop uninstall'] = function (as
 
 
 exports['test Study states: end-of-study: call all you want, only does one survey'] = function (assert, done) {
-  let {thisStudy, seen, R} = setupStartupTest(studyInfoCopy());
+  let {thisStudy, seen, R, S} = setupStartupTest(studyInfoCopy());
   emit(thisStudy, 'change', 'expired');
   emit(thisStudy, 'change', 'expired');
   emit(thisStudy, 'change', 'expired');
@@ -900,7 +963,7 @@ exports['test Study states: end-of-study: call all you want, only does one surve
   };
   return waitABit(null, 1000).then(
   ()=> {
-    teardownStartupTest(R);
+    teardownStartupTest(R, S);
     endsLike(
       {
         flags: {
@@ -922,7 +985,7 @@ exports['test Study states: end-of-study: call all you want, only does one surve
 };
 
 exports['test Study states: user-uninstall-disable: call all you want, only does one survey'] = function (assert, done) {
-  let {thisStudy, seen, R} = setupStartupTest(studyInfoCopy());
+  let {thisStudy, seen, R, S} = setupStartupTest(studyInfoCopy());
   emit(thisStudy, 'change', 'user-disable');
   emit(thisStudy, 'change', 'user-disable');
   emit(thisStudy, 'change', 'user-disable');
@@ -933,7 +996,7 @@ exports['test Study states: user-uninstall-disable: call all you want, only does
   };
   return waitABit().then(
   ()=> {
-    teardownStartupTest(R);
+    teardownStartupTest(R, S);
     endsLike(
       {
         flags: {
@@ -962,14 +1025,14 @@ exports['test aliveness 1, crossed a midnight, study is expired, phone home and 
   let config = studyInfoCopy();
   prefs['shield.firstrun'] = String(500); // 1970!
   prefs[ALIVENESS] = String(500);
-  let {thisStudy, seen, R} = setupStartupTest(config);
+  let {thisStudy, seen, R, S} = setupStartupTest(config);
   let wanted = {
     reports: ['expired', 'exit'],
     states:  ['expired']
   };
   return promiseFinalizedStartup(thisStudy, 'startup').then(
   ()=>{
-    teardownStartupTest(R);
+    teardownStartupTest(R, S);
     endsLike(
       {
         flags: {
@@ -991,14 +1054,14 @@ exports['test aliveness 1, crossed a midnight, study is expired, phone home and 
 exports['test aliveness 2, cross a midnight, study NOT expired, will phone home'] = function (assert, done) {
   let config = studyInfoCopy();
   prefs[ALIVENESS] = String(500);
-  let {thisStudy, seen, R} = setupStartupTest(config);
+  let {thisStudy, seen, R, S} = setupStartupTest(config);
   let wanted = {
     reports: ['active'],
     states:  ['starting' ,'modifying' ,'running']
   };
   return promiseFinalizedStartup(thisStudy, 'startup').then(
   ()=>{
-    teardownStartupTest(R);
+    teardownStartupTest(R, S);
     endsLike(
       {
         flags: {
@@ -1019,7 +1082,7 @@ exports['test aliveness 2, cross a midnight, study NOT expired, will phone home'
 
 exports['test aliveness 3, no cross mindight, not expired, do nothing'] = function (assert, done) {
   let config = studyInfoCopy();
-  let {thisStudy, seen, R} = setupStartupTest(config);
+  let {thisStudy, seen, R, S} = setupStartupTest(config);
   let wanted = {
     reports: [],
     states:  ['starting' ,'modifying' ,'running']
@@ -1028,7 +1091,7 @@ exports['test aliveness 3, no cross mindight, not expired, do nothing'] = functi
 
   return promiseFinalizedStartup(thisStudy, 'startup').then(
   ()=>{
-    teardownStartupTest(R);
+    teardownStartupTest(R, S);
     endsLike(
       {
         reports: wanted.reports,
@@ -1037,7 +1100,7 @@ exports['test aliveness 3, no cross mindight, not expired, do nothing'] = functi
       thisStudy,
       seen
     );
-    teardownStartupTest(R);
+    teardownStartupTest(R, S);
     done();
   });
 };
@@ -1045,7 +1108,7 @@ exports['test aliveness 3, no cross mindight, not expired, do nothing'] = functi
 exports['test aliveness 4, no cross midnight, IS expired, die'] = function (assert, done) {
   let config = studyInfoCopy();
   prefs['shield.firstrun'] = String(500); // 1970!
-  let {thisStudy, seen, R} = setupStartupTest(config);
+  let {thisStudy, seen, R, S} = setupStartupTest(config);
   let wanted = {
     reports: ['expired', 'exit'],
     states: ['expired']
@@ -1061,7 +1124,7 @@ exports['test aliveness 4, no cross midnight, IS expired, die'] = function (asse
       thisStudy,
       seen
     );
-    teardownStartupTest(R);
+    teardownStartupTest(R, S);
     done();
   });
 };
@@ -1069,7 +1132,7 @@ exports['test aliveness 4, no cross midnight, IS expired, die'] = function (asse
 
 exports['test aliveness only sends one `active` per day'] = function (assert, done) {
   let config = studyInfoCopy();
-  let {thisStudy, seen, R} = setupStartupTest(config);
+  let {thisStudy, seen, R, S} = setupStartupTest(config);
   prefs[ALIVENESS] = String(500);
 
   let wanted = {
@@ -1091,7 +1154,7 @@ exports['test aliveness only sends one `active` per day'] = function (assert, do
       thisStudy,
       seen
     );
-    teardownStartupTest(R);
+    teardownStartupTest(R, S);
     done();
   });
 };
@@ -1100,11 +1163,9 @@ exports['test Study: surveyQueryArgs'] = function (assert) {
   prefSvc.set('shield.testing', false);
   let alwaysKeys = ['shield','study','variation','who','updateChannel','fxVersion'];
   let S = new shield.Study(studyInfoCopy());
-  console.log(Object.keys(S.surveyQueryArgs));
   expect(S.surveyQueryArgs).to.have.all.keys(alwaysKeys);
 
   prefSvc.set('shield.testing', true);
-  console.log(Object.keys(S.surveyQueryArgs));
   let testingKeys = alwaysKeys.concat('testing');
   expect(S.surveyQueryArgs).to.have.all.keys(testingKeys);
 };
@@ -1236,7 +1297,6 @@ function cleanup () {
   prefSvc.reset(FAKEPREF);
 }
 before(module.exports, function (name, assert, done) {
-  //console.log("***", name);
   cleanup();
   prefSvc.set('shield.testing', true);
   done();

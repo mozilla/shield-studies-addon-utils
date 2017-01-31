@@ -56,10 +56,11 @@ function uninstall (addonId) {
 // TODO I have no idea what to do with this.
 const self = require('sdk/self');
 
-const prefSvc = require('./jetpack/prefSvc');
+const prefSvc = require('./prefSvc');
 const prefs = prefSvc.Branch(`extensions.${self.preferencesBranch}.`);
-const { emit } = require('./jetpack/events-core');
-const { setInterval } = require('./jetpack/timers');
+const { emit } = require('./events-core');
+
+const {setInterval} = require('./timers');
 
 module.exports = {
   merge: merge,
