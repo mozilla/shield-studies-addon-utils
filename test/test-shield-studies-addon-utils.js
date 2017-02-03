@@ -1,3 +1,5 @@
+const isDebug = false;
+
 var { expect } = require('chai');
 
 const {Cu} = require('chrome');
@@ -60,7 +62,7 @@ function setupEnv () {
   prefSvc.set('toolkit.telemetry.enabled', false);
   prefSvc.set('shield.fakedie', true);
   prefSvc.set('browser.selfsuppport.enabled', false);
-  prefSvc.set('shield.debug', false);
+  prefSvc.set('shield.debug', isDebug);
   prefSvc.set('general.warnOnAboutConfig', false);
 }
 setupEnv();
@@ -230,7 +232,7 @@ exports['test TelemetryWatcher: testing flag works'] = function (assert, done) {
   let R = shield.TelemetryWatcher.on('telemetry', (d)=>reports.push(d[1].testing));
 
   let aStudy = new shield.Study({});
-  let data = {attributes: {}}; // valid data packet
+  let data = {some: 'thing'}; // valid data packet
 
   prefSvc.set('shield.testing', false);
   aStudy.telemetry(data);  // false
@@ -251,7 +253,7 @@ exports['test Telemetry: buckets: default bucket is "shield-study-addon"'] = fun
 
   let aStudy = new shield.Study({});
 
-  let data = {attributes: {}}; // valid data packet
+  let data = {}; // valid data packet
   aStudy.telemetry(data);
 
   return waitABit().then(function () {
@@ -264,17 +266,38 @@ exports['test Telemetry: buckets: default bucket is "shield-study-addon"'] = fun
 
 exports['test Telemetry: invalid data sends an error'] = function (assert, done) {
   let reports = [];
-  let R = shield.TelemetryWatcher.on('telemetry', (d)=>reports.push(d[0]));
+  let R = shield.TelemetryWatcher.on('telemetry', (d)=>reports.push(d));
 
   let aStudy = new shield.Study({});
-  aStudy.telemetry({}); // empty packets aren't valid
+  // all attributes must be strings.
+  aStudy.telemetry({anAttribute: 1});
 
   return waitABit().then(function () {
-    expect(reports[0]).to.deep.equal('shield-study-error');
+    expect(reports[0][0]).to.deep.equal('shield-study-error');
+    expect(reports[0][1].data.error_id).to.deep.equal('jsonschema-validation');
+
     shield.TelemetryWatcher.off(R);
     done();
   });
 };
+
+
+exports['test Telemetry: (by additional schema) invalid sends an error'] = function (assert, done) {
+  let reports = [];
+  let R = shield.TelemetryWatcher.on('telemetry', (d)=>reports.push(d));
+
+  let aStudy = new shield.Study({});
+  // all attributes must be strings.
+  aStudy.telemetry({}, {'type': 'object', 'required': ['a']});
+
+  return waitABit().then(function () {
+    expect(reports[0][0]).to.deep.equal('shield-study-error');
+    expect(reports[0][1].data.error_id).to.deep.equal('jsonschema-validation-addon-defined');
+    shield.TelemetryWatcher.off(R);
+    done();
+  });
+};
+
 
 
 exports['test Telemetry: malformed error packets dont blow up / cascade'] = function (assert, done) {
