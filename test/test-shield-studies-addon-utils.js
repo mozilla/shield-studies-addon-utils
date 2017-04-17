@@ -1168,7 +1168,7 @@ exports['test aliveness only sends one `active` per day'] = function (assert, do
 
 exports['test Study: surveyQueryArgs'] = function (assert) {
   prefSvc.set('shield.testing', false);
-  let alwaysKeys = ['shield','study','variation','who','updateChannel','fxVersion'];
+  let alwaysKeys = ['shield','study','variation','who','updateChannel','fxVersion','addon'];
   let S = new shield.Study(studyInfoCopy());
   expect(S.surveyQueryArgs).to.have.all.keys(alwaysKeys);
 
