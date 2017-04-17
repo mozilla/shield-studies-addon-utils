@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "ajv": "^4.11.2",
-    "shield-study-schemas": "0.7.0"
+    "shield-study-schemas": "0.8.3"
   },
   "devDependencies": {
     "chai": "3.5.0",
@@ -24,6 +24,7 @@
     "istanbul-jpm": "0.1.0",
     "jpm": "1.1.4",
     "json-loader": "^0.5.4",
+    "mock-require": "^2.0.1",
     "npm-run-all": "^4.0.1",
     "webpack": "^1.14.0"
   },

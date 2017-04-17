@@ -156,7 +156,9 @@ exports['test Module has right keys and types'] = function (assert, done) {
     ['EventTarget', 'function'],
     ['emit', 'function'],
     ['jsonschema', 'object'],
-    ['schemas', 'object']
+    ['schemas', 'object'],
+    ['keyValuePairs', 'object']
+
   ];
 
   let keys = expected.map((x)=>x[0]);
@@ -206,10 +208,10 @@ exports['test SurveyWatcher accurately (eventually) reflects surveys opened'] = 
     ]
   };
 
-  waitABit(null, 1000).then(function () {
+  waitABit(null, 2000).then(function () {
     shield.SurveyWatcher.off(W);
     expect(surveysOpened.length, 'length is').to.equal(2);
-    expect(surveysOpened[0], 'o').to.deep.equal(['some random reason', null]);
+    expect(surveysOpened[0], 'element 0').to.deep.equal(['some random reason', null]);
     expect(surveysOpened[1][0], 'expired').to.deep.equal('expired');
     expect(countTabsLike('user-disable')).to.equal(0);
     expect(countTabsLike('expired')).to.equal(1);
@@ -222,7 +224,6 @@ exports['test SurveyWatcher accurately (eventually) reflects surveys opened'] = 
       expect(hasTabWithUrlLike(url),`not want ${url}`).to.be.false;
     });
     a;
-
     done();
   });
 };
@@ -280,25 +281,6 @@ exports['test Telemetry: invalid data sends an error'] = function (assert, done)
     done();
   });
 };
-
-
-exports['test Telemetry: (by additional schema) invalid sends an error'] = function (assert, done) {
-  let reports = [];
-  let R = shield.TelemetryWatcher.on('telemetry', (d)=>reports.push(d));
-
-  let aStudy = new shield.Study({});
-  // all attributes must be strings.
-  aStudy.telemetry({}, {'type': 'object', 'required': ['a']});
-
-  return waitABit().then(function () {
-    expect(reports[0][0]).to.deep.equal('shield-study-error');
-    expect(reports[0][1].data.error_id).to.deep.equal('jsonschema-validation-addon-defined');
-    shield.TelemetryWatcher.off(R);
-    done();
-  });
-};
-
-
 
 exports['test Telemetry: malformed error packets dont blow up / cascade'] = function (assert, done) {
   let aStudy = new shield.Study({});
@@ -480,11 +462,11 @@ exports['test method overrides 2: whenIneligible'] = function (assert, done) {
 };
 
 
-exports['test method overrides 3: whenComplete'] = function (assert, done) {
+exports['test method overrides 3: whenExpired'] = function (assert, done) {
   let override = false;
   class OverrideStudy extends shield.Study {
-    whenComplete () {
-      super.whenComplete();
+    whenExpired () {
+      super.whenExpired();
       override = true;
       throw new Error();
     }
@@ -1277,8 +1259,6 @@ exports['test new studies: respect prefs for variation, firstrun decision during
   expect(thisStudy.variation).to.equal('b');
   done();
 };
-
-
 
 exports['test new Study has undefined state var'] = function (assert, done) {
   let config = studyInfoCopy();
