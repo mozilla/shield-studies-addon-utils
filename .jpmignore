@@ -1,4 +1,7 @@
 .*
 *
 !/lib/**
+!/jetpack/**
+!/node_modules/ajv/dist/ajv.min.js
+!/node_modules/shield-study-schemas/schemas-client/**
 !/package.json

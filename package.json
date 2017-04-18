@@ -1,37 +1,57 @@
 {
   "name": "shield-studies-addon-utils",
-  "version": "2.0.0",
-  "description": "Utilities for building  Shield-Study Mozilla Firefox addons.",
-  "main": "lib/index.js",
-  "scripts": {
-    "test": "grunt test && istanbul check-coverage --statements 100 --functions 100 --branches 100 --lines 100 coverage/reports/coverage.json"
-  },
+  "description": "Library for building Shield-Study Mozilla Firefox addons.",
+  "version": "3.0.0",
   "author": "Gregg Lind <glind@mozilla.com>",
-  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/mozilla/shield-studies-addon-utils/issues"
+  },
   "dependencies": {
+    "ajv": "^4.11.2",
+    "shield-study-schemas": "0.8.3"
   },
   "devDependencies": {
     "chai": "3.5.0",
+    "depcheck": "^0.6.7",
+    "eslint": "^3.14.0",
+    "fixpack": "^2.3.1",
     "grunt": "1.0.1",
     "grunt-babel": "6.0.0",
     "grunt-cli": "1.2.0",
-    "grunt-eslint": "18.1.0",
     "grunt-explainjs": "0.0.4",
     "grunt-istanbul": "0.7.0",
     "grunt-shell": "1.3.0",
     "istanbul-jpm": "0.1.0",
-    "jpm": "1.1.4"
-  },
-  "bugs": {
-    "url": "https://github.com/gregglind/shield-studies-addon-utils/issues"
+    "jpm": "1.1.4",
+    "json-loader": "^0.5.4",
+    "npm-run-all": "^4.0.1",
+    "webpack": "^1.14.0"
   },
   "files": [
-    "lib/"
+    "lib",
+    "external",
+    "jetpack"
   ],
+  "hasEmbeddedWebExtension": true,
+  "homepage": "https://github.com/mozilla/shield-studies-addon-utils#readme",
+  "keywords": [
+    "addon",
+    "mozilla",
+    "shield",
+    "shield-study"
+  ],
+  "license": "MPL-2.0",
+  "main": "lib/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mozilla/shield-studies-addon-utils.git"
   },
-  "keywords": ["mozilla", "addon", "shield", "shield-study"],
-  "homepage": "https://github.com/mozilla/shield-studies-addon-utils#readme"
+  "scripts": {
+    "lint": "npm-run-all lint:*",
+    "lint:depcheck": "depcheck --ignores eslint,ajv,jpm,shield-study-schemas,chai",
+    "lint:eslint": "eslint '{lib,data,test}/**/*.js' 'example/**/{lib,data,test}/**/*.js'",
+    "lint:fixpack": "fixpack",
+    "prepublish": "npm shrinkwrap",
+    "test": "npm run lint && grunt test && istanbul check-coverage --statements 100 --functions 100 --branches 100 --lines 100 coverage/reports/coverage.json"
+  }
 }

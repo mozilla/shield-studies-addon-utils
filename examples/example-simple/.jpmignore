@@ -1,0 +1,10 @@
+*
+.*
+!/data/**
+!/*.js
+!/lib/**
+!/README.md
+!/package.json
+
+# shield-studies-addon-utils and dependencies
+!/node_modules/{ajv/dist/ajv.min.js,shield-study-schemas/schemas-client/*,shield-studies-addon-utils/**/*}
