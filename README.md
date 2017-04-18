@@ -1,11 +1,14 @@
 # Shield Studies Addon Utils [![Build Status](https://travis-ci.org/tombell/travis-ci-status.svg?branch=master)](https://travis-ci.org/tombell/travis-ci-status)
 
-- Instrument your Firefox Addon!
+- Instrument your Firefox (jetpack/addon-sdk) Addon!
 - Build Shield Study (Normandy) compatible addons without having to think very much.
 
-## install
+**Turn Back Now If** your Addon is web-extension only.
+
+## Install `addon-utils` into an addon source directory
 
 ```
+cd "$your-addon-source-dir"
 npm install --save-dev shield-studies-addon-utils
 ```
 
@@ -15,7 +18,10 @@ npm install --save-dev shield-studies-addon-utils
 
 ## Examples
 
-See `examples` directory.
+See `examples` directory for these examples:
+
+- [SIMPLE possible pref-flip study, with random assignment][simple-example]
+- [COMPLEX study subclassing Study to add more probes, determistic assigment, and a bunch of other things][complex-example]
 
 ## Summary
 
@@ -24,7 +30,7 @@ See `examples` directory.
 Your Study is:
 
 - side-by-side variations (1 or more)
-- 'one-phase'.  No warm up periods.  If you want that stuff, handle it yourself, or file bugs
+- 'one-phase'.  No warm up periods.  If you want that stuff, handle it yourself, or file bugs, or look at the
 
 ### Benefits
 
@@ -56,6 +62,12 @@ Using this, you get this analysis FOR FREE (and it's fast!)
 
 3.  Disable also uninstalls (and cleans up)
 
-4.  Undoubtedly, there are others.  It scratches my itch.  I have built a lot of things in the past.
+4.  Undoubtedly, there are others.  It scratches my itch.  I have built a lot of things in the past, and this seems to be a superset of most of them.
+
+
+[simple-example]: ./examples/simple
+[complex-example]: ./examples/complex
+
+
 
 

@@ -1,8 +1,8 @@
 {
-  "title": "Example Theme Shield Study",
-  "name": "example-theme-shield-study",
+  "title": "Example Complex Theme Shield Study",
+  "name": "example-complex-theme-shield-study",
   "version": "1.0.0",
-  "description": "Theming, for users",
+  "description": "Theming, for users, as a Shield Study",
   "main": "index.js",
   "author": "A Mozilla Author <someone@mozilla.com>",
   "engines": {
