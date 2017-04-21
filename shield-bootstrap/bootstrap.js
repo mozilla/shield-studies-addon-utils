@@ -25,8 +25,6 @@ const feature = {
 }
 
 
-
-
 /* here is showing off how to use it! */
 // https://developer.mozilla.org/en-US/Add-ons/Bootstrapped_extensions
 
