@@ -1,13 +1,34 @@
+| index | [example]     |
+|-------|---------------|
+
+
 # Shield Studies Addon Utils [![Build Status](https://travis-ci.org/tombell/travis-ci-status.svg?branch=master)](https://travis-ci.org/tombell/travis-ci-status)
 
 - Instrument your Firefox Addon!
 - Build Shield Study (Normandy) compatible addons without having to think very much.
+
+## Assumptions
+
+
+
+
+## history of major versions
+
+- v4: First `.jsm` release.  Uses packet format for PACKET version 3.
+- v3: Attempt to formalize on `shield-study` PACKET version 3.  Jetpack based.  Prototype used for `raymak/page-reload`.  All work abandoned, and no formal npm release in this series.  Work done at `v3-shield-packet-format` branch.  LAST JETPACK (addon-sdk) RELEASE.
+s v2: Code refactor to es6 `class` with event models.  Added cli tooling.  Packet format is still arbitrary and per-study.  Jetpack based.  Last used in studies in Q2 2017.
+- v1: Initial work and thinking.  Telemetry packets are rather arbitrary.  Jetpack based.
+
+
 
 ## install
 
 ```
 npm install --save-dev shield-studies-addon-utils
 ```
+
+Copy the file to somewhere useful in your addon.
+
 
 ## Tutorial and Full Usage
 
@@ -57,5 +78,8 @@ Using this, you get this analysis FOR FREE (and it's fast!)
 3.  Disable also uninstalls (and cleans up)
 
 4.  Undoubtedly, there are others.  It scratches my itch.  I have built a lot of things in the past.
+
+
+[example]: examples/README.md
 
 
