@@ -1,0 +1,33 @@
+{
+  "name": "shield-embedded-web-extension",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "bash ./bin/xpi.sh",
+    "eslint": "eslint src --ext jsm --ext js --ext json",
+    "watch": "onchange 'addon/**' 'package.json' -e addon/install.rdf -e addon/chrome.manifest -- npm run build -- '{{event}} {{changed}}' "
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "ajv": "^5.1.1",
+    "datauri": "^1.0.5",
+    "eslint": "^3.19.0",
+    "eslint-plugin-mozilla": "^0.3.2",
+    "moustache": "0.0.2",
+    "onchange": "^3.2.1",
+    "shield-studies-addon-utils": "file:../../"
+  },
+  "addon": {
+    "version": "some version",
+    "id": "shield-example-addon@mozilla.com",
+    "name": "Shield Bootstrap Example",
+    "minVersion": "51.0a1",
+    "creator": "Gregg Lind <glind@mozilla.com>",
+    "description": "Shield Intrumented Example As Embedded WebExtension",
+    "chrome": "shield-example-addon"
+  }
+}
