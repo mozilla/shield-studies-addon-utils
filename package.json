@@ -5,7 +5,8 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "npm-run-all test:*",
-    "dist": "webpack --output-library-target=this src/ShieldStudy.in.jsm dist/ShieldStudy.jsm",
+    "predist": "npm run eslint",
+    "dist": "webpack",
     "eslint": "eslint src --ext jsm --ext js --ext json"
   },
   "author": "Gregg Lind <glind@mozilla.com>",

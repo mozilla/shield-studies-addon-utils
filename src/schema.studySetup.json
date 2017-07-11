@@ -1,8 +1,15 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title":  "WebExtensionMessage",
+  "title":  "study setup",
   "type": "object",
   "definitions": {
+    "idString": {
+      "description":  "between 1,100 chars, no spaces, unicode ok.",
+      "type": "string",
+      "pattern": "^\\S+$",
+      "minLength": 1,
+      "maxLength": 100
+    },
     "ending": {
       "type": "object",
       "properties": {
@@ -30,21 +37,60 @@
   },
   "properties": {
     "studyName": {
-      "type": "string"
+      "$ref" : "#/definitions/idString",
+      "description": "Name of a particular study.  Usually the addon_id."
     },
-    "addonId": {
-      "type": "string"
+    "addon": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref" : "#/definitions/idString",
+          "description": "id of the addon."
+        },
+        "version": {
+          "$ref" : "#/definitions/idString",
+          "description": "Semantic version of the addon."
+        }
+      },
+      "required": [
+        "id",
+        "version"
+      ]
     },
     "endings": {
       "type": "object",
       "additionalProperties": {
         "$ref": "#/definitions/ending"
       }
+    },
+    "telemetry": {
+      "type": "object",
+      "properties": {
+        "removeTestingFlag": {
+          "type": "boolean"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "onInvalid": {
+          "type": "string",
+          "enum": [
+            "throw",
+            "log"
+          ]
+        }
+      },
+      "required": [
+        "removeTestingFlag",
+        "enabled",
+        "onInvalid"
+      ]
     }
   },
   "required": [
     "studyName",
     "endings",
-    "addonId"
+    "addon",
+    "telemetry"
   ]
 }

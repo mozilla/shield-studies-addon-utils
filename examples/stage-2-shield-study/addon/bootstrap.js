@@ -8,20 +8,27 @@ const { config } = Cu.import(CONFIGPATH, {});
 const studyConfig = config.study;
 const log = createLog(studyConfig.studyName, config.log.level);  // defined below.
 
-const STUDYUTILSPATH = `${__SCRIPT_URI_SPEC__}/../${studyConfig.installPath}`;
+const STUDYUTILSPATH = `${__SCRIPT_URI_SPEC__}/../${studyConfig.studyUtilsPath}`;
 const { studyUtils } = Cu.import(STUDYUTILSPATH, {});
 
 this.startup = async function(addonData, reason) {
   // addonData: Array [ "id", "version", "installPath", "resourceURI", "instanceID", "webExtension" ]  bootstrap.js:48
   log.debug("startup", REASONS[reason] || reason);
-  studyUtils.setup({studyName: studyConfig.studyName, endings: studyConfig.endings, addonId: addonData.id, testing: studyConfig.testing});
+  studyUtils.setup({
+    studyName: studyConfig.studyName,
+    endings: studyConfig.endings,
+    addon: {id: addonData.id, version: addonData.version},
+    telemetry: studyConfig.telemetry
+  });
   Jsm.import(config.modules);
 
   if ((REASONS[reason]) === "ADDON_INSTALL") {
-    studyUtils.firstSeen();
+    studyUtils.firstSeen();  // sends telemetry "enter"
     const eligible = await config.isEligible(); // addon-specific
     if (!eligible) {
-      // uses config.endings.ineligible.url if any, then uninstalls
+      // uses config.endings.ineligible.url if any,
+      // sends UT for "ineligible"
+      // then uninstalls addon
       await studyUtils.endStudy({reason: "ineligible"});
       return;
     }
@@ -29,14 +36,13 @@ this.startup = async function(addonData, reason) {
 
   // deterministic sampling, then set variation
   const variation = await chooseVariation();
-  await studyUtils.startup({reason: reason, variation:variation});
+  await studyUtils.startup({reason: reason, variation: variation});
 
   // if you have code to handle expiration / long-timers, it could go here.
-
-  const {webExtension} = addonData;
+  const webExtension = addonData.webExtension;
   webExtension.startup().then(api => {
     const {browser} = api;
-    // messages intended for shield:  {shield:true,msg=[endStudy|telemetry],data=data}
+    // messages intended for shield:  {shield:true,msg=[info|endStudy|telemetry],data=data}
     browser.runtime.onMessage.addListener(studyUtils.respondToWebExtensionMessage);
     //  other message handlers from your addon, if any
   });
@@ -86,16 +92,17 @@ function createLog(name, level) {
 
 async function chooseVariation() {
   let toSet, source;
+  const sample = studyUtils.sample;
 
-  if (config.variation) {
+  if (studyConfig.variation) {
     source = "startup-config";
-    toSet = config.variation;
+    toSet = studyConfig.variation;
   } else {
     source = "weightedVariation";
     // this is the standard arm choosing method
     const clientId = await studyUtils.getTelemetryId();
-    const hashFraction = await studyUtils.hashFraction(config.name + clientId, 12);
-    toSet = studyUtils.chooseFrom(studyConfig.weightedVariations, hashFraction);
+    const hashFraction = await sample.hashFraction(studyConfig.studyName + clientId, 12);
+    toSet = sample.chooseWeighted(studyConfig.weightedVariations, hashFraction);
   }
   log.debug(`variation: ${toSet} source:${source}`);
   return toSet;

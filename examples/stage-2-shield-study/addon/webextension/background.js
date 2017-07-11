@@ -4,7 +4,12 @@
 async function msgStudy(msg, data) {
   const allowed = ["endStudy", "telemetry", "info"];
   if (!allowed.includes(msg)) throw new Error(`shieldUtils doesn't know ${msg}, only knows ${allowed}`);
-  return await browser.runtime.sendMessage({shield: true, msg, data});
+  try {
+    const ans = await browser.runtime.sendMessage({shield: true, msg, data});
+    return ans;
+  } catch (e) {
+    console.log("OHNO", e);
+  }
 }
 
 class Feature {
@@ -17,11 +22,15 @@ class Feature {
     browser.browserAction.onClicked.addListener(() => this.handleClick());
   }
   handleClick() {
+    // note: doesn't persist across a session
     this.times += 1;
     console.log("got a click", this.times);
-    msgStudy("telemetry", {"evt": "click", times: this.times});
+    if (this.times == 1) {
+      msgStudy("telemetry", {"evt": "first-click-in-session"});
+    }
+    msgStudy("telemetry", {"evt": "click", times: ""+this.times});
 
-    // addon-initiated ending
+    // addon-initiated ending, 5 times in a session
     if (this.times > 5) {
       msgStudy("endStudy", {reason: "too-popular"});
     }
@@ -29,5 +38,10 @@ class Feature {
 }
 
 // initialize the feature, using our specific variation
-msgStudy("info").then(({variation}) => new Feature({variation}));
+// this isn't robust to race conditions at all,
+// should keep retrying until it gets an answer
+msgStudy("info").then(()=>{
 
+
+});
+msgStudy("info").then(({variation}) => new Feature({variation}));

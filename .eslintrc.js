@@ -22,6 +22,7 @@ module.exports = {
     "mozilla/no-aArgs": "warn",
     "mozilla/balanced-listeners": 0,
     "no-console": "warn",
+    "no-debugger": "warn",
     "no-shadow": ["error"],
     "no-unused-vars": "error",
     "prefer-const": "warn",

@@ -8,6 +8,8 @@ set -eu
 BASE_DIR="$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")"
 TMP_DIR=$(mktemp -d)
 DEST="${TMP_DIR}/addon"
+XPI="${XPI:-addon.xpi}"
+
 
 mkdir -p $DEST
 
@@ -26,9 +28,9 @@ mustache package.json template/chrome.manifest.mustache > addon/chrome.manifest
 cp -rp addon/* $DEST
 
 pushd $DEST
-zip -r $DEST/addon.xpi *
+zip -r $DEST/${XPI} *
 mkdir -p $BASE_DIR/dist
-mv addon.xpi $BASE_DIR/dist
-echo "xpi at ${BASE_DIR}/dist/addon.xpi"
+mv "${XPI}" $BASE_DIR/dist
+echo "xpi at ${BASE_DIR}/dist/${XPI}"
 popd
 
