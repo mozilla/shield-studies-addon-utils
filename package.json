@@ -5,6 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "npm-run-all test:*",
+    "test:func": "export FIREFOX_BINARY=${FIREFOX_BINARY:-beta} && npm run build && XPI_NAME=dist/example_webextension-0.0.1.zip mocha test/functional/",
     "predist": "npm run eslint",
     "dist": "webpack",
     "eslint": "eslint src --ext jsm --ext js --ext json"
@@ -16,7 +17,7 @@
     "ajv": "https://registry.npmjs.org/ajv/-/ajv-4.11.2.tgz",
     "eslint": "^4.0.0",
     "eslint-plugin-json": "^1.2.0",
-    "eslint-plugin-mozilla": "^0.3.2",
+    "eslint-plugin-mozilla": "^0.4.0",
     "shield-study-schemas": "https://registry.npmjs.org/shield-study-schemas/-/shield-study-schemas-0.8.3.tgz",
     "webpack": "^2.6.1"
   },

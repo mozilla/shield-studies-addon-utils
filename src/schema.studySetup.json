@@ -69,7 +69,7 @@
         "removeTestingFlag": {
           "type": "boolean"
         },
-        "enabled": {
+        "send": {
           "type": "boolean"
         },
         "onInvalid": {
@@ -82,8 +82,7 @@
       },
       "required": [
         "removeTestingFlag",
-        "enabled",
-        "onInvalid"
+        "send"
       ]
     }
   },

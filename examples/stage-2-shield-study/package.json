@@ -21,7 +21,7 @@
     "eslint-plugin-mozilla": "^0.3.2",
     "moustache": "0.0.2",
     "onchange": "^3.2.1",
-    "shield-studies-addon-utils": "file:../../"
+    "shield-studies-addon-utils": "file:../.."
   },
   "addon": {
     "version": "1.0.0",
@@ -34,5 +34,6 @@
     "creator": "Gregg Lind <glind@mozilla.com>",
     "description": "Shield Intrumented Example As Embedded WebExtension",
     "chrome": "shield-example-addon"
-  }
+  },
+  "dependencies": {}
 }

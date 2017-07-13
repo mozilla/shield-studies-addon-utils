@@ -4,22 +4,24 @@
 TODO glind survey / urls & query args
 TODO glind publish as v4
 */
-const {utils: Cu} = Components;
-
-Cu.import("resource://gre/modules/Log.jsm");
-const log = Log.repository.getLogger("shield-study-utils");
-log.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
-log.level = Log.Level.Debug;
+const EXPORTED_SYMBOLS = ["studyUtils"];
 
 const UTILS_VERSION = require("../package.json").version;
 const PACKET_VERSION = 3;
 
-Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
-const EXPORTED_SYMBOLS = ["studyUtils"];
-
+const {utils: Cu} = Components;
 Cu.import("resource://gre/modules/AddonManager.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
+
+const log = (() => {
+  Cu.import("resource://gre/modules/Log.jsm");
+  const L = Log.repository.getLogger("shield-study-utils");
+  L.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
+  L.level = Log.Level.Debug;
+  return L;
+})();
 
 // telemetry utils
 const CID = Cu.import("resource://gre/modules/ClientID.jsm", null);
@@ -46,7 +48,7 @@ var jsonschema = {
   },
   validateOrThrow(data, schema) {
     const valid = ajv.validate(schema, data);
-    if (!valid) { throw new Error(ajv.errors); }
+    if (!valid) { throw new Error(JSON.stringify((ajv.errors))); }
     return true;
   },
 };
@@ -76,14 +78,15 @@ function merge(source) {
   // get object's own property Symbols and/or Names, including nonEnumerables by default
   function getOwnPropertyIdentifiers(object, options = { names: true, symbols: true, nonEnumerables: true }) {
     const symbols = !options.symbols ? [] :
-                    Object.getOwnPropertySymbols(object);
+      Object.getOwnPropertySymbols(object);
+
+    // eslint-disable-next-line
     const names = !options.names ? [] :
-                  options.nonEnumerables ? Object.getOwnPropertyNames(object) :
-                  Object.keys(object);
+      options.nonEnumerables ? Object.getOwnPropertyNames(object) :
+        Object.keys(object);
     return [...names, ...symbols];
   }
-
-  let descriptor = {};
+  const descriptor = {};
 
   // `Boolean` converts the first parameter to a boolean value. Any object is
   // converted to `true` where `null` and `undefined` becames `false`. Therefore
@@ -96,21 +99,19 @@ function merge(source) {
   return Object.defineProperties(source, descriptor);
 }
 
-
 function mergeQueryArgs(url, ...args) {
   /* currently left to right*/
-
-  // TODO, glind, decide order of merge here, create util for 'merge dicts'
+  // TODO, glind, decide order of merge here
   const U = new URL(url);
   let q = U.search || "?";
   q = new URLSearchParams(q);
 
-  let merged = merge({}, ...args);
+  const merged = merge({}, ...args);
 
   // get user info.
-  Object.keys(merged).forEach((k) =>{
-    console.log(q.get(k),k,merged[k]);
-    q.set(k,merged[k]);
+  Object.keys(merged).forEach((k) => {
+    log.debug(q.get(k), k, merged[k]);
+    q.set(k, merged[k]);
   });
 
   U.search = q.toString();
@@ -141,12 +142,11 @@ function chooseWeighted(weightedVariations, fraction = Math.random()) {
   jsonschema.validateOrThrow(weightedVariations, schemas.weightedVariations);
 
   var weights = weightedVariations.map(x => x.weight || 1);
-  var choices = weightedVariations.map(x => x.name);
   const partial = cumsum(weights);
   const total = weights.reduce((a, b) => a + b);
-  for (let ii = 0; ii < choices.length; ii++) {
+  for (let ii = 0; ii < weightedVariations.length; ii++) {
     if (fraction <= partial[ii] / total) {
-      return choices[ii];
+      return weightedVariations[ii];
     }
   }
   return null;
@@ -160,8 +160,6 @@ async function hashFraction(saltedString, bits = 12) {
 class StudyUtils {
   constructor(config) {
     // TODO glind Answer: no.  see if you can merge the construtor and setup and export the class, rather than a singleton
-
-    //
     this.respondToWebExtensionMessage = function({shield, msg, data}, sender, sendResponse) {
       // shield: boolean, if present, request is for shield
       if (!shield) return true;
@@ -169,22 +167,15 @@ class StudyUtils {
       if (!allowedMethods.includes(msg)) {
         throw new Error(`respondToWebExtensionMessage: "${msg}" is not in allowed studyUtils methods: ${allowedMethods}`);
       }
+      // handle async
       Promise.resolve(this[msg](data)).then(
         function(ans) {
-          log.debug("about to respond", ans);
+          log.debug("respondingTo", msg, ans);
           sendResponse(ans);
         },
         // function error eventually
       );
-
-      // try {
-      //   const ans = await this[msg](data);
-      //   sendResponse(ans);
-      // } catch (err) {
-      //   sendResponse(Promise.reject(err));
-      // }
       return true;
-
     }.bind(this);
 
     // expose the sample utilities
@@ -211,8 +202,14 @@ class StudyUtils {
     this._isSetup = true;
     return this;
   }
+  reset() {
+    this.config = {};
+    delete this._variation;
+    this._isSetup = false;
+  }
   async openTab(url, params = {}) {
     this.throwIfNotSetup("openTab");
+    log.debug(url, params);
     log.debug("opening this formatted tab", url, params);
     Services.wm.getMostRecentWindow("navigator:browser").gBrowser.addTab(url, params);
   }
@@ -233,30 +230,31 @@ class StudyUtils {
     this.throwIfNotSetup("info");
     return {
       studyName: this.config.studyName,
-      variation: this.getVariation(),
       addon: this.config.addon,
+      variation: this.getVariation(),
+      // TODO normandy id?
     };
   }
   // TODO glind, maybe this is getter / setter?
-  get telemetryTestingFlag() {
-    this.throwIfNotSetup("telemetryTestingFlag");
-    return !this.config.telemetry.removeTestingFlag;
+  get telemetryConfig() {
+    this.throwIfNotSetup("telemetryConfig");
+    return this.config.telemetry;
   }
   firstSeen() {
     log.debug(`firstSeen`);
     this.throwIfNotSetup("firstSeen");
     this._telemetry({study_state: "enter"}, "shield-study");
   }
-  setActive(which) {
+  setActive() {
     this.throwIfNotSetup("setActive");
     const info = this.info();
-    log.debug("marking TelemetryEnvironment", info.studyName, info.variation);
-    TelemetryEnvironment.setExperimentActive(info.studyName, info.variation);
+    log.debug("marking TelemetryEnvironment", info.studyName, info.variation.name);
+    TelemetryEnvironment.setExperimentActive(info.studyName, info.variation.name);
   }
-  unsetActive(which) {
+  unsetActive() {
     this.throwIfNotSetup("unsetActive");
     const info = this.info();
-    log.debug("unmarking TelemetryEnvironment", info.studyName, info.variation);
+    log.debug("unmarking TelemetryEnvironment", info.studyName, info.variation.name);
     TelemetryEnvironment.setExperimentInactive(info.studyName);
   }
   surveyUrl(urlTemplate) {
@@ -270,38 +268,36 @@ class StudyUtils {
     log.debug(`about to uninstall ${id}`);
     AddonManager.getAddonByID(id, addon => addon.uninstall());
   }
-  async startup({reason, variation}) {
-    if (variation) this.setVariation(variation);
+  async startup({reason}) {
     this.throwIfNotSetup("startup");
     log.debug(`startup ${reason}`);
+    this.setActive();
     if (reason === REASONS.ADDON_INSTALL) {
       this._telemetry({study_state: "installed"}, "shield-study");
     }
-    this.setActive(this.info().studyName, this.getVariation());
   }
   async shutdown(reason) {
     this.throwIfNotSetup("shutdown");
     log.debug(`shutdown ${reason}`);
   }
-
   async endStudy({reason, fullname}) {
     this.throwIfNotSetup("endStudy");
     log.debug(`endStudy ${reason}`);
-    this.unsetActive(this.info().studyName);
+    this.unsetActive();
     // TODO glind, think about reason vs fullname
     // TODO glind, think about race conditions for endings, ensure only one exit
     const ending = this.config.endings[reason];
     if (ending) {
       const {baseUrl, exactUrl} = ending;
-      if (baseUrl) {
+      if (exactUrl) {
+        this.openTab(exactUrl);
+      } else if (baseUrl) {
         const qa = await this.endingQueryArgs();
         qa.reason = reason;
         qa.fullreason = fullname;
         const fullUrl = mergeQueryArgs(baseUrl, qa);
         log.debug(baseUrl, fullUrl);
         this.openTab(fullUrl);
-      } else if (exactUrl) {
-        this.openTab(exactUrl);
       }
     }
     switch (reason) {
@@ -311,10 +307,10 @@ class StudyUtils {
       case "ended-positive":
       case "ended-neutral":
       case "ended-negative":
-        this._telemetry({study_state: reason, fullname});
+        this._telemetry({study_state: reason, fullname}, "shield-study");
         break;
       default:
-        this._telemetry({study_state: "ended-neutral", study_state_fullname: reason});
+        this._telemetry({study_state: "ended-neutral", study_state_fullname: reason}, "shield-study");
         // unless we know better TODO grl
     }
     // these are all exits
@@ -330,13 +326,13 @@ class StudyUtils {
     const queryArgs = {
       shield: PACKET_VERSION,
       study: info.studyName,
-      variation: info.variation,
+      variation: info.variation.name,
       updateChannel: Services.appinfo.defaultUpdateChannel,
       fxVersion: Services.appinfo.version,
       addon: info.addon.version, // addon version
       who, // telemetry clientId
     };
-    queryArgs.testing = Number(this.telemetryTestingFlag);
+    queryArgs.testing = Number(!this.telemetryConfig.removeTestingFlag);
     return queryArgs;
   }
 
@@ -347,7 +343,7 @@ class StudyUtils {
     const payload = {
       version:        PACKET_VERSION,
       study_name:     info.studyName,
-      branch:         info.variation,
+      branch:         info.variation.name,
       addon_version:  info.addon.version,
       shield_version: UTILS_VERSION,
       type:           bucket,
@@ -382,6 +378,10 @@ class StudyUtils {
     // emit(TelemetryWatcher, 'telemetry', [bucket, payload]);
     log.debug(`telemetry: ${JSON.stringify(payload)}`);
     const telOptions = {addClientId: true, addEnvironment: true};
+    if (!this.telemetryConfig.send) {
+      log.debug("NOT sending.  `telemetryConfig.send` is false");
+      return false;
+    }
     return TelemetryController.submitExternalPing(bucket, payload, telOptions);
   }
 

@@ -20,6 +20,9 @@ this.startup = async function(addonData, reason) {
     addon: {id: addonData.id, version: addonData.version},
     telemetry: studyConfig.telemetry
   });
+  const variation = await chooseVariation();
+  studyUtils.setVariation(variation);
+
   Jsm.import(config.modules);
 
   if ((REASONS[reason]) === "ADDON_INSTALL") {
@@ -33,11 +36,9 @@ this.startup = async function(addonData, reason) {
       return;
     }
   }
+  await studyUtils.startup({reason: reason});
 
-  // deterministic sampling, then set variation
-  const variation = await chooseVariation();
-  await studyUtils.startup({reason: reason, variation: variation});
-
+  console.log(`info ${JSON.stringify(studyUtils.info())}`);;
   // if you have code to handle expiration / long-timers, it could go here.
   const webExtension = addonData.webExtension;
   webExtension.startup().then(api => {

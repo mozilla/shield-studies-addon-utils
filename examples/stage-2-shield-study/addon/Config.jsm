@@ -14,7 +14,9 @@ var slug = "shield-example-addon"; // matches chrome.manifest;
 var config = {
   "study": {
     "studyName": "mostImportantExperiment", // no spaces, for all the reasons
-    "variation": "kittens", // optional, use to override/decide
+    "variation": {
+      "name": "kittens"
+    }, // optional, use to override/decide
     "weightedVariations": [
       {"name": "control",
         "weight": 1},
@@ -32,6 +34,9 @@ var config = {
       */
     "endings": {
       /** standard endings */
+      "user-disable": {
+        "baseUrl": "data:,You uninstalled"
+      },
       "ineligible": {
         "baseUrl": "http://www.example.com/?reason=ineligible",
       },
@@ -50,9 +55,9 @@ var config = {
       }
     },
     "telemetry": {
-      "enabled": true, // assumed false. Actually send pings?
+      "send": true, // assumed false. Actually send pings?
       "removeTestingFlag": false,  // Marks pings as testing, set true for actual release
-      "onInvalid": "throw"  // invalid packet for schema?  throw||log
+      // TODO "onInvalid": "throw"  // invalid packet for schema?  throw||log
     },
     "studyUtilsPath": `./StudyUtils.jsm`,
   },
