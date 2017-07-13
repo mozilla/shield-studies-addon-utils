@@ -6,7 +6,7 @@ const {utils: Cu} = Components;
 const CONFIGPATH = `${__SCRIPT_URI_SPEC__}/../Config.jsm`;
 const { config } = Cu.import(CONFIGPATH, {});
 const studyConfig = config.study;
-const log = createLog(studyConfig.studyName, config.log.level);  // defined below.
+const log = createLog(studyConfig.studyName, config.log.bootstrap.level);  // defined below.
 
 const STUDYUTILSPATH = `${__SCRIPT_URI_SPEC__}/../${studyConfig.studyUtilsPath}`;
 const { studyUtils } = Cu.import(STUDYUTILSPATH, {});
@@ -20,6 +20,7 @@ this.startup = async function(addonData, reason) {
     addon: {id: addonData.id, version: addonData.version},
     telemetry: studyConfig.telemetry
   });
+  studyUtils.setLoggingLevel(config.log.studyUtils)
   const variation = await chooseVariation();
   studyUtils.setVariation(variation);
 
@@ -83,11 +84,11 @@ const REASONS = {
 for (const r in REASONS) { REASONS[REASONS[r]] = r; }
 
 // logging
-function createLog(name, level) {
+function createLog(name, levelWord) {
   Cu.import("resource://gre/modules/Log.jsm");
   var log = Log.repository.getLogger(name);
   log.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
-  log.level = level || Log.Level.Debug; // should be a config / pref
+  log.level = Log.Level[levelWord] || Log.Level.Debug; // should be a config / pref
   return log;
 }
 

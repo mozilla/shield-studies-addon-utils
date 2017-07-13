@@ -15,13 +15,7 @@ Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
 
-const log = (() => {
-  Cu.import("resource://gre/modules/Log.jsm");
-  const L = Log.repository.getLogger("shield-study-utils");
-  L.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
-  L.level = Log.Level.Debug;
-  return L;
-})();
+const log = createLog("shield-study-utils", Log.Level.Debug);
 
 // telemetry utils
 const CID = Cu.import("resource://gre/modules/ClientID.jsm", null);
@@ -397,10 +391,18 @@ class StudyUtils {
   telemetryError(errorReport) {
     return this._telemetry(errorReport, "shield-study-error");
   }
+  setLoggingLevel(descriptor) {
+    log.level = Log.Level[descriptor];
+  }
 }
 
-var studyUtils = new StudyUtils();
-
+function createLog(name, levelWord) {
+  Cu.import("resource://gre/modules/Log.jsm");
+  var log = Log.repository.getLogger(name);
+  log.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
+  log.level = Log.Level[levelWord] || Log.Level.Debug; // should be a config / pref
+  return log;
+}
 /** addon state change reasons */
 const REASONS = {
   APP_STARTUP: 1,      // The application is starting up.
@@ -413,6 +415,9 @@ const REASONS = {
   ADDON_DOWNGRADE: 8,  // The add-on is being downgraded.
 };
 for (const r in REASONS) { REASONS[REASONS[r]] = r; }
+
+// Actually create the singleton.
+var studyUtils = new StudyUtils();
 
 // to make this work with webpack!
 this.EXPORTED_SYMBOLS = EXPORTED_SYMBOLS;

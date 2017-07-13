@@ -68,7 +68,10 @@ var config = {
   // addon-specific modules to load/unload during `startup`, `shutdown`
   "modules": [
   ],
+  // sets the logging for BOTH the bootstrap file AND shield-study-utils
   "log": {
-    "level": 0,
+    //Fatal: 70, Error: 60, Warn: 50, Info: 40, Config: 30, Debug: 20, Trace: 10, All: -1,
+    "bootstrap":  "Debug"
+    "studyUtils": "Trace"
   },
 };
