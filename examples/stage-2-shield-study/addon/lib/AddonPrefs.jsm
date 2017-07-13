@@ -1,5 +1,6 @@
 "use strict";
 
+/* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(EXPORTED_SYMBOLS|AddonPrefs)" }]*/
 var EXPORTED_SYMBOLS = ["AddonPrefs"];
 
 Components.utils.import("resource://gre/modules/Services.jsm");

@@ -2,20 +2,21 @@
 
 /* to use:
 
-- this file has chrome privileges
-- Cu.import will work for any 'general firefox things' (Services,etc)
+- Recall this file has chrome privileges
+- Cu.import in this file will work for any 'general firefox things' (Services,etc)
   but NOT for addon-specific libs
 */
 
+/* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(config|EXPORTED_SYMBOLS)" }]*/
 var EXPORTED_SYMBOLS = ["config"];
 
-var slug = "shield-example-addon"; // matches chrome.manifest;
+// var slug = "shield-example-addon"; // should match chrome.manifest;
 
 var config = {
   "study": {
     "studyName": "mostImportantExperiment", // no spaces, for all the reasons
     "variation": {
-      "name": "kittens"
+      "name": "kittens",
     }, // optional, use to override/decide
     "weightedVariations": [
       {"name": "control",
@@ -35,7 +36,7 @@ var config = {
     "endings": {
       /** standard endings */
       "user-disable": {
-        "baseUrl": "data:,You uninstalled"
+        "baseUrl": "data:,You uninstalled",
       },
       "ineligible": {
         "baseUrl": "http://www.example.com/?reason=ineligible",
@@ -51,8 +52,8 @@ var config = {
       },
       "a-non-url-opening-ending": {
         "study_state": "ended-neutral",
-        "baseUrl":  null
-      }
+        "baseUrl":  null,
+      },
     },
     "telemetry": {
       "send": true, // assumed false. Actually send pings?
@@ -63,15 +64,21 @@ var config = {
   },
   "isEligible": async function() {
     // get whatever prefs, addons, telemetry, anything!
+    // Cu.import can see 'firefox things', but not package things.
     return true;
   },
   // addon-specific modules to load/unload during `startup`, `shutdown`
   "modules": [
+    // can use ${slug} here for example
   ],
   // sets the logging for BOTH the bootstrap file AND shield-study-utils
   "log": {
-    //Fatal: 70, Error: 60, Warn: 50, Info: 40, Config: 30, Debug: 20, Trace: 10, All: -1,
-    "bootstrap":  "Debug"
-    "studyUtils": "Trace"
+    // Fatal: 70, Error: 60, Warn: 50, Info: 40, Config: 30, Debug: 20, Trace: 10, All: -1,
+    "bootstrap":  {
+      "level": "Debug",
+    },
+    "studyUtils":  {
+      "level": "Trace",
+    },
   },
 };

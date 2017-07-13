@@ -14,11 +14,11 @@
   "license": "MPL-2.0",
   "dependencies": {},
   "devDependencies": {
-    "ajv": "https://registry.npmjs.org/ajv/-/ajv-4.11.2.tgz",
+    "ajv": "^4.11.2",
     "eslint": "^4.0.0",
     "eslint-plugin-json": "^1.2.0",
     "eslint-plugin-mozilla": "^0.4.0",
-    "shield-study-schemas": "https://registry.npmjs.org/shield-study-schemas/-/shield-study-schemas-0.8.3.tgz",
+    "shield-study-schemas": "^0.8.3",
     "webpack": "^2.6.1"
   },
   "bugs": {

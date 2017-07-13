@@ -15,7 +15,7 @@ Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
 
-const log = createLog("shield-study-utils", Log.Level.Debug);
+const log = createLog("shield-study-utils", "Debug");
 
 // telemetry utils
 const CID = Cu.import("resource://gre/modules/ClientID.jsm", null);
@@ -219,6 +219,10 @@ class StudyUtils {
     this.throwIfNotSetup("getvariation");
     return this._variation;
   }
+  getShieldId() {
+    const key = "extensions.shield-recipe-client.user_id";
+    return Services.prefs.getCharPref(key, "");
+  }
   info() {
     log.debug("getting info");
     this.throwIfNotSetup("info");
@@ -226,7 +230,7 @@ class StudyUtils {
       studyName: this.config.studyName,
       addon: this.config.addon,
       variation: this.getVariation(),
-      // TODO normandy id?
+      shieldId: this.getShieldId(),
     };
   }
   // TODO glind, maybe this is getter / setter?
@@ -270,12 +274,13 @@ class StudyUtils {
       this._telemetry({study_state: "installed"}, "shield-study");
     }
   }
-  async shutdown(reason) {
-    this.throwIfNotSetup("shutdown");
-    log.debug(`shutdown ${reason}`);
-  }
   async endStudy({reason, fullname}) {
     this.throwIfNotSetup("endStudy");
+    if (this._isEnding) {
+      log.debug("endStudy, already ending!");
+      return;
+    }
+    this._isEnding = true;
     log.debug(`endStudy ${reason}`);
     this.unsetActive();
     // TODO glind, think about reason vs fullname
@@ -342,7 +347,7 @@ class StudyUtils {
       shield_version: UTILS_VERSION,
       type:           bucket,
       data,
-      testing:        this.telemetryTestingFlag,
+      testing:        !this.telemetryConfig.removeTestingFlag,
     };
 
     let validation;
@@ -398,10 +403,11 @@ class StudyUtils {
 
 function createLog(name, levelWord) {
   Cu.import("resource://gre/modules/Log.jsm");
-  var log = Log.repository.getLogger(name);
-  log.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
-  log.level = Log.Level[levelWord] || Log.Level.Debug; // should be a config / pref
-  return log;
+  var L = Log.repository.getLogger(name);
+  L.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
+  L.debug("log made", name, levelWord, Log.Level[levelWord]);
+  L.level = Log.Level[levelWord] || Log.Level.Debug; // should be a config / pref
+  return L;
 }
 /** addon state change reasons */
 const REASONS = {

@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "reinstall": "npm install -f shield-studies-addon-utils",
+    "postinstall": "ln -s ../../.. node_modules/shield-studies-addon-utils",
     "prebuild": "cp node_modules/shield-studies-addon-utils/dist/StudyUtils.jsm addon/",
     "build": "XPI=shield-embedded-web-extension.xpi bash ./bin/xpi.sh",
-    "eslint": "eslint src --ext jsm --ext js --ext json",
+    "eslint": "eslint addon --ext jsm --ext js --ext json --",
     "watch": "onchange 'addon/**' 'package.json' 'template/**' -e addon/install.rdf -e addon/chrome.manifest -e addon/StudyUtils.jsm -- npm run build -- '{{event}} {{changed}} $(date)'"
   },
   "keywords": [],
@@ -19,9 +19,9 @@
     "datauri": "^1.0.5",
     "eslint": "^3.19.0",
     "eslint-plugin-mozilla": "^0.3.2",
+    "jshint": "^2.9.5",
     "moustache": "0.0.2",
-    "onchange": "^3.2.1",
-    "shield-studies-addon-utils": "file:../.."
+    "onchange": "^3.2.1"
   },
   "addon": {
     "version": "1.0.0",

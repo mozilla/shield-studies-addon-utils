@@ -2,25 +2,28 @@
 
 
 /* global  __SCRIPT_URI_SPEC__  */
+/* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(startup|shutdown|install|uninstall)" }]*/
+
 const {utils: Cu} = Components;
 const CONFIGPATH = `${__SCRIPT_URI_SPEC__}/../Config.jsm`;
 const { config } = Cu.import(CONFIGPATH, {});
 const studyConfig = config.study;
+Cu.import("resource://gre/modules/Console.jsm");
 const log = createLog(studyConfig.studyName, config.log.bootstrap.level);  // defined below.
 
 const STUDYUTILSPATH = `${__SCRIPT_URI_SPEC__}/../${studyConfig.studyUtilsPath}`;
 const { studyUtils } = Cu.import(STUDYUTILSPATH, {});
 
-this.startup = async function(addonData, reason) {
+async function startup(addonData, reason) {
   // addonData: Array [ "id", "version", "installPath", "resourceURI", "instanceID", "webExtension" ]  bootstrap.js:48
   log.debug("startup", REASONS[reason] || reason);
   studyUtils.setup({
     studyName: studyConfig.studyName,
     endings: studyConfig.endings,
     addon: {id: addonData.id, version: addonData.version},
-    telemetry: studyConfig.telemetry
+    telemetry: studyConfig.telemetry,
   });
-  studyUtils.setLoggingLevel(config.log.studyUtils)
+  studyUtils.setLoggingLevel(config.log.studyUtils.level);
   const variation = await chooseVariation();
   studyUtils.setVariation(variation);
 
@@ -37,36 +40,49 @@ this.startup = async function(addonData, reason) {
       return;
     }
   }
-  await studyUtils.startup({reason: reason});
+  await studyUtils.startup({reason});
 
-  console.log(`info ${JSON.stringify(studyUtils.info())}`);;
+  console.log(`info ${JSON.stringify(studyUtils.info())}`);
   // if you have code to handle expiration / long-timers, it could go here.
   const webExtension = addonData.webExtension;
   webExtension.startup().then(api => {
     const {browser} = api;
-    // messages intended for shield:  {shield:true,msg=[info|endStudy|telemetry],data=data}
+    // messages intended for shieldn:  {shield:true,msg=[info|endStudy|telemetry],data=data}
     browser.runtime.onMessage.addListener(studyUtils.respondToWebExtensionMessage);
     //  other message handlers from your addon, if any
   });
-};
+  // studyUtils.endStudy("user-disable");
+}
 
-this.shutdown = async function(addonData, reason) {
-  log.debug("shutdown", REASONS[reason] || reason);
-  studyUtils.shutdown(reason);
-  // unloads must come after module work
-  Jsm.unload(config.modules);
-  Jsm.unload([CONFIGPATH, STUDYUTILSPATH]);
-};
 
-this.uninstall = async function(addonData, reason) {
-  log.debug("uninstall", REASONS[reason] || reason);
-};
+function shutdown(addonData, reason) {
+  console.log("shutdown", REASONS[reason] || reason);
+  // are we uninstalling?
+  // if so, user or automatic?
+  if (reason === REASONS.ADDON_UNINSTALL || reason === REASONS.ADDON_DISABLE) {
+    console.log("uninstall or disable");
+    if (!studyUtils._isEnding) {
+      // we are the first requestors, must be user action.
+      console.log("user requested shutdown");
+      studyUtils.endStudy({reason: "user-disable"});
+      return;
+    }
 
-this.install = async function(addonData, reason) {
-  log.debug("install", REASONS[reason] || reason);
+  // normal shutdown, or 2nd attempts
+    console.log("Jsms unloading");
+    Jsm.unload(config.modules);
+    Jsm.unload([CONFIGPATH, STUDYUTILSPATH]);
+  }
+}
+
+function uninstall(addonData, reason) {
+  console.log("uninstall", REASONS[reason] || reason);
+}
+
+function install(addonData, reason) {
+  console.log("install", REASONS[reason] || reason);
   // handle ADDON_UPGRADE (if needful) here
-};
-
+}
 
 /** CONSTANTS and other bootstrap.js utilities */
 
@@ -86,10 +102,10 @@ for (const r in REASONS) { REASONS[REASONS[r]] = r; }
 // logging
 function createLog(name, levelWord) {
   Cu.import("resource://gre/modules/Log.jsm");
-  var log = Log.repository.getLogger(name);
-  log.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
-  log.level = Log.Level[levelWord] || Log.Level.Debug; // should be a config / pref
-  return log;
+  var L = Log.repository.getLogger(name);
+  L.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
+  L.level = Log.Level[levelWord] || Log.Level.Debug; // should be a config / pref
+  return L;
 }
 
 async function chooseVariation() {

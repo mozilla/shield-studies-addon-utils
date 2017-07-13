@@ -10,7 +10,7 @@ function telemetry (data) {
   }
   throwIfInvalid(data);
   msgStudy("telemetry", data);
-};
+}
 
 // template code for talking to `studyUtils` using `browser.runtime`
 async function msgStudy(msg, data) {
