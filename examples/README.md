@@ -1,29 +1,7 @@
-# Example Studies
+# Example Embedded Web Extension Shield Study
 
-## Simplest Possible Study
+Demonstrated in stages.
 
-[simplest study](./example-simplest)
-
-- 2 file, very thing
-- does nothing
-- seriously, really does nothing
-
-
-## Theme Variations Study
-
-The main tutorial study
-
-- 3 file structure
-- demos
-
-  - orientation
-  - whenIneligible
-  - etc.
-
-## Pref-flip
-
-[example pref-flip](./example-pref-flip)
-
-- 3 file structure
-- demos `isEligible`, `cleanup`
+- stage 1:  embedded web extension
+- stage 2:  instrumented shield study
 
