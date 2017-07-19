@@ -1,8 +1,6 @@
-/* global  __SCRIPT_URI_SPEC__  */
-
 const { classes: Cc, interfaces: Ci, utils: Cu } = Components;
-// TODO investigate this hackiness
-const { studyUtils } = Cu.import(`${__SCRIPT_URI_SPEC__}/../StudyUtils.jsm`, {});
+Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+XPCOMUtils.defineLazyModuleGetter(this, "studyUtils", "resource://test-addon/StudyUtils.jsm");
 
 // TODO move this to a Config.jsm file
 const studyConfig = {
