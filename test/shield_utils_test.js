@@ -23,9 +23,29 @@ describe("Shield Study Utils Functional Tests", function() {
 
   after(() => driver.quit());
 
-  it("should have a URL bar", async() => {
-    const urlBar = await utils.promiseUrlBar(driver);
-    const text = await urlBar.getAttribute("placeholder");
-    assert.equal(text, "Search or enter address");
+  it("should return the correct variation", async() => {
+    const variation = await driver.executeAsyncScript(async(callback) => {
+      const { studyUtils } = Components.utils.import("resource://test-addon/StudyUtils.jsm", {});
+      // TODO move this to a Config.jsm file
+      const studyConfig = {
+        studyName: "shieldStudyUtilsTest",
+        "weightedVariations": [
+          {"name": "control",
+            "weight": 1},
+          {"name": "kittens",
+            "weight": 1.5},
+          {"name": "puppers",
+            "weight": 2},  // we want more puppers in our sample
+        ],
+      };
+
+      const sample = studyUtils.sample;
+      const clientId = await studyUtils.getTelemetryId();
+      const hashFraction = await sample.hashFraction(studyConfig.studyName + clientId);
+      const chosenVariation = await sample.chooseWeighted(studyConfig.weightedVariations, hashFraction);
+      callback(chosenVariation);
+    });
+    console.log(variation);
+    assert(variation !== null);
   });
 });
