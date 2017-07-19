@@ -12,7 +12,15 @@
   },
   "author": "Gregg Lind <glind@mozilla.com>",
   "license": "MPL-2.0",
-  "dependencies": {},
+  "dependencies": {
+    "assert": "^1.4.1",
+    "fs-extra": "^4.0.0",
+    "fx-runner": "^1.0.7",
+    "geckodriver": "^1.8.0",
+    "mocha": "^3.4.2",
+    "path": "^0.12.7",
+    "selenium-webdriver": "^3.4.0"
+  },
   "devDependencies": {
     "ajv": "^4.11.2",
     "eslint": "^4.0.0",
