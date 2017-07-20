@@ -1,5 +1,5 @@
 FROM ubuntu:16.04
-WORKDIR /shield-study-utils
+WORKDIR /shield-study-addon-utils
 
 RUN apt-get update -y && \
     apt-get install -y curl && \

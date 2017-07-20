@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: marcrowo/shield-study-utils-base:1
+      - image: marcrowo/shield-study-utils-base:2
         environment:
           DISPLAY: :10
 
