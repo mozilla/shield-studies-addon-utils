@@ -6,15 +6,17 @@ jobs:
         environment:
           DISPLAY: :10
 
-    working_directory: /shield-study-utils
+    working_directory: /shield-study-addon-utils
 
     steps:
       - run:
           name: xvfb and openbox
-          command: Xvfb $DISPLAY -ac & sleep 1 & openbox
+          command: Xvfb $DISPLAY -ac & sleep 3 & openbox
           background: true
     
       - checkout
+
+      - run: npm install -g webpack mustache
 
       - run: npm install
 
