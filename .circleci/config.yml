@@ -16,8 +16,6 @@ jobs:
     
       - checkout
 
-      - run: npm install -g webpack mustache
-
       - run: npm install
 
       - run:
