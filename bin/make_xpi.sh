@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+cp dist/StudyUtils.jsm test-addon/
 
 set -eu
 
