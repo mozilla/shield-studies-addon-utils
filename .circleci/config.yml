@@ -1,0 +1,34 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: marcrowo/shield-study-utils-base:3
+        environment:
+          DISPLAY: :10
+
+    working_directory: /shield-study-addon-utils
+
+    steps:
+      - run:
+          name: xvfb and openbox
+          command: Xvfb $DISPLAY -ac & sleep 3 & openbox
+          background: true
+    
+      - checkout
+
+      - run: npm install
+
+      - run:
+          name: webpack and eslint
+          command: npm run dist
+
+      - run:
+          name: Build .XPI
+          command: npm run build
+  
+      - run:
+          name: Functional tests
+          command: npm run test
+
+      - store_artifacts:
+          path: "test-addon/test-addon.xpi"

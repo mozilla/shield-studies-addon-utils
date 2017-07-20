@@ -1,18 +1,26 @@
 {
   "name": "shield-studies-addon-utils",
   "version": "4.0.0",
-  "description": "Utilities for building  Shield-Study Mozilla Firefox addons.",
+  "description": "Utilities for building Shield-Study Mozilla Firefox addons.",
   "main": "lib/index.js",
   "scripts": {
-    "test": "npm-run-all test:*",
-    "test:func": "export FIREFOX_BINARY=${FIREFOX_BINARY:-beta} && npm run build && XPI_NAME=dist/example_webextension-0.0.1.zip mocha test/functional/",
+    "build": "./bin/make_xpi.sh",
+    "test": "export FIREFOX_BINARY=firefox && npm run build && XPI_NAME=test-addon/test-addon.xpi mocha test",
     "predist": "npm run eslint",
     "dist": "webpack",
     "eslint": "eslint src --ext jsm --ext js --ext json"
   },
   "author": "Gregg Lind <glind@mozilla.com>",
   "license": "MPL-2.0",
-  "dependencies": {},
+  "dependencies": {
+    "assert": "^1.4.1",
+    "fs-extra": "^4.0.0",
+    "fx-runner": "^1.0.7",
+    "geckodriver": "^1.8.0",
+    "mocha": "^3.4.2",
+    "path": "^0.12.7",
+    "selenium-webdriver": "^3.4.0"
+  },
   "devDependencies": {
     "ajv": "^4.11.2",
     "eslint": "^4.0.0",
