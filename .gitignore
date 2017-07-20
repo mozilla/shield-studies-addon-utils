@@ -3,3 +3,7 @@ node_modules
 coverage
 testing-env
 test/z-ensure-coverage.js
+
+*.*.swp
+dist/
+examples/stage-2-shield-study/addon/StudyUtils.jsm

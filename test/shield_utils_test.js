@@ -23,7 +23,7 @@ describe("Shield Study Utils Functional Tests", function() {
 
   after(() => driver.quit());
 
-  it("should return the correct variation", async() => {
+  it("should return a variation with a name", async() => {
     const variation = await driver.executeAsyncScript(async(callback) => {
       const { studyUtils } = Components.utils.import("resource://test-addon/StudyUtils.jsm", {});
       // TODO move this to a Config.jsm file
@@ -46,6 +46,6 @@ describe("Shield Study Utils Functional Tests", function() {
       callback(chosenVariation);
     });
     console.log(variation);
-    assert(variation !== null);
+    assert(variation.name !== null);
   });
 });
