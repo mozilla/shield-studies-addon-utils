@@ -48,15 +48,13 @@ describe("Shield Study Utils Functional Tests", function() {
   });
 
   it("telemetry should be working", async() => {
-    const shieldTelemetry = await driver.executeAsyncScript(async(callback) => {
+    const shieldTelemetryPing = await driver.executeAsyncScript(async(callback) => {
       const { studyUtils } = Components.utils.import("resource://test-addon/StudyUtils.jsm", {});
       Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
-      Components.utils.import("resource://gre/modules/TelemetryController.jsm");
-      Components.utils.import("resource://gre/modules/TelemetryStorage.jsm");
 
       // setup StudyUtils because telemetry will use this data
       studyUtils.setup({
-        studyName: "telemetry-test",
+        studyName: "shield-utils-test",
         endings: {},
         addon: {id: "1", version: "1"},
         telemetry: { send: true, removeTestingFlag: false },
@@ -80,7 +78,86 @@ describe("Shield Study Utils Functional Tests", function() {
 
       callback(await TelemetryArchive.promiseArchivedPingById(shieldPing.id));
     });
+    assert(shieldTelemetryPing.payload.data.attributes.foo === "bar");
+  });
 
-    assert(shieldTelemetry.payload.data.attributes.foo === "bar");
+  describe("test the library's \"startup\" process", function() {
+    it("should send the correct ping on first seen", async() => {
+      const firstSeenPing = await driver.executeAsyncScript(async(callback) => {
+        const { studyUtils } = Components.utils.import("resource://test-addon/StudyUtils.jsm", {});
+        Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
+
+        // setup StudyUtils because telemetry will use this data
+        studyUtils.setup({
+          studyName: "shield-utils-test",
+          endings: {},
+          addon: {id: "1", version: "1"},
+          telemetry: { send: true, removeTestingFlag: false },
+        });
+        studyUtils.setVariation({ name: "puppers", weight: "2" });
+
+        studyUtils.firstSeen();
+
+        let firstPing;
+        const pings = await TelemetryArchive.promiseArchivedPingList();
+        for (const ping of pings) {
+          if (ping.type === "shield-study") {
+            firstPing = ping;
+          }
+        }
+
+        callback(await TelemetryArchive.promiseArchivedPingById(firstPing.id));
+      });
+      assert(firstSeenPing.payload.data.study_state === "enter");
+    });
+
+    it("should set the experient to active in Telemetry", async() => {
+      const activeExperiments = await driver.executeAsyncScript(async(callback) => {
+        const { studyUtils } = Components.utils.import("resource://test-addon/StudyUtils.jsm", {});
+        Components.utils.import("resource://gre/modules/TelemetryEnvironment.jsm");
+
+        // setup StudyUtils because telemetry will use this data
+        studyUtils.setup({
+          studyName: "shield-utils-test",
+          endings: {},
+          addon: {id: "1", version: "1"},
+          telemetry: { send: true, removeTestingFlag: false },
+        });
+        studyUtils.setVariation({ name: "puppers", weight: "2" });
+
+        studyUtils.setActive();
+
+        callback(TelemetryEnvironment.getActiveExperiments());
+      });
+      assert(activeExperiments.hasOwnProperty("shield-utils-test"));
+    });
+
+    it("should send the correct telemetry ping on first install", async() => {
+      const installedPing = await driver.executeAsyncScript(async(callback) => {
+        const { studyUtils } = Components.utils.import("resource://test-addon/StudyUtils.jsm", {});
+        Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
+
+        // setup StudyUtils because telemetry will use this data
+        studyUtils.setup({
+          studyName: "shield-utils-test",
+          endings: {},
+          addon: {id: "1", version: "1"},
+          telemetry: { send: true, removeTestingFlag: false },
+        });
+        studyUtils.setVariation({ name: "puppers", weight: "2" });
+
+        await studyUtils.startup({reason: 5}); // ADDON_INSTALL = 5
+
+        let startupPing;
+        const pings = await TelemetryArchive.promiseArchivedPingList();
+        for (const ping of pings) {
+          if (ping.type === "shield-study") {
+            startupPing = ping;
+          }
+        }
+        callback(await TelemetryArchive.promiseArchivedPingById(startupPing.id));
+      });
+      assert(installedPing.payload.data.study_state === "installed");
+    });
   });
 });
