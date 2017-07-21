@@ -84,17 +84,11 @@ describe("Shield Study Utils Functional Tests", function() {
   describe("test the library's \"startup\" process", function() {
     it("should send the correct ping on first seen", async() => {
       const firstSeenPing = await driver.executeAsyncScript(async(callback) => {
+        const { fakeSetup } = Components.utils.import("resource://test-addon/utils.jsm", {});
         const { studyUtils } = Components.utils.import("resource://test-addon/StudyUtils.jsm", {});
         Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
 
-        // setup StudyUtils because telemetry will use this data
-        studyUtils.setup({
-          studyName: "shield-utils-test",
-          endings: {},
-          addon: {id: "1", version: "1"},
-          telemetry: { send: true, removeTestingFlag: false },
-        });
-        studyUtils.setVariation({ name: "puppers", weight: "2" });
+        fakeSetup();
 
         studyUtils.firstSeen();
 
@@ -113,17 +107,11 @@ describe("Shield Study Utils Functional Tests", function() {
 
     it("should set the experient to active in Telemetry", async() => {
       const activeExperiments = await driver.executeAsyncScript(async(callback) => {
+        const { fakeSetup } = Components.utils.import("resource://test-addon/utils.jsm", {});
         const { studyUtils } = Components.utils.import("resource://test-addon/StudyUtils.jsm", {});
         Components.utils.import("resource://gre/modules/TelemetryEnvironment.jsm");
 
-        // setup StudyUtils because telemetry will use this data
-        studyUtils.setup({
-          studyName: "shield-utils-test",
-          endings: {},
-          addon: {id: "1", version: "1"},
-          telemetry: { send: true, removeTestingFlag: false },
-        });
-        studyUtils.setVariation({ name: "puppers", weight: "2" });
+        fakeSetup();
 
         studyUtils.setActive();
 
@@ -134,17 +122,11 @@ describe("Shield Study Utils Functional Tests", function() {
 
     it("should send the correct telemetry ping on first install", async() => {
       const installedPing = await driver.executeAsyncScript(async(callback) => {
+        const { fakeSetup } = Components.utils.import("resource://test-addon/utils.jsm", {});
         const { studyUtils } = Components.utils.import("resource://test-addon/StudyUtils.jsm", {});
         Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
 
-        // setup StudyUtils because telemetry will use this data
-        studyUtils.setup({
-          studyName: "shield-utils-test",
-          endings: {},
-          addon: {id: "1", version: "1"},
-          telemetry: { send: true, removeTestingFlag: false },
-        });
-        studyUtils.setVariation({ name: "puppers", weight: "2" });
+        fakeSetup();
 
         await studyUtils.startup({reason: 5}); // ADDON_INSTALL = 5
 
