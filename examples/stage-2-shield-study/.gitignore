@@ -1,3 +1,4 @@
 chrome.manifest
 install.rdf
 *.xpi
+addon/StudyUtils.jsm

@@ -23,7 +23,7 @@ describe("Shield Study Utils Functional Tests", function() {
 
   after(() => driver.quit());
 
-  it("should return a variation with a name", async() => {
+  it("should return the correct variation", async() => {
     const variation = await driver.executeAsyncScript(async(callback) => {
       const { studyUtils } = Components.utils.import("resource://test-addon/StudyUtils.jsm", {});
       // TODO move this to a Config.jsm file
@@ -40,12 +40,47 @@ describe("Shield Study Utils Functional Tests", function() {
       };
 
       const sample = studyUtils.sample;
-      const clientId = await studyUtils.getTelemetryId();
-      const hashFraction = await sample.hashFraction(studyConfig.studyName + clientId);
+      const hashFraction = await sample.hashFraction("test");
       const chosenVariation = await sample.chooseWeighted(studyConfig.weightedVariations, hashFraction);
       callback(chosenVariation);
     });
-    console.log(variation);
-    assert(variation.name !== null);
+    assert(variation.name === "puppers");
+  });
+
+  it("telemetry should be working", async() => {
+    const shieldTelemetry = await driver.executeAsyncScript(async(callback) => {
+      const { studyUtils } = Components.utils.import("resource://test-addon/StudyUtils.jsm", {});
+      Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
+      Components.utils.import("resource://gre/modules/TelemetryController.jsm");
+      Components.utils.import("resource://gre/modules/TelemetryStorage.jsm");
+
+      // setup StudyUtils because telemetry will use this data
+      studyUtils.setup({
+        studyName: "telemetry-test",
+        endings: {},
+        addon: {id: "1", version: "1"},
+        telemetry: { send: true, removeTestingFlag: false },
+      });
+      studyUtils.setVariation({ name: "puppers", weight: "2" });
+
+      await studyUtils.telemetry({ "foo": "bar" });
+
+      // TODO Fix this hackiness; caused by addClientId option in submitExternalPing
+      // The ping seems to be sending (appears in about:telemetry) but does not appear
+      // in the pings array
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      let shieldPing;
+      const pings = await TelemetryArchive.promiseArchivedPingList();
+      for (const ping of pings) {
+        if (ping.type === "shield-study-addon") {
+          shieldPing = ping;
+        }
+      }
+
+      callback(await TelemetryArchive.promiseArchivedPingById(shieldPing.id));
+    });
+
+    assert(shieldTelemetry.payload.data.attributes.foo === "bar");
   });
 });
