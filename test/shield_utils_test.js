@@ -49,17 +49,11 @@ describe("Shield Study Utils Functional Tests", function() {
 
   it("telemetry should be working", async() => {
     const shieldTelemetryPing = await driver.executeAsyncScript(async(callback) => {
+      const { fakeSetup, getMostRecentPingsByType } = Components.utils.import("resource://test-addon/utils.jsm", {});
       const { studyUtils } = Components.utils.import("resource://test-addon/StudyUtils.jsm", {});
       Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
 
-      // setup StudyUtils because telemetry will use this data
-      studyUtils.setup({
-        studyName: "shield-utils-test",
-        endings: {},
-        addon: {id: "1", version: "1"},
-        telemetry: { send: true, removeTestingFlag: false },
-      });
-      studyUtils.setVariation({ name: "puppers", weight: "2" });
+      fakeSetup();
 
       await studyUtils.telemetry({ "foo": "bar" });
 
@@ -68,15 +62,7 @@ describe("Shield Study Utils Functional Tests", function() {
       // in the pings array
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      let shieldPing;
-      const pings = await TelemetryArchive.promiseArchivedPingList();
-      for (const ping of pings) {
-        if (ping.type === "shield-study-addon") {
-          shieldPing = ping;
-        }
-      }
-
-      callback(await TelemetryArchive.promiseArchivedPingById(shieldPing.id));
+      callback(await getMostRecentPingsByType("shield-study-addon"));
     });
     assert(shieldTelemetryPing.payload.data.attributes.foo === "bar");
   });
@@ -84,7 +70,7 @@ describe("Shield Study Utils Functional Tests", function() {
   describe("test the library's \"startup\" process", function() {
     it("should send the correct ping on first seen", async() => {
       const firstSeenPing = await driver.executeAsyncScript(async(callback) => {
-        const { fakeSetup } = Components.utils.import("resource://test-addon/utils.jsm", {});
+        const { fakeSetup, getMostRecentPingsByType } = Components.utils.import("resource://test-addon/utils.jsm", {});
         const { studyUtils } = Components.utils.import("resource://test-addon/StudyUtils.jsm", {});
         Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
 
@@ -92,15 +78,7 @@ describe("Shield Study Utils Functional Tests", function() {
 
         studyUtils.firstSeen();
 
-        let firstPing;
-        const pings = await TelemetryArchive.promiseArchivedPingList();
-        for (const ping of pings) {
-          if (ping.type === "shield-study") {
-            firstPing = ping;
-          }
-        }
-
-        callback(await TelemetryArchive.promiseArchivedPingById(firstPing.id));
+        callback(await getMostRecentPingsByType("shield-study"));
       });
       assert(firstSeenPing.payload.data.study_state === "enter");
     });
@@ -122,7 +100,7 @@ describe("Shield Study Utils Functional Tests", function() {
 
     it("should send the correct telemetry ping on first install", async() => {
       const installedPing = await driver.executeAsyncScript(async(callback) => {
-        const { fakeSetup } = Components.utils.import("resource://test-addon/utils.jsm", {});
+        const { fakeSetup, getMostRecentPingsByType } = Components.utils.import("resource://test-addon/utils.jsm", {});
         const { studyUtils } = Components.utils.import("resource://test-addon/StudyUtils.jsm", {});
         Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
 
@@ -130,14 +108,7 @@ describe("Shield Study Utils Functional Tests", function() {
 
         await studyUtils.startup({reason: 5}); // ADDON_INSTALL = 5
 
-        let startupPing;
-        const pings = await TelemetryArchive.promiseArchivedPingList();
-        for (const ping of pings) {
-          if (ping.type === "shield-study") {
-            startupPing = ping;
-          }
-        }
-        callback(await TelemetryArchive.promiseArchivedPingById(startupPing.id));
+        callback(await getMostRecentPingsByType("shield-study"));
       });
       assert(installedPing.payload.data.study_state === "installed");
     });
