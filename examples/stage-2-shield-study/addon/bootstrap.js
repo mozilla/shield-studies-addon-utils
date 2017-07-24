@@ -9,7 +9,7 @@ const CONFIGPATH = `${__SCRIPT_URI_SPEC__}/../Config.jsm`;
 const { config } = Cu.import(CONFIGPATH, {});
 const studyConfig = config.study;
 Cu.import("resource://gre/modules/Console.jsm");
-const log = createLog(studyConfig.studyName, config.log.bootstrap.level);  // defined below.
+const log = createLog(studyConfig.studyName, config.log.bootstrap.level); // defined below.
 
 const STUDYUTILSPATH = `${__SCRIPT_URI_SPEC__}/../${studyConfig.studyUtilsPath}`;
 const { studyUtils } = Cu.import(STUDYUTILSPATH, {});
@@ -24,13 +24,14 @@ async function startup(addonData, reason) {
     telemetry: studyConfig.telemetry,
   });
   studyUtils.setLoggingLevel(config.log.studyUtils.level);
+  // TODO marcrowo: This should be in the lib, not a function the author needs to write.
   const variation = await chooseVariation();
   studyUtils.setVariation(variation);
 
   Jsm.import(config.modules);
 
   if ((REASONS[reason]) === "ADDON_INSTALL") {
-    studyUtils.firstSeen();  // sends telemetry "enter"
+    studyUtils.firstSeen(); // sends telemetry "enter"
     const eligible = await config.isEligible(); // addon-specific
     if (!eligible) {
       // uses config.endings.ineligible.url if any,
@@ -44,6 +45,9 @@ async function startup(addonData, reason) {
 
   console.log(`info ${JSON.stringify(studyUtils.info())}`);
   // if you have code to handle expiration / long-timers, it could go here.
+
+  // TODO marcrowo: Move this to library? Specific case for WebExtensions. But for this case, should not
+  // be manual setup.
   const webExtension = addonData.webExtension;
   webExtension.startup().then(api => {
     const {browser} = api;
@@ -68,7 +72,7 @@ function shutdown(addonData, reason) {
       return;
     }
 
-  // normal shutdown, or 2nd attempts
+    // normal shutdown, or 2nd attempts
     console.log("Jsms unloading");
     Jsm.unload(config.modules);
     Jsm.unload([CONFIGPATH, STUDYUTILSPATH]);
@@ -108,6 +112,7 @@ function createLog(name, levelWord) {
   return L;
 }
 
+// TODO marcrowo: Move to lib.
 async function chooseVariation() {
   let toSet, source;
   const sample = studyUtils.sample;
@@ -126,6 +131,7 @@ async function chooseVariation() {
   return toSet;
 }
 
+// TODO marcrowo: Move to lib?
 // jsm loader / unloader
 class Jsm {
   static import(modulesArray) {
