@@ -2,9 +2,8 @@
 
 const assert = require("assert");
 const utils = require("./utils");
-// const firefox = require("selenium-webdriver/firefox");
-
-// const Context = firefox.Context;
+const firefox = require("selenium-webdriver/firefox");
+const Context = firefox.Context;
 
 // TODO create new profile per test?
 // then we can test with a clean profile every time
@@ -62,7 +61,8 @@ describe("Shield Study Utils Functional Tests", function() {
       // in the pings array
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      callback(await getMostRecentPingsByType("shield-study-addon"));
+      const shieldPings = await getMostRecentPingsByType("shield-study-addon");
+      callback(shieldPings[0]);
     });
     assert(shieldTelemetryPing.payload.data.attributes.foo === "bar");
   });
@@ -78,12 +78,13 @@ describe("Shield Study Utils Functional Tests", function() {
 
         studyUtils.firstSeen();
 
-        callback(await getMostRecentPingsByType("shield-study"));
+        const studyPings = await getMostRecentPingsByType("shield-study");
+        callback(studyPings[0]);
       });
       assert(firstSeenPing.payload.data.study_state === "enter");
     });
 
-    it("should set the experient to active in Telemetry", async() => {
+    it("should set the experiment to active in Telemetry", async() => {
       const activeExperiments = await driver.executeAsyncScript(async(callback) => {
         const { fakeSetup } = Components.utils.import("resource://test-addon/utils.jsm", {});
         const { studyUtils } = Components.utils.import("resource://test-addon/StudyUtils.jsm", {});
@@ -108,9 +109,75 @@ describe("Shield Study Utils Functional Tests", function() {
 
         await studyUtils.startup({reason: 5}); // ADDON_INSTALL = 5
 
-        callback(await getMostRecentPingsByType("shield-study"));
+        const studyPings = await getMostRecentPingsByType("shield-study");
+        callback(studyPings[0]);
       });
       assert(installedPing.payload.data.study_state === "installed");
+    });
+  });
+
+  describe("test the library's endStudy() function", function() {
+    before(async() => {
+      await driver.executeAsyncScript(async(callback) => {
+        const { fakeSetup } = Components.utils.import("resource://test-addon/utils.jsm", {});
+        const { studyUtils } = Components.utils.import("resource://test-addon/StudyUtils.jsm", {});
+
+        fakeSetup();
+
+        // TODO add tests for other reasons (?)
+        await studyUtils.endStudy({reason: "expired", fullname: "TEST_FULLNAME"});
+        callback();
+      });
+    });
+
+    it("should set the experiment as inactive", async() => {
+      const activeExperiments = await driver.executeAsyncScript(async(callback) => {
+        Components.utils.import("resource://gre/modules/TelemetryEnvironment.jsm");
+        callback(TelemetryEnvironment.getActiveExperiments());
+      });
+      assert(!activeExperiments.hasOwnProperty("shield-utils-test"));
+    });
+
+    describe("test the opening of a URL at the end of the study", function() {
+      let handles;
+
+      it("should open a new tab", async() => {
+        handles = await driver.getAllWindowHandles();
+        assert(handles.length === 2); // opened a new tab
+      });
+
+      it("should open a new tab to the correct URL", async() => {
+        const currentHandle = await driver.getWindowHandle();
+        driver.setContext(Context.CONTENT);
+        // Find the new window handle.
+        let newWindowHandle = null;
+        for (const handle of handles) {
+          if (handle !== currentHandle) {
+            newWindowHandle = handle;
+          }
+        }
+        await driver.switchTo().window(newWindowHandle);
+        const currentURL = await driver.getCurrentUrl();
+        assert(currentURL.startsWith("http://www.example.com/?reason=expired"));
+      });
+    });
+
+    it("should send the correct reason telemetry", async() => {
+      const pings = await driver.executeAsyncScript(async(callback) => {
+        const { getMostRecentPingsByType } = Components.utils.import("resource://test-addon/utils.jsm", {});
+        const studyPings = await getMostRecentPingsByType("shield-study");
+        callback(studyPings[1]); // ping before the most recent ping
+      });
+      assert(pings.payload.data.study_state === "expired");
+    });
+
+    it("should send the uninstall telemetry", async() => {
+      const pings = await driver.executeAsyncScript(async(callback) => {
+        const { getMostRecentPingsByType } = Components.utils.import("resource://test-addon/utils.jsm", {});
+        const studyPings = await getMostRecentPingsByType("shield-study");
+        callback(studyPings[0]);
+      });
+      assert(pings.payload.data.study_state === "exit");
     });
   });
 });

@@ -9,27 +9,38 @@ var EXPORTED_SYMBOLS = ["fakeSetup", "getMostRecentPingsByType"];
 function fakeSetup() {
   studyUtils.setup({
     studyName: "shield-utils-test",
-    endings: {},
+    endings: {
+      "expired": {
+        "baseUrl": "http://www.example.com/?reason=expired",
+      }},
     addon: {id: "1", version: "1"},
     telemetry: { send: true, removeTestingFlag: false },
   });
   studyUtils.setVariation({ name: "puppers", weight: "2" });
 }
 
+// Returns array of pings of type `type` in sorted order by timestamp
+// first element is most recent ping
 async function getMostRecentPingsByType(type) {
   const pings = await TelemetryArchive.promiseArchivedPingList();
 
-  // get most recent ping per type
-  const mostRecentPings = {};
-  for (const ping of pings.filter((p) => p.type === type)) {
-    if (ping.type in mostRecentPings) {
-      if (mostRecentPings[ping.type].timestampCreated < ping.timestampCreated) {
-        mostRecentPings[ping.type] = ping;
-      }
-    } else {
-      mostRecentPings[ping.type] = ping;
+  const filteredPings = pings.filter((p) => p.type === type);
+  filteredPings.sort((a, b) => {
+    if (a.timestampCreated > b.timestampCreated) {
+      return -1;
     }
-  }
+    if (a.timestampCreated < b.timestampCreated) {
+      return 1;
+    }
+    if (a.timestampCreated === b.timestampCreated) {
+      return 0;
+    }
+    return 0;
+  });
 
-  return TelemetryArchive.promiseArchivedPingById(mostRecentPings[type].id);
+  const pingData = [];
+  for (const ping of filteredPings) {
+    pingData.push(await TelemetryArchive.promiseArchivedPingById(ping.id));
+  }
+  return pingData;
 }
