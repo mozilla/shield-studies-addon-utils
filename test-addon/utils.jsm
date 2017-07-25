@@ -24,7 +24,7 @@ function fakeSetup() {
 async function getMostRecentPingsByType(type) {
   const pings = await TelemetryArchive.promiseArchivedPingList();
 
-  const filteredPings = pings.filter((p) => p.type === type);
+  const filteredPings = pings.filter(p => p.type === type);
   filteredPings.sort((a, b) => {
     if (a.timestampCreated > b.timestampCreated) {
       return -1;
@@ -40,7 +40,7 @@ async function getMostRecentPingsByType(type) {
 
   const pingData = [];
   for (const ping of filteredPings) {
-    pingData.push(await TelemetryArchive.promiseArchivedPingById(ping.id));
+    pingData.push(TelemetryArchive.promiseArchivedPingById(ping.id));
   }
-  return pingData;
+  return Promise.all(pingData);
 }
