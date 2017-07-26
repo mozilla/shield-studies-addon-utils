@@ -335,7 +335,7 @@ class StudyUtils {
     return queryArgs;
   }
 
-  _telemetry(data, bucket = "shield-study-addon") {
+  async _telemetry(data, bucket = "shield-study-addon") {
     log.debug(`telemetry in:  ${bucket} ${JSON.stringify(data)}`);
     this.throwIfNotSetup("_telemetry");
     const info = this.info();
@@ -376,6 +376,8 @@ class StudyUtils {
     }
     // emit(TelemetryWatcher, 'telemetry', [bucket, payload]);
     log.debug(`telemetry: ${JSON.stringify(payload)}`);
+    // FIXME marcrowo: addClientId makes the ping not appear in test?
+    // seems like a problem with Telemetry, not the shield-study-utils library
     const telOptions = {addClientId: true, addEnvironment: true};
     if (!this.telemetryConfig.send) {
       log.debug("NOT sending.  `telemetryConfig.send` is false");
