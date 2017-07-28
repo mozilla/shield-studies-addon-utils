@@ -25,22 +25,8 @@ async function getMostRecentPingsByType(type) {
   const pings = await TelemetryArchive.promiseArchivedPingList();
 
   const filteredPings = pings.filter(p => p.type === type);
-  filteredPings.sort((a, b) => {
-    if (a.timestampCreated > b.timestampCreated) {
-      return -1;
-    }
-    if (a.timestampCreated < b.timestampCreated) {
-      return 1;
-    }
-    if (a.timestampCreated === b.timestampCreated) {
-      return 0;
-    }
-    return 0;
-  });
+  filteredPings.sort((a, b) => b.timestampCreated - a.timestampCreated);
 
-  const pingData = [];
-  for (const ping of filteredPings) {
-    pingData.push(TelemetryArchive.promiseArchivedPingById(ping.id));
-  }
+  const pingData = filteredPings.map(ping => TelemetryArchive.promiseArchivedPingById(ping.id));
   return Promise.all(pingData);
 }
