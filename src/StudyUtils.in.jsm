@@ -387,13 +387,13 @@ class StudyUtils {
   }
 
   // telemetry from addon, mostly from webExtension message.
-  telemetry(data) {
+  async telemetry(data) {
     log.debug(`telemetry ${JSON.stringify(data)}`);
     const toSubmit = {
       attributes: data,
     };
     // lets check early, and respond with something useful?
-    this._telemetry(toSubmit, "shield-study-addon");
+    return this._telemetry(toSubmit, "shield-study-addon");
   }
   telemetryError(errorReport) {
     return this._telemetry(errorReport, "shield-study-error");
