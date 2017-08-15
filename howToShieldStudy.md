@@ -1,5 +1,8 @@
 #  How To Shield Study
 
+**WARNING THIS INFORMATION IS OUT OF DATE WITH V4**
+
+
 ## Key Ideas - Knowing Answers Using Studies
 
 -  :crystal_ball: Shield Studies are addons with instrumentation  to help you <a id='knowing-back'></a>[see the future](#knowing) and make decisions about features

@@ -9,11 +9,13 @@
 
 ## Assumptions
 
-
-
+- You are building a [LEGACY ADDONS](https://developer.mozilla.org/en-US/Add-ons/Legacy_add_ons).  To deploy these after 57, you will need the magic special signing.
+-  Jetpack / addon-sdk is NOT SUPPORTED.
+- WebExtensions are not strong enough
 
 ## history of major versions
 
+- v4.x: (proposed)  additional functions for common cases
 - v4: First `.jsm` release.  Uses packet format for PACKET version 3.
 - v3: Attempt to formalize on `shield-study` PACKET version 3.  Jetpack based.  Prototype used for `raymak/page-reload`.  All work abandoned, and no formal npm release in this series.  Work done at `v3-shield-packet-format` branch.  LAST JETPACK (addon-sdk) RELEASE.
 s v2: Code refactor to es6 `class` with event models.  Added cli tooling.  Packet format is still arbitrary and per-study.  Jetpack based.  Last used in studies in Q2 2017.
@@ -34,9 +36,9 @@ Copy the file to somewhere useful in your addon.
 
 [fully worked tutorial - How To Shield Study](./howToShieldStudy.md)
 
-## Examples
+## Example embedded web extension study
 
-See `examples` directory.
+See [examples](`example`) directory.
 
 ## Summary
 
@@ -45,19 +47,12 @@ See `examples` directory.
 Your Study is:
 
 - side-by-side variations (1 or more)
-- 'one-phase'.  No warm up periods.  If you want that stuff, handle it yourself, or file bugs
 
 ### Benefits
 
 Using this, you get this analysis FOR FREE (and it's fast!)
 
 - Branch x channel x VARIATION x experiment-id x PHASE (install, reject, alive etc) using UNIFIED TELEMETRY
-
-- In particular, this library has 100% test coverage for lots of **startup** and **shutdown** cases, so that your addon does the Right Thing across restarts.
-
-  - maintains same variation across restarts
-  - testable, tested code
-  - doesn't care much about your variations, so long as they are 'multi-callable' safely.
 
 
 ## Development
@@ -68,16 +63,11 @@ Using this, you get this analysis FOR FREE (and it's fast!)
 
 ## Gotchas, Opinions, Side Effects, and Misfeatures
 
-1.  This assumes `jetpack` (`jpm`) style addons, with
+1.  No handling of 'timers'.  No saved state at all (including the variation name), unless you handle it yourself.
 
-    - `require`
-    - `jpm` startup and shutdown semantics
+2.  No 'running' pings in v4 (yet).
 
-2.  Some prefs will be set and running during an experiment in the "addon-specific" pref tree.
-
-3.  Disable also uninstalls (and cleans up)
-
-4.  Undoubtedly, there are others.  It scratches my itch.  I have built a lot of things in the past.
+3.  User disable also uninstalls (and cleans up)
 
 
 [example]: examples/README.md
