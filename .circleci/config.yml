@@ -13,7 +13,7 @@ jobs:
           name: xvfb and openbox
           command: Xvfb $DISPLAY -ac & sleep 3 & openbox
           background: true
-    
+
       - checkout
 
       - run: npm install
@@ -24,8 +24,8 @@ jobs:
 
       - run:
           name: Build .XPI
-          command: npm run build
-  
+          command: npm run build-test-addon-xpi
+
       - run:
           name: Functional tests
           command: npm run test

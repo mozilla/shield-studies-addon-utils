@@ -22,4 +22,5 @@ done < "${BASE_DIR}/build-includes.txt"
 pushd $DEST
 zip -r test-addon.xpi *
 mv test-addon.xpi $BASE_DIR
+echo "created at: ${BASE_DIR}/test-addon.xpi"
 popd
