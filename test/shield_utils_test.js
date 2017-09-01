@@ -139,11 +139,12 @@ describe("Shield Study Utils Functional Tests", function() {
     });
 
     describe("test the opening of a URL at the end of the study", function() {
-      let handles;
-
       it("should open a new tab", async() => {
-        handles = await driver.getAllWindowHandles();
-        assert(handles.length === 2); // opened a new tab
+        const newTabOpened = await driver.wait(async() => {
+          const handles = await driver.getAllWindowHandles();
+          return handles.length === 2; // opened a new tab
+        }, 3000);
+        assert(newTabOpened);
       });
 
       it("should open a new tab to the correct URL", async() => {
@@ -151,14 +152,18 @@ describe("Shield Study Utils Functional Tests", function() {
         driver.setContext(Context.CONTENT);
         // Find the new window handle.
         let newWindowHandle = null;
+        const handles = await driver.getAllWindowHandles();
         for (const handle of handles) {
           if (handle !== currentHandle) {
             newWindowHandle = handle;
           }
         }
-        await driver.switchTo().window(newWindowHandle);
-        const currentURL = await driver.getCurrentUrl();
-        assert(currentURL.startsWith("http://www.example.com/?reason=expired"));
+        const correctURLOpened = await driver.wait(async() => {
+          await driver.switchTo().window(newWindowHandle);
+          const currentURL = await driver.getCurrentUrl();
+          return currentURL.startsWith("http://www.example.com/?reason=expired");
+        });
+        assert(correctURLOpened);
       });
     });
 
