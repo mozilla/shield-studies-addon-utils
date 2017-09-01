@@ -207,6 +207,10 @@ class StudyUtils {
     this.throwIfNotSetup("openTab");
     log.debug(url, params);
     log.debug("opening this formatted tab", url, params);
+    if (!Services.wm.getMostRecentWindow("navigator:browser").gBrowser) {
+      // Wait for the window to be opened
+      await new Promise(resolve => setTimeout(resolve, 30000));
+    }
     Services.wm.getMostRecentWindow("navigator:browser").gBrowser.addTab(url, params);
   }
   async getTelemetryId() {
