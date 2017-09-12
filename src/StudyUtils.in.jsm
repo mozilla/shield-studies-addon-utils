@@ -15,7 +15,7 @@ Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
 
-const log = createLog("shield-study-utils", "Debug");
+let log;
 
 // telemetry utils
 const CID = Cu.import("resource://gre/modules/ClientID.jsm", null);
@@ -189,6 +189,8 @@ class StudyUtils {
     if (!this._isSetup) throw new Error(name + ": this method can't be used until `setup` is called");
   }
   setup(config) {
+    log = createLog("shield-study-utils", config.log.studyUtils.level);
+
     log.debug("setting up!");
     jsonschema.validateOrThrow(config, schemas.studySetup);
 
@@ -205,6 +207,10 @@ class StudyUtils {
     this.throwIfNotSetup("openTab");
     log.debug(url, params);
     log.debug("opening this formatted tab", url, params);
+    if (!Services.wm.getMostRecentWindow("navigator:browser").gBrowser) {
+      // Wait for the window to be opened
+      await new Promise(resolve => setTimeout(resolve, 30000));
+    }
     Services.wm.getMostRecentWindow("navigator:browser").gBrowser.addTab(url, params);
   }
   async getTelemetryId() {
@@ -227,7 +233,7 @@ class StudyUtils {
     log.debug("getting info");
     this.throwIfNotSetup("info");
     return {
-      studyName: this.config.studyName,
+      studyName: this.config.study.studyName,
       addon: this.config.addon,
       variation: this.getVariation(),
       shieldId: this.getShieldId(),
@@ -236,7 +242,7 @@ class StudyUtils {
   // TODO glind, maybe this is getter / setter?
   get telemetryConfig() {
     this.throwIfNotSetup("telemetryConfig");
-    return this.config.telemetry;
+    return this.config.study.telemetry;
   }
   firstSeen() {
     log.debug(`firstSeen`);
@@ -285,7 +291,7 @@ class StudyUtils {
     this.unsetActive();
     // TODO glind, think about reason vs fullname
     // TODO glind, think about race conditions for endings, ensure only one exit
-    const ending = this.config.endings[reason];
+    const ending = this.config.study.endings[reason];
     if (ending) {
       const {baseUrl, exactUrl} = ending;
       if (exactUrl) {
@@ -407,8 +413,8 @@ function createLog(name, levelWord) {
   Cu.import("resource://gre/modules/Log.jsm");
   var L = Log.repository.getLogger(name);
   L.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
-  L.debug("log made", name, levelWord, Log.Level[levelWord]);
   L.level = Log.Level[levelWord] || Log.Level.Debug; // should be a config / pref
+  L.debug("log made", name, levelWord, Log.Level[levelWord]);
   return L;
 }
 /** addon state change reasons */

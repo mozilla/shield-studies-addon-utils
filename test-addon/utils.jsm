@@ -8,13 +8,22 @@ var EXPORTED_SYMBOLS = ["fakeSetup", "getMostRecentPingsByType"];
 
 function fakeSetup() {
   studyUtils.setup({
-    studyName: "shield-utils-test",
-    endings: {
-      "expired": {
-        "baseUrl": "http://www.example.com/?reason=expired",
-      }},
+    study: {
+      studyName: "shield-utils-test",
+      endings: {
+        "expired": {
+          "baseUrl": "http://www.example.com/?reason=expired",
+        },
+      },
+      telemetry: { send: true, removeTestingFlag: false },
+    },
+    log: {
+      // Fatal: 70, Error: 60, Warn: 50, Info: 40, Config: 30, Debug: 20, Trace: 10, All: -1,
+      studyUtils: {
+        level: "Warn",
+      },
+    },
     addon: {id: "1", version: "1"},
-    telemetry: { send: true, removeTestingFlag: false },
   });
   studyUtils.setVariation({ name: "puppers", weight: "2" });
 }

@@ -36,19 +36,57 @@
     }
   },
   "properties": {
-    "studyName": {
-      "$ref" : "#/definitions/idString",
-      "description": "Name of a particular study.  Usually the addon_id."
+    "study": {
+      "type": "object",
+      "properties": {
+        "studyName": {
+          "$ref": "#/definitions/idString",
+          "description": "Name of a particular study.  Usually the addon_id."
+        },
+        "endings": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ending"
+          }
+        },
+        "telemetry": {
+          "type": "object",
+          "properties": {
+            "removeTestingFlag": {
+              "type": "boolean"
+            },
+            "send": {
+              "type": "boolean"
+            },
+            "onInvalid": {
+              "type": "string",
+              "enum": [
+                "throw",
+                "log"
+              ]
+            }
+          },
+          "required": [
+            "removeTestingFlag",
+            "send"
+          ]
+        }
+      },
+      "required": [
+        "studyName",
+        "endings",
+        "telemetry"
+      ]
     },
     "addon": {
       "type": "object",
       "properties": {
         "id": {
-          "$ref" : "#/definitions/idString",
+          "$ref": "#/definitions/idString",
           "description": "id of the addon."
         },
         "version": {
-          "$ref" : "#/definitions/idString",
+          "$ref": "#/definitions/idString",
           "description": "Semantic version of the addon."
         }
       },
@@ -56,40 +94,10 @@
         "id",
         "version"
       ]
-    },
-    "endings": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/ending"
-      }
-    },
-    "telemetry": {
-      "type": "object",
-      "properties": {
-        "removeTestingFlag": {
-          "type": "boolean"
-        },
-        "send": {
-          "type": "boolean"
-        },
-        "onInvalid": {
-          "type": "string",
-          "enum": [
-            "throw",
-            "log"
-          ]
-        }
-      },
-      "required": [
-        "removeTestingFlag",
-        "send"
-      ]
     }
   },
   "required": [
-    "studyName",
-    "endings",
-    "addon",
-    "telemetry"
+    "study",
+    "addon"
   ]
 }
