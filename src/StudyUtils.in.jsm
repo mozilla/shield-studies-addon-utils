@@ -1,9 +1,5 @@
 "use strict";
 
-/*
-TODO glind survey / urls & query args
-TODO glind publish as v4
-*/
 const EXPORTED_SYMBOLS = ["studyUtils"];
 
 const UTILS_VERSION = require("../package.json").version;
@@ -96,6 +92,7 @@ function merge(source) {
 function mergeQueryArgs(url, ...args) {
   /* currently left to right*/
   // TODO, glind, decide order of merge here
+  // TODO, use Object.assign, or ES7 spread
   const U = new URL(url);
   let q = U.search || "?";
   q = new URLSearchParams(q);
@@ -184,6 +181,8 @@ class StudyUtils {
 
     // expose validation methods
     this.jsonschema = jsonschema;
+
+    this.REASONS = REASONS;
   }
   throwIfNotSetup(name = "unknown") {
     if (!this._isSetup) throw new Error(name + ": this method can't be used until `setup` is called");
@@ -225,6 +224,19 @@ class StudyUtils {
     this.throwIfNotSetup("getvariation");
     return this._variation;
   }
+
+  async deterministicVariation(weightedVariations, rng = null) {
+    // hash the studyName and telemetryId to get the same branch every time.
+    this.throwIfNotSetup("deterministicVariation needs studyName");
+    // this is the standard arm choosing method
+    let fraction = rng;
+    if (fraction === null) {
+      const clientId = await this.getTelemetryId();
+      fraction = await this.sample.hashFraction(this.config.study.studyName + clientId, 12);
+    }
+    return this.sample.chooseWeighted(weightedVariations, fraction);
+  }
+
   getShieldId() {
     const key = "extensions.shield-recipe-client.user_id";
     return Services.prefs.getCharPref(key, "");
@@ -246,29 +258,26 @@ class StudyUtils {
   }
   firstSeen() {
     log.debug(`firstSeen`);
-    this.throwIfNotSetup("firstSeen");
+    this.throwIfNotSetup("firstSeen uses telemetry.");
     this._telemetry({study_state: "enter"}, "shield-study");
   }
   setActive() {
-    this.throwIfNotSetup("setActive");
+    this.throwIfNotSetup("setActive uses telemetry.");
     const info = this.info();
     log.debug("marking TelemetryEnvironment", info.studyName, info.variation.name);
     TelemetryEnvironment.setExperimentActive(info.studyName, info.variation.name);
   }
   unsetActive() {
-    this.throwIfNotSetup("unsetActive");
+    this.throwIfNotSetup("unsetActive uses telemetry.");
     const info = this.info();
     log.debug("unmarking TelemetryEnvironment", info.studyName, info.variation.name);
     TelemetryEnvironment.setExperimentInactive(info.studyName);
   }
-  surveyUrl(urlTemplate) {
-    // TODO glind, what is this?
-    this.throwIfNotSetup("surveyUrl");
-    log.debug(`survey: ${urlTemplate} filled with args`);
-  }
   uninstall(id) {
-    this.throwIfNotSetup("uninstall");
     if (!id) id = this.info().addon.id;
+    if (!id) {
+      this.throwIfNotSetup("uninstall needs addon.id as arg or from setup.");
+    }
     log.debug(`about to uninstall ${id}`);
     AddonManager.getAddonByID(id, addon => addon.uninstall());
   }
@@ -407,6 +416,7 @@ class StudyUtils {
   setLoggingLevel(descriptor) {
     log.level = Log.Level[descriptor];
   }
+
 }
 
 function createLog(name, levelWord) {
