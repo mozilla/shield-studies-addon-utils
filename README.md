@@ -38,7 +38,7 @@ Copy the file to somewhere useful in your addon.
 
 ## Example embedded web extension study
 
-See [examples](`example`) directory.
+See [examples](https://github.com/mozilla/shield-studies-addon-utils/tree/master/examples) directory.
 
 ## Summary
 
