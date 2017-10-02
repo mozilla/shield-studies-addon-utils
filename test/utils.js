@@ -26,6 +26,8 @@ const FIREFOX_PREFERENCES = {
   // toolbox.
   "devtools.chrome.enabled": true,
   "devtools.debugger.remote-enabled": true,
+  "devtools.debugger.prompt-connection": false,
+  "general.warnOnAboutConfig": false
 };
 
 // useful if we need to test on a specific version of Firefox
