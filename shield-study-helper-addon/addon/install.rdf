@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>@qa-shield-study-helper</em:id>
+    <em:type>2</em:type>
+    <em:bootstrap>true</em:bootstrap>
+    <em:multiprocessCompatible>true</em:multiprocessCompatible>
+    <em:hasEmbeddedWebExtension>true</em:hasEmbeddedWebExtension>
+    <em:unpack>false</em:unpack>
+    <em:version>1.0.0</em:version>
+    <em:name>QA Shield Study Ping and Config Helper</em:name>
+    <em:description>Display pings and other useful things for shield-study addons
+    </em:description>
+    <em:creator>glind@mozilla.com</em:creator>
+    <em:iconURL>chrome://qa-shield-study-helper-icons/content/icon.png</em:iconURL>
+    <em:targetApplication>
+      <Description>
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+        <em:minVersion>55.0</em:minVersion>
+        <em:maxVersion>*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
+    <em:targetApplication>
+      <Description>
+        <em:id>{aa3c5121-dab2-40e2-81ca-7ea25febc110}</em:id>
+        <em:minVersion>55.0</em:minVersion>
+        <em:maxVersion>*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+  </Description>
+</RDF>

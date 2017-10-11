@@ -1,0 +1,16 @@
+{
+  "name": "QA Shield Study button",
+  "version": "1.0.0",
+  "manifest_version": 2,
+  "browser_action": {
+    "browser_style": true,
+    "default_title": "QA Shield Study",
+    "default_popup": "qa.html",
+    "default_icon": {
+      "64": "icon.png"
+    }
+  },
+  "icons": {
+    "64": "icon.png"
+  }
+}
