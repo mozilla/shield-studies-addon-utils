@@ -23,51 +23,51 @@ So, you build an addon to get some puppies up in yer browser.
 
 1.  Install some needful tools.
 
-	```shell
+``` shell
   # useful global cli tools
   npm install -g shield-study-cli jpm
-  ```
+```
 
 2.  Start a project.
 
 	**Low level (raw)**
 
-   ```shell
+``` shell
    # a directory
 	mkdir theme-shield-study && cd $_
 	jpm init
 	npm install --save-dev jpm
 	touch {index,theme}.js
-	```
+```
 
-	:gift: **Shield Bonus**: `shield init theme-shield-study && cd $_` when you need to do for real.
+:gift: **Shield Bonus**: `shield init theme-shield-study && cd $_` when you need to do for real.
 
 3.  Make the feature.
 
 	**theme.js**
 
-	```js
+``` js
 	/** theme.js **/
 	exports.puppies = function applyPuppies () {
 	  // implement puppy theme work
 	  console.log("puppies");
 	}
-	```
+```
 
 	**index.js**
 
-	```js
+``` js
 	/** index.js **/
 	require("./theme").puppies();
-	```
+```
 
 3.  Run the addon.
 
-	```shell
+``` shell
 	shield run . -- -b Aurora
 
 	# calls out to `jpm` after setting up all the things
-	```
+```
 
 :gift: **Shield Bonus**: :zzz: If you are already feeling impatient, [full code is below](#final-code) .
 
@@ -123,7 +123,7 @@ Let's expand the choice of themes.  Organize all the choices into a `variations`
 
 **theme.js**
 
-```js
+``` js
 /** theme.js */
 
 function theme (choice) {
@@ -140,7 +140,7 @@ exports.variations = {
 
 **index.js**
 
-```js
+``` js
 /** index.js */
 
 /* give a theme to the user */
@@ -159,15 +159,15 @@ Better solution: use `shield-studies-addon-utils`, which handles these headaches
 
 1.  Add `shield-studies-addon-utils` to the project.
 
-	```shell
+``` shell
 	npm install --save-dev shield-studies-addon-utils
-	```
+```
 
 2.  Use `shield-studies-addon-utils` in the project code.
 
 	**index.js**
 
-	```js
+```js
 	/** index.js */
 	const self = require("sdk/self");
 
@@ -175,7 +175,7 @@ Better solution: use `shield-studies-addon-utils`, which handles these headaches
 	const studyConfig = require("./theme");
 	const thisStudy = new shield.Study(studyConfig);
 	thisStudy.startup(self.loadReason);
-	```
+```
 
 Now `thisStudy.startup` **decides** which branch the user receives, by setting these prefs (if unset):
 
@@ -194,9 +194,9 @@ Use the `shield` cli command to run a particular variation for testing and demon
 
 1. demo "kittens" variation on Aurora (Developer Edition)
 
-	```
+```
 	$ shield . kittens  -- -b Aurora
-	```
+```
 
 :gift: **Shield Bonus**: Arguments after the `--` are passed along to `jpm`.
 
@@ -213,7 +213,7 @@ While we are here, we give the study a `config.name`.
 
 	**feature.js (`theme.js`)**
 
-	```js
+``` js
 	/** feature.js **/
 
 	function feature (choice) {
@@ -221,13 +221,13 @@ While we are here, we give the study a `config.name`.
 	  console.log("feature is", choice);
 	}
 	exports.feature = feature;
-	```
+```
 
 2.  Add `config.name`, use `feature`.
 
 	**study.js**
 
-	```js
+``` js
 	/** study.js **/
 
 	const self = require("sdk/self");
@@ -247,24 +247,24 @@ While we are here, we give the study a `config.name`.
 	const thisStudy = new shield.Study(studyConfig);
 
 	exports.study = thisStudy;
-	```
+```
 
 3. Use the `study` in `index.js`
 
 	**index.js (final form)**
 
-	```js
+``` js
 	/** index.js **/
    const self = require("sdk/self");
 	require("./study").study.startup(self.loadReason);
-	```
+```
 
 4.  Let's fancy up the study by subclassing `shield.Study`:
 
 
 	**study.js**
 
-	```js
+``` js
 	/** study.js **/
 	const self = require("sdk/self");
 	const shield = require("shield-studies-addon-utils");
@@ -290,7 +290,7 @@ While we are here, we give the study a `config.name`.
 	const thisStudy = new OurStudy(studyConfig);
 
 	exports.study = thisStudy;
-	```
+```
 
 :gift: **Shield Bonus**: `shield.Study` has a lot of overridable methods.  [Full Shield.Study Api]()
 
