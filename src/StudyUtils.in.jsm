@@ -1,5 +1,31 @@
 "use strict";
 
+/**
+* OUTSTANDING QUESTIONS FOR GREGG
+*  - shield-studies-addon schema description references attributes sent as 
+*  Map(string, string). Can you explain what this means?
+*  - Can you describe the purpose of the `studySetup` and `webExtensionMsg` schema?
+* TODO bdanforth: ask these questions then remove this comment block.
+*/
+
+
+/**
+* STUDYUTILS OVERVIEW
+* This module takes care of the following:
+*  - Validates telemetry packets via JSON schema before sending pings
+*  - TODO bdanforth: fill in the rest of the stuff it does
+* Notes:
+*  - There are a number of methods that won't work if the setup method has not executed.
+*     - These are methods where the first line is `this.throwIfNotSetup`
+*     - The setup method ensures that the config data passed in is valid per its
+*       corresponding schema
+*/
+
+
+/*
+TODO glind survey / urls & query args
+TODO glind publish as v4
+*/
 const EXPORTED_SYMBOLS = ["studyUtils"];
 
 const UTILS_VERSION = require("../package.json").version;
@@ -18,6 +44,10 @@ const CID = Cu.import("resource://gre/modules/ClientID.jsm", null);
 const { TelemetryController } = Cu.import("resource://gre/modules/TelemetryController.jsm", null);
 const { TelemetryEnvironment } = Cu.import("resource://gre/modules/TelemetryEnvironment.jsm", null);
 
+/**
+* Gets the telemetry client ID for the user (AKA their Firefox user ID).
+* @return {string} id - the telemetry client ID
+*/
 async function getTelemetryId() {
   const id = TelemetryController.clientID;
   /* istanbul ignore next */
@@ -27,15 +57,42 @@ async function getTelemetryId() {
   return id;
 }
 
+/**
+* Set-up JSON schema validation
+* Schemas are used to validate an input (here, via AJV at runtime)
+* Schemas here are used for:
+*  - Telemetry:
+*  Ensure correct Parquet format for different types of outbound packets:
+*    - "shield-study": shield study state and outcome data common to all shield studies.
+*    - "shield-study-addon": addon-specific probe data, with `attributes` sent as Map(string,string).
+*    - "shield-study-error": data used to notify, group and count some kinds of errors from shield studies
+*  - ShieldUtils API ducktypes
+*    - "weightedVariations": a list of branch name:weight pairs used to randomly assign the user to a branch
+*    - "webExtensionMsg": TODO bdanforth: Add description
+*    - "studySetup": TODO bdanforth: Add description
+*/
 const schemas = require("./schemas.js");
 const Ajv = require("ajv/dist/ajv.min.js");
 const ajv = new Ajv();
 
 var jsonschema = {
+  /**
+  * Validates input data based on a specified schema
+  * @param { Object } data - The data to be validated
+  * @param { Object } schema - The schema to validate against
+  * @returns { boolean } - Will return true if the data is valid
+  */
   validate(data, schema) {
     var valid = ajv.validate(schema, data);
     return {valid, errors:  ajv.errors || []};
   },
+  /**
+  * Validates input data based on a specified schema
+  * @param { Object } data - The data to be validated
+  * @param { Object } schema - The schema to validate against
+  * @throws Will throw an error if the data is not valid
+  * @returns { boolean } - Will return true if the data is valid
+  */
   validateOrThrow(data, schema) {
     const valid = ajv.validate(schema, data);
     if (!valid) { throw new Error(JSON.stringify((ajv.errors))); }
