@@ -353,6 +353,13 @@ class StudyUtils {
   async _telemetry(data, bucket = "shield-study-addon") {
     log.debug(`telemetry in:  ${bucket} ${JSON.stringify(data)}`);
     this.throwIfNotSetup("_telemetry");
+
+    const isShieldEnabled = Services.prefs.getBoolPref("app.shield.optoutstudies.enabled", false);
+    if (!isShieldEnabled) {
+      log.warn("telemetry not submitted due to user being opted out of shield");
+      return false;
+    }
+
     const info = this.info();
     const payload = {
       version:        PACKET_VERSION,
