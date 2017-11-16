@@ -354,7 +354,7 @@ class StudyUtils {
     log.debug(`telemetry in:  ${bucket} ${JSON.stringify(data)}`);
     this.throwIfNotSetup("_telemetry");
 
-    const isShieldEnabled = Services.prefs.getBoolPref("app.shield.optoutstudies.enabled", false);
+    const isShieldEnabled = Services.prefs.getBoolPref("app.shield.optoutstudies.enabled", true);
     if (!isShieldEnabled) {
       log.warn("telemetry not submitted due to user being opted out of shield");
       return false;
