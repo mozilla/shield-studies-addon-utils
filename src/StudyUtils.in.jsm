@@ -1,9 +1,20 @@
 "use strict";
 
+/*
+* TODO bdanforth: Put these final questions at the top of the PR
+* @QUESTION glind: The function `mergeQueryArgs` accepts a rest parameter as its
+* second argument, but what is ultimately passed in as this parameter is an object
+* literal from 'endingQueryArgs'. When I execute `mergeQueryArgs` in a REPL,
+* passing in an object literal as the rest parameter, I get an error:
+*    "TypeError: objectLiteral is not iterable".
+* How does this `mergeQueryArgs` not throw an error for you?
+*/
+
 /**
 * STUDYUTILS OVERVIEW
 * This module takes care of the following:
 *  - Validates telemetry packets via JSON schema before sending pings
+*  - Deterministically chooses a study variation/branch for the user
 *  - TODO bdanforth: fill in the rest of the stuff it does
 * Notes:
 *  - There are a number of methods that won't work if the setup method has not executed.
@@ -36,20 +47,6 @@ const { TelemetryController } = Cu.import("resource://gre/modules/TelemetryContr
 const { TelemetryEnvironment } = Cu.import("resource://gre/modules/TelemetryEnvironment.jsm", null);
 
 /**
-* Gets the telemetry client ID for the user.
-* @async
-* @returns {string} id - the telemetry client ID
-*/
-async function getTelemetryId() {
-  const id = TelemetryController.clientID;
-  /* istanbul ignore next */
-  if (id === undefined) {
-    return await CID.ClientIDImpl._doLoadClientID();
-  }
-  return id;
-}
-
-/**
 * Set-up JSON schema validation
 * Schemas are used to validate an input (here, via AJV at runtime)
 * Schemas here are used for:
@@ -58,12 +55,12 @@ async function getTelemetryId() {
 *    - "shield-study": shield study state and outcome data common to all shield studies.
 *    - "shield-study-addon": addon-specific probe data, with `attributes` (used to capture
 *      feature-specific state) sent as Map(string,string).
-*    - "shield-study-error": data used to notify, group and count some kinds of errors from shield studies
+*    - "shield-study-error": data used to notify, group and count some kinds of errors from shield
+*      studies
 *  - ShieldUtils API ducktypes
-*    - "weightedVariations": the array of branch name:weight pairs used to randomly assign the user to a branch
+*    - "weightedVariations": the array of branch name:weight pairs used to randomly assign the user
+*    to a branch
 *    - "webExtensionMsg": TODO bdanforth: Add description, see Questions for Gregg above
-*      @QUESTION glind: Can you describe the purpose of the `webExtensionMsg` schema;
-*.     doesn't look like it is used?
 *    - "studySetup": the options object passed into the StudyUtils.setup method
 */
 const schemas = require("./schemas.js");
@@ -96,6 +93,11 @@ var jsonschema = {
 };
 
 /**
+ * Note: This is the deep merge from the addon-sdk (sdk/util/object.js).
+ * Probably deeper than we need. Compared to a shallow merge with the
+ * spread operator (const c = {...a, ...b}), this function can be configured
+ * to copy non-enumerable properties, symbols, and property descriptors.
+ * 
  * Merges all the properties of all arguments into first argument. If two or
  * more argument objects have own properties with the same name, the property
  * is overridden, with precedence from right to left, implying, that properties
@@ -114,24 +116,19 @@ var jsonschema = {
  *    b.bar     // 1
  *    b.name    // 'b'
  *
- * from addon-sdk:sdk/util/object.js
  * @param {...Object} source - two or more object arguments
  * @returns {Object} - the resulting merged object
  */
 function merge(source) {
   /*
-  * Gets object's own property Symbols and/or Names, including nonEnumerables by default
+  * Gets object's own property symbols and/or names, including non-enumerables by default
   * @param {Object} object - the object to get own property symbols and names for
   * @param {Object} options - object indicating what kinds of properties to merge
   * @param {boolean} options.name - True if function should return object's own property names
   * @param {boolean} options.symbols - True if function should return object's own property symbols
-  * @param {boolean} options.nonEnumerables - True if non-enumerable object own property names should be included
+  * @param {boolean} options.nonEnumerables - True if function should return object's non-enumerable
+  * own property names
   * @returns {string[]|symbol[]} - An array of own property names and/or symbols for object
-  * TODO bdanforth: confirm data type format for @returns above
-  * @QUESTION glind: What is the JSDoc way of identifying the return value for
-  * getOwnPropertyIdentifiers? It's an array of symbols and/or strings. Is there a
-  * reason for this array having mixed data type elements? Is there a risk? Best I could
-  * come up with: @returns {string[]|symbol[]}
   */
   function getOwnPropertyIdentifiers(object, options = { names: true, symbols: true, nonEnumerables: true }) {
     const symbols = !options.symbols ? [] :
@@ -144,12 +141,16 @@ function merge(source) {
     return [...names, ...symbols];
   }
 
-  // descriptor: an object whose own enumerable properties constitute descriptors for
-  // the properties from arguments[1]+ to be defined or modified in arguments[0]
+  /*
+  * descriptor: an object whose own enumerable properties constitute descriptors for
+  * the properties from arguments[1]+ to be defined or modified in arguments[0]
+  */
   const descriptor = {};
-  // `Boolean` converts the first parameter to a boolean value. Any object is
-  // converted to `true` where `null` and `undefined` becames `false`. Therefore
-  // the `filter` method will keep only objects that are defined and not null.
+  /*
+  * `Boolean` converts the first parameter to a boolean value. Any object is
+  * converted to `true` where `null` and `undefined` becames `false`. Therefore
+  * the `filter` method will keep only objects that are defined and not null.
+  */
   Array.slice(arguments, 1).filter(Boolean).forEach(function onEach(properties) {
     getOwnPropertyIdentifiers(properties).forEach(function(name) {
       descriptor[name] = Object.getOwnPropertyDescriptor(properties, name);
@@ -160,17 +161,10 @@ function merge(source) {
 
 /**
 * Appends a query string to a url.
-* @QUESTION glind: What do you mean here by "static (data)"?
 * @param {string} url - a base url to append; must be static (data) or external
 * @param {Object} ...args - query arguments, one or more object literal used to
 * build a query string
 * @returns {string} - an absolute url appended with a query string
-* @QUESTION glind: The function `mergeQueryArgs` accepts a rest parameter as its
-* second argument, but what is ultimately passed in as this parameter is an object
-* literal from 'endingQueryArgs'. When I execute `mergeQueryArgs` in a REPL,
-* passing in an object literal as the rest parameter, I get an error:
-*    "TypeError: objectLiteral is not iterable".
-* How does this `mergeQueryArgs` not throw an error for you?
 */
 function mergeQueryArgs(url, ...args) {
   /* currently left to right*/
@@ -183,15 +177,13 @@ function mergeQueryArgs(url, ...args) {
   // create an interface to interact with the query string
   q = new URLSearchParams(q);
 
-  // @QUESTION: `mergeQueryArgs` rest parameter is always one object literal? Why
-  // are we merging here?
   const merged = merge({}, ...args);
 
   // Set each search parameter in "merged" to its value in the query string,
   // building up the query string one search parameter at a time.
   Object.keys(merged).forEach((k) => {
     // k: the search parameter (ex: fxVersion)
-    // q.get(k): returns the value of the search parameter, k, in query string, q (ex: 57.0.1a)
+    // q.get(k): returns the value of parameter k, in query string, q (ex: 57.0.1a)
     log.debug(q.get(k), k, merged[k]);
     q.set(k, merged[k]);
   });
@@ -205,6 +197,10 @@ function mergeQueryArgs(url, ...args) {
 // sampling utils
 /**
 * @async
+* Converts a string into its sha256 hexadecimal representation.
+* This is ultimately used to make a hash of the user's telemetry clientID and the study name.
+* @param {string} message - The message to convert.
+* @returns {string} hashHex - a hexadecimal, 256-bit hash
 */
 async function sha256(message) {
   const msgBuffer = new TextEncoder("utf-8").encode(message); // encode as UTF-8
@@ -214,10 +210,30 @@ async function sha256(message) {
   return hashHex;
 }
 
+/**
+* Converts an array of length N into a cumulative sum array of length N,
+* where n_i = sum(array.slice(0,i)) i.e. each element is the sum of all elements up
+* to and including that element
+* This is ultimately used for turning sample weights (AKA weightedVariations)
+* into right hand limits (>= X) to  deterministically select which variation a user receives.
+* @example [.25,.3,.45] => [.25,.55,1.0]; if a user's sample weight were .25, they would
+* fall into the left-most bucket
+* @param {Number[]} arr - An array of sample weights [0, 1)
+* @returns {Number[]} - A cumulative sum array of sample weights [0, 1)
+*/
 function cumsum(arr) {
   return arr.reduce(function(r, c, i) { r.push((r[i - 1] || 0) + c); return r; }, [] );
 }
 
+/**
+* Given sample weights (weightedVariations) and a particular position (fraction),
+* return a variation.  If no fraction given, return a variation at random fraction
+* proportional to the weightVariations object
+* @param {Object[]} weightedVariations - the array of branch name:weight pairs used to randomly
+* assign the user to a branch
+* @param {Number} fraction - a number [0, 1)
+* returns {Object} - the variation object in weightedVariations for the given fraction
+*/
 function chooseWeighted(weightedVariations, fraction = Math.random()) {
   /*
    weightedVaiations, list of:
@@ -241,6 +257,14 @@ function chooseWeighted(weightedVariations, fraction = Math.random()) {
 
 /**
 * @async
+* Converts a string into a fraction [0, 1) based on the first X bits of its sha256 hexadecimal representation
+* Note: Salting (adding the study name to the telemetry clientID) ensures that the same user ends up with a 
+* different bucket/hash for each study.
+* Hashing of the salted string ensures uniform hashing; i.e. that every bucket/variation gets filled.
+* @param {string} saltedString - a salted string used to create a hash for the user
+* @param {Number} bits - The first number of bits to use in the sha256 hex representation
+* @returns {Number} - a fraction between [0, 1)
+
 */
 async function hashFraction(saltedString, bits = 12) {
   const hash = await sha256(saltedString);
@@ -250,14 +274,28 @@ async function hashFraction(saltedString, bits = 12) {
 class StudyUtils {
   constructor(config) {
     // TODO glind Answer: no.  see if you can merge the construtor and setup and export the class, rather than a singleton
+    /*
+    * Handles a message received by the webExtension, sending a response back.
+    * @param {Object} - webExtensionMsg object, see its schema
+    * @param {boolean}, webExtensionMsg.shield - Whether or not the message is a shield message (intended for StudyUtils)
+    * @param {string}, webExtensionMsg.msg - StudyUtils method to be called from the webExtension
+    * @param {*}, webExtensionMsg.data - Data sent from webExtension
+    * @param {Object}, sender - Details about the message sender, see runtime.onMessage MDN docs
+    * @param {responseCallback} sendResponse - The callback to send a response back to the webExtension
+    * @returns {boolean|undefined} - true if the message has been processed (shield message) or ignored (non-shield message)
+    */
     this.respondToWebExtensionMessage = function({shield, msg, data}, sender, sendResponse) {
-      // shield: boolean, if present, request is for shield
+      /* 
+      * @TODO glind: make sure we're using the webExtensionMsg schema somewhere
+      */
       if (!shield) return true;
       const allowedMethods = ["endStudy", "telemetry", "info"];
       if (!allowedMethods.includes(msg)) {
         throw new Error(`respondToWebExtensionMessage: "${msg}" is not in allowed studyUtils methods: ${allowedMethods}`);
       }
       // handle async
+      // Execute the StudyUtils method requested by the webExtension
+      // then send the webExtension a response with their return value
       Promise.resolve(this[msg](data)).then(
         function(ans) {
           log.debug("respondingTo", msg, ans);
@@ -266,10 +304,14 @@ class StudyUtils {
         // function error eventually
       );
       return true;
+      // Ensure this method is bound to the instance of studyUtils, see callsite in bootstrap.js
+      // TODO glind: Claim: making this function a StudyUtils method would also do this.
     }.bind(this);
 
-    // expose the sample utilities
+    // Expose sampling methods onto the exported studyUtils singleton, for use by any
+    // Components.utils-importing module
     this.sample = {
+
       sha256,
       cumsum,
       chooseWeighted,
@@ -283,10 +325,19 @@ class StudyUtils {
 
     this.REASONS = REASONS;
   }
+
+  /*
+  * TODO bdanforth: add doc block
+  * Checks if the StudyUtils.setup method has been called
+  */
   throwIfNotSetup(name = "unknown") {
     if (!this._isSetup) throw new Error(name + ": this method can't be used until `setup` is called");
   }
 
+  /*
+  * TODO bdanforth: add docblock
+  * https://github.com/raymak/cfr-focused-release/blob/dfc643e233735c9d93b3f1bae16ff908907d5dab/addon/bootstrap.js#L34
+  */
   setup(config) {
     log = createLog("shield-study-utils", config.log.studyUtils.level);
 
@@ -297,6 +348,11 @@ class StudyUtils {
     this._isSetup = true;
     return this;
   }
+
+  /*
+  * TODO bdanforth: add docblock'
+  * @QUESTION: When would this be called? It's not called at all in Kamyar's study. At bootstrap shutdown?
+  */
   reset() {
     this.config = {};
     delete this._variation;
@@ -304,10 +360,15 @@ class StudyUtils {
   }
   /**
   * @async
+  * TODO bdanforth: add docblock
+  * params info: http://mdn.beonex.com/en/XUL/Method/addTab.html
   */
   async openTab(url, params = {}) {
     this.throwIfNotSetup("openTab");
     log.debug(url, params);
+    /*
+    * @QUESTION: Why are we waiting 30 seconds to add a tab?
+    */
     log.debug("opening this formatted tab", url, params);
     if (!Services.wm.getMostRecentWindow("navigator:browser").gBrowser) {
       // Wait for the window to be opened
@@ -318,10 +379,22 @@ class StudyUtils {
 
   /**
   * @async
+  * Gets the telemetry client ID for the user.
+  * @returns {string} id - the telemetry client ID
   */
   async getTelemetryId() {
-    return await getTelemetryId();
+    const id = TelemetryController.clientID;
+    /* istanbul ignore next */
+    if (id === undefined) {
+      return await CID.ClientIDImpl._doLoadClientID();
+    }
+    return id;
   }
+
+  /**
+  * TODO bdanforth: add docblock
+  * called in bootstrap.js
+  */
   setVariation(variation) {
     this.throwIfNotSetup("setVariation");
     this._variation = variation;
@@ -334,6 +407,10 @@ class StudyUtils {
 
   /**
   * @async
+  * TODO bdanforth: add docblock
+  * Ensures the same user gets the same branch every time
+  * @QUESTION: What is rng?
+  * @QUESTION: What is a hash fraction?
   */
   async deterministicVariation(weightedVariations, rng = null) {
     // hash the studyName and telemetryId to get the same branch every time.
@@ -347,10 +424,17 @@ class StudyUtils {
     return this.sample.chooseWeighted(weightedVariations, fraction);
   }
 
+  /*
+  * TODO bdanforth: add docblock
+  */
   getShieldId() {
     const key = "extensions.shield-recipe-client.user_id";
     return Services.prefs.getCharPref(key, "");
   }
+
+  /*
+  * TODO bdanforth: add docblock
+  */
   info() {
     log.debug("getting info");
     this.throwIfNotSetup("info");
@@ -461,7 +545,7 @@ class StudyUtils {
     // TODO glind, make this back breaking!
     this.throwIfNotSetup("endingQueryArgs");
     const info = this.info();
-    const who = await getTelemetryId();
+    const who = await this.getTelemetryId();
     const queryArgs = {
       shield: PACKET_VERSION,
       study: info.studyName,
@@ -477,6 +561,7 @@ class StudyUtils {
 
   /**
   * @async
+  * Telemetry from StudyUtils, does schema checking.
   */
   async _telemetry(data, bucket = "shield-study-addon") {
     log.debug(`telemetry in:  ${bucket} ${JSON.stringify(data)}`);
@@ -529,7 +614,7 @@ class StudyUtils {
     return TelemetryController.submitExternalPing(bucket, payload, telOptions);
   }
 
-  // telemetry from addon, mostly from webExtension message.
+  // telemetry from addon, mostly from webExtension message. Does schema checking.
   /**
   * @async
   */
