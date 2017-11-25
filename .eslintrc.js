@@ -27,5 +27,7 @@ module.exports = {
     "no-unused-vars": "error",
     "prefer-const": "warn",
     "semi": ["error", "always"],
+    "require-jsdoc": "warn",
+    "valid-jsdoc": "warn",
   },
 };

@@ -232,7 +232,7 @@ function cumsum(arr) {
 * @param {Object[]} weightedVariations - the array of branch name:weight pairs used to randomly
 * assign the user to a branch
 * @param {Number} fraction - a number [0, 1)
-* returns {Object} - the variation object in weightedVariations for the given fraction
+* @returns {Object} - the variation object in weightedVariations for the given fraction
 */
 function chooseWeighted(weightedVariations, fraction = Math.random()) {
   /*
@@ -271,8 +271,14 @@ async function hashFraction(saltedString, bits = 12) {
   return parseInt(hash.substr(0, bits), 16) / Math.pow(16, bits);
 }
 
+/*
+* Class representing utilities for shield studies.
+*/
 class StudyUtils {
-  constructor(config) {
+  /**
+  * Create a StudyUtils instance.
+  */
+  constructor() {
     // TODO glind Answer: no.  see if you can merge the construtor and setup and export the class, rather than a singleton
     /*
     * Handles a message received by the webExtension, sending a response back.
@@ -285,9 +291,7 @@ class StudyUtils {
     * @returns {boolean|undefined} - true if the message has been processed (shield message) or ignored (non-shield message)
     */
     this.respondToWebExtensionMessage = function({shield, msg, data}, sender, sendResponse) {
-      /* 
-      * @TODO glind: make sure we're using the webExtensionMsg schema somewhere
-      */
+      // @TODO glind: make sure we're using the webExtensionMsg schema somewhere
       if (!shield) return true;
       const allowedMethods = ["endStudy", "telemetry", "info"];
       if (!allowedMethods.includes(msg)) {
@@ -305,7 +309,7 @@ class StudyUtils {
       );
       return true;
       // Ensure this method is bound to the instance of studyUtils, see callsite in bootstrap.js
-      // TODO glind: Claim: making this function a StudyUtils method would also do this.
+      // TODO glind: bdanforth's claim: making this function a StudyUtils method would also do this.
     }.bind(this);
 
     // Expose sampling methods onto the exported studyUtils singleton, for use by any
@@ -327,16 +331,17 @@ class StudyUtils {
   }
 
   /*
-  * TODO bdanforth: add doc block
   * Checks if the StudyUtils.setup method has been called
+  * @param {string} name - the name of a StudyUtils method
   */
   throwIfNotSetup(name = "unknown") {
     if (!this._isSetup) throw new Error(name + ": this method can't be used until `setup` is called");
   }
 
   /*
-  * TODO bdanforth: add docblock
-  * https://github.com/raymak/cfr-focused-release/blob/dfc643e233735c9d93b3f1bae16ff908907d5dab/addon/bootstrap.js#L34
+  * Validates the studySetup object passed in from the addon.
+  * @param {Object} config - the studySetup object, see schema.studySetup.json
+  * @returns {StudyUtils} - the StudyUtils class instance
   */
   setup(config) {
     log = createLog("shield-study-utils", config.log.studyUtils.level);
@@ -350,24 +355,27 @@ class StudyUtils {
   }
 
   /*
-  * TODO bdanforth: add docblock'
-  * @QUESTION: When would this be called? It's not called at all in Kamyar's study. At bootstrap shutdown?
+  * Resets the state of the study.
+  * @QUESTION: When would this be used? Couldn't find an example
   */
   reset() {
     this.config = {};
     delete this._variation;
     this._isSetup = false;
   }
+
   /**
   * @async
-  * TODO bdanforth: add docblock
-  * params info: http://mdn.beonex.com/en/XUL/Method/addTab.html
+  * Opens a new tab that loads a page with the specified URL.
+  * @param {string} url - the url of a page
+  * @param {Object} params - optional, see http://mdn.beonex.com/en/XUL/Method/addTab.html
+  * @returns {void}
   */
   async openTab(url, params = {}) {
     this.throwIfNotSetup("openTab");
     log.debug(url, params);
     /*
-    * @QUESTION: Why are we waiting 30 seconds to add a tab?
+    * @QUESTION: Why are we waiting 30 seconds to add a tab if gBrowser doesn't exist?
     */
     log.debug("opening this formatted tab", url, params);
     if (!Services.wm.getMostRecentWindow("navigator:browser").gBrowser) {
@@ -392,14 +400,20 @@ class StudyUtils {
   }
 
   /**
-  * TODO bdanforth: add docblock
-  * called in bootstrap.js
+  * Sets the variation for the StudyUtils instance.
+  * @param {Object} variation - the study variation for this user
+  * @returns {StudyUtils} - the StudyUtils class instance
   */
   setVariation(variation) {
     this.throwIfNotSetup("setVariation");
     this._variation = variation;
     return this;
   }
+
+  /**
+  * Gets the variation for the StudyUtils instance.
+  * @returns {Object} variation - the study variation for this user
+  */
   getVariation() {
     this.throwIfNotSetup("getvariation");
     return this._variation;
@@ -407,10 +421,11 @@ class StudyUtils {
 
   /**
   * @async
-  * TODO bdanforth: add docblock
-  * Ensures the same user gets the same branch every time
-  * @QUESTION: What is rng?
-  * @QUESTION: What is a hash fraction?
+  * Deterministically selects and returns the study variation for the user.
+  * @param {Object[]} weightedVariations - see schema.weightedVariations.json
+  * @param {Number} rng - TODO bdanforth: update this description;
+  * @returns {Object} - the study variation for this user
+  * @QUESTION: What is rng? Random number generator?
   */
   async deterministicVariation(weightedVariations, rng = null) {
     // hash the studyName and telemetryId to get the same branch every time.
@@ -425,7 +440,8 @@ class StudyUtils {
   }
 
   /*
-  * TODO bdanforth: add docblock
+  * Gets the Shield recipe client ID.
+  * @returns {string} - the Shield recipe client ID.
   */
   getShieldId() {
     const key = "extensions.shield-recipe-client.user_id";
@@ -433,7 +449,8 @@ class StudyUtils {
   }
 
   /*
-  * TODO bdanforth: add docblock
+  * Packages information about the study into an object.
+  * @returns {Object} - study information, see schema.studySetup.json
   */
   info() {
     log.debug("getting info");
@@ -445,28 +462,59 @@ class StudyUtils {
       shieldId: this.getShieldId(),
     };
   }
+
+  /*
+  * Get the telemetry configuration for the study.
+  * @returns {Object} - the telemetry cofiguration, see schema.studySetup.json
+  */
   // TODO glind, maybe this is getter / setter?
   get telemetryConfig() {
     this.throwIfNotSetup("telemetryConfig");
     return this.config.study.telemetry;
   }
+
+  /*
+  * TODO bdanforth: add docblock.
+  * @QUESTION: What does "enter" mean?
+  * @QUESTION: Is there somewhere that explains all the different study_states?
+  */
   firstSeen() {
     log.debug(`firstSeen`);
     this.throwIfNotSetup("firstSeen uses telemetry.");
     this._telemetry({study_state: "enter"}, "shield-study");
   }
+
+  /*
+  * Adds the study to the active list of telemetry experiments
+  * TODO bdanforth: add docblock. Update StudyUtils.startup and StudyUtils.endStudy
+  * descriptions as a result.
+  * @QUESTION: What is this doing?
+  */
   setActive() {
     this.throwIfNotSetup("setActive uses telemetry.");
     const info = this.info();
     log.debug("marking TelemetryEnvironment", info.studyName, info.variation.name);
     TelemetryEnvironment.setExperimentActive(info.studyName, info.variation.name);
   }
+
+  /*
+  * Removes the study to the active list of telemetry experiments
+  * TODO bdanforth: add docblock. Update StudyUtils.startup and StudyUtils.endStudy
+  * descriptions as a result.
+  * @QUESTION: What is this doing?
+  */
   unsetActive() {
     this.throwIfNotSetup("unsetActive uses telemetry.");
     const info = this.info();
     log.debug("unmarking TelemetryEnvironment", info.studyName, info.variation.name);
     TelemetryEnvironment.setExperimentInactive(info.studyName);
   }
+
+  /*
+  * Uninstalls the shield study addon, given its addon id.
+  * @param {string} id - the addon id
+  * @returns {void}
+  */
   uninstall(id) {
     if (!id) id = this.info().addon.id;
     if (!id) {
@@ -478,6 +526,10 @@ class StudyUtils {
 
   /**
   * @async
+  * Adds the study to the active list of telemetry experiments and sends the
+  * "installed" telemetry ping if applicable
+  * @param {string} reason - The reason the addon has started up
+  * @returns {void}
   */
   async startup({reason}) {
     this.throwIfNotSetup("startup");
@@ -490,6 +542,14 @@ class StudyUtils {
 
   /**
   * @async
+  * Ends the study:
+  *  - Removes the study from the active list of telemetry experiments
+  *  - Opens a new tab at a specified URL, if present (e.g. for a survey)
+  *  - Sends a telemetry ping about the nature of the ending (positive, neutral, negative)
+  *  - Sends an exit telemetry ping
+  * @param {string} reason - The reason the study is ending, see schema.studySetup.json
+  * @param {string} fullname -  optional, the full name of the study state, see schema.studySetup.json
+  * @returns {void}
   */
   async endStudy({reason, fullname}) {
     this.throwIfNotSetup("endStudy");
@@ -540,6 +600,9 @@ class StudyUtils {
 
   /**
   * @async
+  * Builds an object whose properties are query arguments that can be
+  * appended to a study ending url
+  * @returns {Object} queryArgs - the query arguments for the study
   */
   async endingQueryArgs() {
     // TODO glind, make this back breaking!
