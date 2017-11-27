@@ -624,7 +624,14 @@ class StudyUtils {
 
   /**
   * @async
-  * Telemetry from StudyUtils, does schema checking.
+  * Validates and submits telemetry pings from StudyUtils.
+  * @param {Object} data - the data to send as part of the telemetry packet
+  * @param {string} bucket - the type of telemetry packet to be sent
+  * @returns {Promise|boolean} - A promise that resolves with the ping id
+  * once the ping is stored or sent, or false if
+  *   - there is a validation error,
+  *   - the packet is of type "shield-study-error"
+  *   - the study's telemetryConfig.send is set to false
   */
   async _telemetry(data, bucket = "shield-study-addon") {
     log.debug(`telemetry in:  ${bucket} ${JSON.stringify(data)}`);
@@ -650,7 +657,7 @@ class StudyUtils {
       log.error(err);
       return false;
     }
-
+    // @QUESTION: Wouldn't validation errors fall into the catch statement?
     if (validation.errors.length) {
       const errorReport = {
         "error_id": "jsonschema-validation",
@@ -658,11 +665,15 @@ class StudyUtils {
         "severity": "fatal",
         "message": JSON.stringify(validation.errors),
       };
+      // @QUESTION: Why don't we have validation for shield-study-error?
       if (bucket === "shield-study-error") {
         // log: if it's a warn or error, it breaks jpm test
         log.warn("cannot validate shield-study-error", data, bucket);
         return false; // just die, maybe should have a super escape hatch?
       }
+      // @QUESTION: This just calls this._telemetry again, but submits the
+      // error report as a "shield-study-addon" packet? What type of errors
+      // would fall under this?
       return this.telemetryError(errorReport);
     }
     // emit(TelemetryWatcher, 'telemetry', [bucket, payload]);
@@ -677,9 +688,12 @@ class StudyUtils {
     return TelemetryController.submitExternalPing(bucket, payload, telOptions);
   }
 
-  // telemetry from addon, mostly from webExtension message. Does schema checking.
   /**
   * @async
+  * Validates and submits telemetry pings from the addon; mostly from
+  * webExtension messages.
+  * @param {Object} data - the data to send as part of the telemetry packet
+  * @returns {Promise|boolean} - see StudyUtils._telemetry
   */
   async telemetry(data) {
     log.debug(`telemetry ${JSON.stringify(data)}`);
@@ -689,15 +703,33 @@ class StudyUtils {
     // lets check early, and respond with something useful?
     return this._telemetry(toSubmit, "shield-study-addon");
   }
+
+  /**
+  * Submits error report telemetry pings.
+  * @param {Object} errorReport - the error report, see StudyUtils._telemetry
+  * @returns {Promise|boolean} - see StudyUtils._telemetry
+  */
   telemetryError(errorReport) {
     return this._telemetry(errorReport, "shield-study-error");
   }
+
+  /**
+  * @QUESTION: This appears to be redundant with the code in createLog
+  * Can I remove this?
+  */
   setLoggingLevel(descriptor) {
     log.level = Log.Level[descriptor];
   }
 
 }
 
+/**
+* @QUESTION: Why are we using this log instead of console.log? Where does this print to?
+* Creates a log for debugging.
+* @param {string} name - the name of the Logger instance
+* @param {string} levelWord - the Log level (e.g. "trace", "error", ...)
+* @returns {Object} L - the Logger instance, see gre/modules/Log.jsm
+*/
 function createLog(name, levelWord) {
   Cu.import("resource://gre/modules/Log.jsm");
   var L = Log.repository.getLogger(name);
