@@ -2,18 +2,18 @@
 |-------|---------------|
 
 
-# Shield Studies Addon Utils [![Build Status](https://travis-ci.org/tombell/travis-ci-status.svg?branch=master)](https://travis-ci.org/tombell/travis-ci-status)
+# Shield Studies Addon Utils [![Build Status](https://travis-ci.org/mozilla/shield-studies-addon-utils.svg?branch=master)](https://travis-ci.org/mozilla/shield-studies-addon-utils)
 
 - Instrument your Firefox Addon!
 - Build Shield Study (Normandy) compatible addons without having to think very much.
 
 ## Assumptions
 
-- You are building a [LEGACY ADDONS](https://developer.mozilla.org/en-US/Add-ons/Legacy_add_ons).  To deploy these after 57, you will need the magic special signing.
+- You are building a [LEGACY ADDONS](https://developer.mozilla.org/Add-ons/Legacy_add_ons).  To deploy these after 57, you will need the magic special signing.
 -  Jetpack / addon-sdk is NOT SUPPORTED.
 - WebExtensions are not strong enough
 
-## history of major versions
+## History of major versions
 
 - v4.x: (proposed)  additional functions for common cases
 - v4: First `.jsm` release.  Uses packet format for PACKET version 3.
@@ -23,9 +23,9 @@ s v2: Code refactor to es6 `class` with event models.  Added cli tooling.  Packe
 
 
 
-## install
+## Install
 
-```
+```sh
 npm install --save-dev shield-studies-addon-utils
 ```
 
@@ -64,12 +64,8 @@ Using this, you get this analysis FOR FREE (and it's fast!)
 ## Gotchas, Opinions, Side Effects, and Misfeatures
 
 1.  No handling of 'timers'.  No saved state at all (including the variation name), unless you handle it yourself.
-
 2.  No 'running' pings in v4 (yet).
-
 3.  User disable also uninstalls (and cleans up)
 
 
 [example]: examples/README.md
-
-
