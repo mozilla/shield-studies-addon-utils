@@ -2,7 +2,7 @@
 |-------|---------------|----|---|---|
 
 
-# Shield Studies Addon Utils [![Build Status](https://travis-ci.org/tombell/travis-ci-status.svg?branch=master)](https://travis-ci.org/tombell/travis-ci-status)
+# Shield Studies Addon Utils [![Build Status](https://travis-ci.org/mozilla/shield-studies-addon-utils.svg?branch=master)](https://travis-ci.org/mozilla/shield-studies-addon-utils)
 
 - Instrument your Firefox Addon!
 - Build [Shield Study][shield-wiki] (Normandy) compatible addons without having to think very much.
