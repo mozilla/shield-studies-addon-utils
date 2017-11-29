@@ -29,5 +29,6 @@ module.exports = {
     "semi": ["error", "always"],
     "require-jsdoc": "warn",
     "valid-jsdoc": "warn",
+    "max-len": ["error", 80],
   },
 };
