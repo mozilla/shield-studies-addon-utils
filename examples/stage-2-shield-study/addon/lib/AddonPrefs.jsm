@@ -38,5 +38,6 @@ function set(key, type, value) {
 }
 
 var AddonPrefs = {
-  get, set,
+  get,
+  set,
 };

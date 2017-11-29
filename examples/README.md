@@ -2,6 +2,5 @@
 
 Demonstrated in stages.
 
-- stage 1:  embedded web extension
-- stage 2:  instrumented shield study
-
+* stage 1: embedded web extension
+* stage 2: instrumented shield study
