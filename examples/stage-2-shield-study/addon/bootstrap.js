@@ -1,17 +1,18 @@
 "use strict";
 
-
 /* global  __SCRIPT_URI_SPEC__  */
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(startup|shutdown|install|uninstall)" }]*/
 
-const {utils: Cu} = Components;
+const { utils: Cu } = Components;
 const CONFIGPATH = `${__SCRIPT_URI_SPEC__}/../Config.jsm`;
 const { config } = Cu.import(CONFIGPATH, {});
 const studyConfig = config.study;
 Cu.import("resource://gre/modules/Console.jsm");
-const log = createLog(studyConfig.studyName, config.log.bootstrap.level);  // defined below.
+const log = createLog(studyConfig.studyName, config.log.bootstrap.level); // defined below.
 
-const STUDYUTILSPATH = `${__SCRIPT_URI_SPEC__}/../${studyConfig.studyUtilsPath}`;
+const STUDYUTILSPATH = `${__SCRIPT_URI_SPEC__}/../${
+  studyConfig.studyUtilsPath
+}`;
 const { studyUtils } = Cu.import(STUDYUTILSPATH, {});
 
 async function startup(addonData, reason) {
@@ -20,7 +21,7 @@ async function startup(addonData, reason) {
   studyUtils.setup({
     studyName: studyConfig.studyName,
     endings: studyConfig.endings,
-    addon: {id: addonData.id, version: addonData.version},
+    addon: { id: addonData.id, version: addonData.version },
     telemetry: studyConfig.telemetry,
   });
   studyUtils.setLoggingLevel(config.log.studyUtils.level);
@@ -29,31 +30,32 @@ async function startup(addonData, reason) {
 
   Jsm.import(config.modules);
 
-  if ((REASONS[reason]) === "ADDON_INSTALL") {
-    studyUtils.firstSeen();  // sends telemetry "enter"
+  if (REASONS[reason] === "ADDON_INSTALL") {
+    studyUtils.firstSeen(); // sends telemetry "enter"
     const eligible = await config.isEligible(); // addon-specific
     if (!eligible) {
       // uses config.endings.ineligible.url if any,
       // sends UT for "ineligible"
       // then uninstalls addon
-      await studyUtils.endStudy({reason: "ineligible"});
+      await studyUtils.endStudy({ reason: "ineligible" });
       return;
     }
   }
-  await studyUtils.startup({reason});
+  await studyUtils.startup({ reason });
 
   console.log(`info ${JSON.stringify(studyUtils.info())}`);
   // if you have code to handle expiration / long-timers, it could go here.
   const webExtension = addonData.webExtension;
   webExtension.startup().then(api => {
-    const {browser} = api;
+    const { browser } = api;
     // messages intended for shieldn:  {shield:true,msg=[info|endStudy|telemetry],data=data}
-    browser.runtime.onMessage.addListener(studyUtils.respondToWebExtensionMessage);
+    browser.runtime.onMessage.addListener(
+      studyUtils.respondToWebExtensionMessage
+    );
     //  other message handlers from your addon, if any
   });
   // studyUtils.endStudy("user-disable");
 }
-
 
 function shutdown(addonData, reason) {
   console.log("shutdown", REASONS[reason] || reason);
@@ -64,11 +66,11 @@ function shutdown(addonData, reason) {
     if (!studyUtils._isEnding) {
       // we are the first requestors, must be user action.
       console.log("user requested shutdown");
-      studyUtils.endStudy({reason: "user-disable"});
+      studyUtils.endStudy({ reason: "user-disable" });
       return;
     }
 
-  // normal shutdown, or 2nd attempts
+    // normal shutdown, or 2nd attempts
     console.log("Jsms unloading");
     Jsm.unload(config.modules);
     Jsm.unload([CONFIGPATH, STUDYUTILSPATH]);
@@ -88,16 +90,18 @@ function install(addonData, reason) {
 
 // addon state change reasons
 const REASONS = {
-  APP_STARTUP: 1,      // The application is starting up.
-  APP_SHUTDOWN: 2,     // The application is shutting down.
-  ADDON_ENABLE: 3,     // The add-on is being enabled.
-  ADDON_DISABLE: 4,    // The add-on is being disabled. (Also sent during uninstallation)
-  ADDON_INSTALL: 5,    // The add-on is being installed.
-  ADDON_UNINSTALL: 6,  // The add-on is being uninstalled.
-  ADDON_UPGRADE: 7,    // The add-on is being upgraded.
-  ADDON_DOWNGRADE: 8,  // The add-on is being downgraded.
+  APP_STARTUP: 1, // The application is starting up.
+  APP_SHUTDOWN: 2, // The application is shutting down.
+  ADDON_ENABLE: 3, // The add-on is being enabled.
+  ADDON_DISABLE: 4, // The add-on is being disabled. (Also sent during uninstallation)
+  ADDON_INSTALL: 5, // The add-on is being installed.
+  ADDON_UNINSTALL: 6, // The add-on is being uninstalled.
+  ADDON_UPGRADE: 7, // The add-on is being upgraded.
+  ADDON_DOWNGRADE: 8, // The add-on is being downgraded.
 };
-for (const r in REASONS) { REASONS[REASONS[r]] = r; }
+for (const r in REASONS) {
+  REASONS[REASONS[r]] = r;
+}
 
 // logging
 function createLog(name, levelWord) {
@@ -119,7 +123,10 @@ async function chooseVariation() {
     source = "weightedVariation";
     // this is the standard arm choosing method
     const clientId = await studyUtils.getTelemetryId();
-    const hashFraction = await sample.hashFraction(studyConfig.studyName + clientId, 12);
+    const hashFraction = await sample.hashFraction(
+      studyConfig.studyName + clientId,
+      12
+    );
     toSet = sample.chooseWeighted(studyConfig.weightedVariations, hashFraction);
   }
   log.debug(`variation: ${toSet} source:${source}`);

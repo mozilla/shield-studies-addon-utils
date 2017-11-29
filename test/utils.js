@@ -27,7 +27,7 @@ const FIREFOX_PREFERENCES = {
   "devtools.chrome.enabled": true,
   "devtools.debugger.remote-enabled": true,
   "devtools.debugger.prompt-connection": false,
-  "general.warnOnAboutConfig": false
+  "general.warnOnAboutConfig": false,
 };
 
 // useful if we need to test on a specific version of Firefox
@@ -44,10 +44,10 @@ async function promiseActualBinary(binary) {
   }
 }
 
-module.exports.promiseSetupDriver = async() => {
+module.exports.promiseSetupDriver = async () => {
   const profile = new firefox.Profile();
 
-  Object.keys(FIREFOX_PREFERENCES).forEach((key) => {
+  Object.keys(FIREFOX_PREFERENCES).forEach(key => {
     profile.setPreference(key, FIREFOX_PREFERENCES[key]);
   });
 
@@ -58,30 +58,44 @@ module.exports.promiseSetupDriver = async() => {
     .forBrowser("firefox")
     .setFirefoxOptions(options);
 
-  const binaryLocation = await promiseActualBinary(process.env.FIREFOX_BINARY || "firefox");
+  const binaryLocation = await promiseActualBinary(
+    process.env.FIREFOX_BINARY || "firefox"
+  );
   await options.setBinary(new firefox.Binary(binaryLocation));
   const driver = await builder.build();
   driver.setContext(Context.CHROME);
   return driver;
 };
 
-module.exports.installAddon = async(driver) => {
+module.exports.installAddon = async driver => {
   // references:
   //    https://bugzilla.mozilla.org/show_bug.cgi?id=1298025
   //    https://github.com/mozilla/geckodriver/releases/tag/v0.17.0
   const fileLocation = path.join(process.cwd(), process.env.XPI_NAME);
   const executor = driver.getExecutor();
-  executor.defineCommand("installAddon", "POST", "/session/:sessionId/moz/addon/install");
+  executor.defineCommand(
+    "installAddon",
+    "POST",
+    "/session/:sessionId/moz/addon/install"
+  );
   const installCmd = new cmd.Command("installAddon");
 
   const session = await driver.getSession();
-  installCmd.setParameters({ sessionId: session.getId(), path: fileLocation, temporary: true });
+  installCmd.setParameters({
+    sessionId: session.getId(),
+    path: fileLocation,
+    temporary: true,
+  });
   return executor.execute(installCmd);
 };
 
-module.exports.uninstallAddon = async(driver, id) => {
+module.exports.uninstallAddon = async (driver, id) => {
   const executor = driver.getExecutor();
-  executor.defineCommand("uninstallAddon", "POST", "/session/:sessionId/moz/addon/uninstall");
+  executor.defineCommand(
+    "uninstallAddon",
+    "POST",
+    "/session/:sessionId/moz/addon/uninstall"
+  );
   const uninstallCmd = new cmd.Command("uninstallAddon");
 
   const session = await driver.getSession();

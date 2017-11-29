@@ -8,18 +8,11 @@
     },
     "msg": {
       "type": "string",
-      "enum": [
-        "endStudy",
-        "telemetry",
-        "info"
-      ]
+      "enum": ["endStudy", "telemetry", "info"]
     },
     "data": {
       "type": "object"
     }
   },
-  "required": [
-    "shield",
-    "msg"
-  ]
+  "required": ["shield", "msg"]
 }

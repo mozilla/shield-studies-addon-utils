@@ -5,7 +5,7 @@ const EXPORTED_SYMBOLS = ["studyUtils"];
 const UTILS_VERSION = require("../package.json").version;
 const PACKET_VERSION = 3;
 
-const {utils: Cu} = Components;
+const { utils: Cu } = Components;
 Cu.import("resource://gre/modules/AddonManager.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
@@ -15,8 +15,14 @@ let log;
 
 // telemetry utils
 const CID = Cu.import("resource://gre/modules/ClientID.jsm", null);
-const { TelemetryController } = Cu.import("resource://gre/modules/TelemetryController.jsm", null);
-const { TelemetryEnvironment } = Cu.import("resource://gre/modules/TelemetryEnvironment.jsm", null);
+const { TelemetryController } = Cu.import(
+  "resource://gre/modules/TelemetryController.jsm",
+  null
+);
+const { TelemetryEnvironment } = Cu.import(
+  "resource://gre/modules/TelemetryEnvironment.jsm",
+  null
+);
 
 async function getTelemetryId() {
   const id = TelemetryController.clientID;
@@ -34,11 +40,13 @@ const ajv = new Ajv();
 var jsonschema = {
   validate(data, schema) {
     var valid = ajv.validate(schema, data);
-    return {valid, errors:  ajv.errors || []};
+    return { valid, errors: ajv.errors || [] };
   },
   validateOrThrow(data, schema) {
     const valid = ajv.validate(schema, data);
-    if (!valid) { throw new Error(JSON.stringify((ajv.errors))); }
+    if (!valid) {
+      throw new Error(JSON.stringify(ajv.errors));
+    }
     return true;
   },
 };
@@ -66,14 +74,20 @@ var jsonschema = {
  */
 function merge(source) {
   // get object's own property Symbols and/or Names, including nonEnumerables by default
-  function getOwnPropertyIdentifiers(object, options = { names: true, symbols: true, nonEnumerables: true }) {
-    const symbols = !options.symbols ? [] :
-      Object.getOwnPropertySymbols(object);
+  function getOwnPropertyIdentifiers(
+    object,
+    options = { names: true, symbols: true, nonEnumerables: true }
+  ) {
+    const symbols = !options.symbols
+      ? []
+      : Object.getOwnPropertySymbols(object);
 
     // eslint-disable-next-line
-    const names = !options.names ? [] :
-      options.nonEnumerables ? Object.getOwnPropertyNames(object) :
-        Object.keys(object);
+    const names = !options.names
+      ? []
+      : options.nonEnumerables
+        ? Object.getOwnPropertyNames(object)
+        : Object.keys(object);
     return [...names, ...symbols];
   }
   const descriptor = {};
@@ -81,11 +95,13 @@ function merge(source) {
   // `Boolean` converts the first parameter to a boolean value. Any object is
   // converted to `true` where `null` and `undefined` becames `false`. Therefore
   // the `filter` method will keep only objects that are defined and not null.
-  Array.slice(arguments, 1).filter(Boolean).forEach(function onEach(properties) {
-    getOwnPropertyIdentifiers(properties).forEach(function(name) {
-      descriptor[name] = Object.getOwnPropertyDescriptor(properties, name);
+  Array.slice(arguments, 1)
+    .filter(Boolean)
+    .forEach(function onEach(properties) {
+      getOwnPropertyIdentifiers(properties).forEach(function(name) {
+        descriptor[name] = Object.getOwnPropertyDescriptor(properties, name);
+      });
     });
-  });
   return Object.defineProperties(source, descriptor);
 }
 
@@ -100,7 +116,7 @@ function mergeQueryArgs(url, ...args) {
   const merged = merge({}, ...args);
 
   // get user info.
-  Object.keys(merged).forEach((k) => {
+  Object.keys(merged).forEach(k => {
     log.debug(q.get(k), k, merged[k]);
     q.set(k, merged[k]);
   });
@@ -114,12 +130,17 @@ async function sha256(message) {
   const msgBuffer = new TextEncoder("utf-8").encode(message); // encode as UTF-8
   const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer); // hash the message
   const hashArray = Array.from(new Uint8Array(hashBuffer)); // convert ArrayBuffer to Array
-  const hashHex = hashArray.map(b => ("00" + b.toString(16)).slice(-2)).join(""); // convert bytes to hex string
+  const hashHex = hashArray
+    .map(b => ("00" + b.toString(16)).slice(-2))
+    .join(""); // convert bytes to hex string
   return hashHex;
 }
 
 function cumsum(arr) {
-  return arr.reduce(function(r, c, i) { r.push((r[i - 1] || 0) + c); return r; }, [] );
+  return arr.reduce(function(r, c, i) {
+    r.push((r[i - 1] || 0) + c);
+    return r;
+  }, []);
 }
 
 function chooseWeighted(weightedVariations, fraction = Math.random()) {
@@ -151,19 +172,27 @@ async function hashFraction(saltedString, bits = 12) {
 class StudyUtils {
   constructor(config) {
     // TODO glind Answer: no.  see if you can merge the construtor and setup and export the class, rather than a singleton
-    this.respondToWebExtensionMessage = function({shield, msg, data}, sender, sendResponse) {
+    this.respondToWebExtensionMessage = function(
+      { shield, msg, data },
+      sender,
+      sendResponse
+    ) {
       // shield: boolean, if present, request is for shield
       if (!shield) return true;
       const allowedMethods = ["endStudy", "telemetry", "info"];
       if (!allowedMethods.includes(msg)) {
-        throw new Error(`respondToWebExtensionMessage: "${msg}" is not in allowed studyUtils methods: ${allowedMethods}`);
+        throw new Error(
+          `respondToWebExtensionMessage: "${
+            msg
+          }" is not in allowed studyUtils methods: ${allowedMethods}`
+        );
       }
       // handle async
       Promise.resolve(this[msg](data)).then(
         function(ans) {
           log.debug("respondingTo", msg, ans);
           sendResponse(ans);
-        },
+        }
         // function error eventually
       );
       return true;
@@ -185,7 +214,10 @@ class StudyUtils {
     this.REASONS = REASONS;
   }
   throwIfNotSetup(name = "unknown") {
-    if (!this._isSetup) throw new Error(name + ": this method can't be used until `setup` is called");
+    if (!this._isSetup)
+      throw new Error(
+        name + ": this method can't be used until `setup` is called"
+      );
   }
   setup(config) {
     log = createLog("shield-study-utils", config.log.studyUtils.level);
@@ -210,7 +242,9 @@ class StudyUtils {
       // Wait for the window to be opened
       await new Promise(resolve => setTimeout(resolve, 30000));
     }
-    Services.wm.getMostRecentWindow("navigator:browser").gBrowser.addTab(url, params);
+    Services.wm
+      .getMostRecentWindow("navigator:browser")
+      .gBrowser.addTab(url, params);
   }
   async getTelemetryId() {
     return await getTelemetryId();
@@ -232,7 +266,10 @@ class StudyUtils {
     let fraction = rng;
     if (fraction === null) {
       const clientId = await this.getTelemetryId();
-      fraction = await this.sample.hashFraction(this.config.study.studyName + clientId, 12);
+      fraction = await this.sample.hashFraction(
+        this.config.study.studyName + clientId,
+        12
+      );
     }
     return this.sample.chooseWeighted(weightedVariations, fraction);
   }
@@ -259,18 +296,29 @@ class StudyUtils {
   firstSeen() {
     log.debug(`firstSeen`);
     this.throwIfNotSetup("firstSeen uses telemetry.");
-    this._telemetry({study_state: "enter"}, "shield-study");
+    this._telemetry({ study_state: "enter" }, "shield-study");
   }
   setActive() {
     this.throwIfNotSetup("setActive uses telemetry.");
     const info = this.info();
-    log.debug("marking TelemetryEnvironment", info.studyName, info.variation.name);
-    TelemetryEnvironment.setExperimentActive(info.studyName, info.variation.name);
+    log.debug(
+      "marking TelemetryEnvironment",
+      info.studyName,
+      info.variation.name
+    );
+    TelemetryEnvironment.setExperimentActive(
+      info.studyName,
+      info.variation.name
+    );
   }
   unsetActive() {
     this.throwIfNotSetup("unsetActive uses telemetry.");
     const info = this.info();
-    log.debug("unmarking TelemetryEnvironment", info.studyName, info.variation.name);
+    log.debug(
+      "unmarking TelemetryEnvironment",
+      info.studyName,
+      info.variation.name
+    );
     TelemetryEnvironment.setExperimentInactive(info.studyName);
   }
   uninstall(id) {
@@ -281,15 +329,15 @@ class StudyUtils {
     log.debug(`about to uninstall ${id}`);
     AddonManager.getAddonByID(id, addon => addon.uninstall());
   }
-  async startup({reason}) {
+  async startup({ reason }) {
     this.throwIfNotSetup("startup");
     log.debug(`startup ${reason}`);
     this.setActive();
     if (reason === REASONS.ADDON_INSTALL) {
-      this._telemetry({study_state: "installed"}, "shield-study");
+      this._telemetry({ study_state: "installed" }, "shield-study");
     }
   }
-  async endStudy({reason, fullname}) {
+  async endStudy({ reason, fullname }) {
     this.throwIfNotSetup("endStudy");
     if (this._isEnding) {
       log.debug("endStudy, already ending!");
@@ -302,7 +350,7 @@ class StudyUtils {
     // TODO glind, think about race conditions for endings, ensure only one exit
     const ending = this.config.study.endings[reason];
     if (ending) {
-      const {baseUrl, exactUrl} = ending;
+      const { baseUrl, exactUrl } = ending;
       if (exactUrl) {
         this.openTab(exactUrl);
       } else if (baseUrl) {
@@ -321,14 +369,17 @@ class StudyUtils {
       case "ended-positive":
       case "ended-neutral":
       case "ended-negative":
-        this._telemetry({study_state: reason, fullname}, "shield-study");
+        this._telemetry({ study_state: reason, fullname }, "shield-study");
         break;
       default:
-        this._telemetry({study_state: "ended-neutral", study_state_fullname: reason}, "shield-study");
-        // unless we know better TODO grl
+        this._telemetry(
+          { study_state: "ended-neutral", study_state_fullname: reason },
+          "shield-study"
+        );
+      // unless we know better TODO grl
     }
     // these are all exits
-    this._telemetry({study_state: "exit"}, "shield-study");
+    this._telemetry({ study_state: "exit" }, "shield-study");
     this.uninstall(); // TODO glind. should be controllable by arg?
   }
 
@@ -355,14 +406,14 @@ class StudyUtils {
     this.throwIfNotSetup("_telemetry");
     const info = this.info();
     const payload = {
-      version:        PACKET_VERSION,
-      study_name:     info.studyName,
-      branch:         info.variation.name,
-      addon_version:  info.addon.version,
+      version: PACKET_VERSION,
+      study_name: info.studyName,
+      branch: info.variation.name,
+      addon_version: info.addon.version,
       shield_version: UTILS_VERSION,
-      type:           bucket,
+      type: bucket,
       data,
-      testing:        !this.telemetryConfig.removeTestingFlag,
+      testing: !this.telemetryConfig.removeTestingFlag,
     };
 
     let validation;
@@ -377,10 +428,10 @@ class StudyUtils {
 
     if (validation.errors.length) {
       const errorReport = {
-        "error_id": "jsonschema-validation",
-        "error_source": "addon",
-        "severity": "fatal",
-        "message": JSON.stringify(validation.errors),
+        error_id: "jsonschema-validation",
+        error_source: "addon",
+        severity: "fatal",
+        message: JSON.stringify(validation.errors),
       };
       if (bucket === "shield-study-error") {
         // log: if it's a warn or error, it breaks jpm test
@@ -393,7 +444,7 @@ class StudyUtils {
     log.debug(`telemetry: ${JSON.stringify(payload)}`);
     // FIXME marcrowo: addClientId makes the ping not appear in test?
     // seems like a problem with Telemetry, not the shield-study-utils library
-    const telOptions = {addClientId: true, addEnvironment: true};
+    const telOptions = { addClientId: true, addEnvironment: true };
     if (!this.telemetryConfig.send) {
       log.debug("NOT sending.  `telemetryConfig.send` is false");
       return false;
@@ -416,7 +467,6 @@ class StudyUtils {
   setLoggingLevel(descriptor) {
     log.level = Log.Level[descriptor];
   }
-
 }
 
 function createLog(name, levelWord) {
@@ -429,16 +479,18 @@ function createLog(name, levelWord) {
 }
 /** addon state change reasons */
 const REASONS = {
-  APP_STARTUP: 1,      // The application is starting up.
-  APP_SHUTDOWN: 2,     // The application is shutting down.
-  ADDON_ENABLE: 3,     // The add-on is being enabled.
-  ADDON_DISABLE: 4,    // The add-on is being disabled. (Also sent during uninstallation)
-  ADDON_INSTALL: 5,    // The add-on is being installed.
-  ADDON_UNINSTALL: 6,  // The add-on is being uninstalled.
-  ADDON_UPGRADE: 7,    // The add-on is being upgraded.
-  ADDON_DOWNGRADE: 8,  // The add-on is being downgraded.
+  APP_STARTUP: 1, // The application is starting up.
+  APP_SHUTDOWN: 2, // The application is shutting down.
+  ADDON_ENABLE: 3, // The add-on is being enabled.
+  ADDON_DISABLE: 4, // The add-on is being disabled. (Also sent during uninstallation)
+  ADDON_INSTALL: 5, // The add-on is being installed.
+  ADDON_UNINSTALL: 6, // The add-on is being uninstalled.
+  ADDON_UPGRADE: 7, // The add-on is being upgraded.
+  ADDON_DOWNGRADE: 8, // The add-on is being downgraded.
 };
-for (const r in REASONS) { REASONS[REASONS[r]] = r; }
+for (const r in REASONS) {
+  REASONS[REASONS[r]] = r;
+}
 
 // Actually create the singleton.
 var studyUtils = new StudyUtils();

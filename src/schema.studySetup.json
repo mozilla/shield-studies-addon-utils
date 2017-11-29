@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title":  "study setup",
+  "title": "study setup",
   "type": "object",
   "definitions": {
     "idString": {
-      "description":  "between 1,100 chars, no spaces, unicode ok.",
+      "description": "between 1,100 chars, no spaces, unicode ok.",
       "type": "string",
       "pattern": "^\\S+$",
       "minLength": 1,
@@ -27,7 +27,8 @@
         },
         "study_state_fullname": {
           "type": "string",
-          "description": "Second part of name of state, if any.  Study-specific for study-defined endings."
+          "description":
+            "Second part of name of state, if any.  Study-specific for study-defined endings."
         },
         "url": {
           "type": "string"
@@ -60,23 +61,13 @@
             },
             "onInvalid": {
               "type": "string",
-              "enum": [
-                "throw",
-                "log"
-              ]
+              "enum": ["throw", "log"]
             }
           },
-          "required": [
-            "removeTestingFlag",
-            "send"
-          ]
+          "required": ["removeTestingFlag", "send"]
         }
       },
-      "required": [
-        "studyName",
-        "endings",
-        "telemetry"
-      ]
+      "required": ["studyName", "endings", "telemetry"]
     },
     "addon": {
       "type": "object",
@@ -90,14 +81,8 @@
           "description": "Semantic version of the addon."
         }
       },
-      "required": [
-        "id",
-        "version"
-      ]
+      "required": ["id", "version"]
     }
   },
-  "required": [
-    "study",
-    "addon"
-  ]
+  "required": ["study", "addon"]
 }
