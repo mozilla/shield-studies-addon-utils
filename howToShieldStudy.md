@@ -14,60 +14,60 @@
 
 ## Example: Puppies Up In Your Browser :dog: :arrow_up: :computer:
 
-[Fake!] VP of Firefox has a <a id='notsorry-back'></a><span id='notsorry-back'>[pet theory](#notsorry) that users love theming their browser with puppy images.
+[Fake!] VP of Firefox has a <a id="notsorry-back"></a>[pet theory](#notsorry) that users love theming their browser with puppy images.
 
 You want to please the VP of Firefox.
 
 So, you build an addon to get some puppies up in yer browser.
 
 
-1.  Install some needful tools.
+1. Install some needful tools.
 
-	```shell
-  # useful global cli tools
-  npm install -g shield-study-cli jpm
-  ```
+    ```shell
+    # useful global cli tools
+    npm install -g shield-study-cli jpm
+    ```
 
-2.  Start a project.
+2. Start a project.
 
-	**Low level (raw)**
+    **Low level (raw)**
 
-   ```shell
-   # a directory
-	mkdir theme-shield-study && cd $_
-	jpm init
-	npm install --save-dev jpm
-	touch {index,theme}.js
-	```
+    ```shell
+    # a directory
+    mkdir theme-shield-study && cd $_
+    jpm init
+    npm install --save-dev jpm
+    touch {index,theme}.js
+    ```
 
-	:gift: **Shield Bonus**: `shield init theme-shield-study && cd $_` when you need to do for real.
+    :gift: **Shield Bonus**: `shield init theme-shield-study && cd $_` when you need to do for real.
 
-3.  Make the feature.
+3. Make the feature.
 
-	**theme.js**
+    **theme.js**
 
-	```js
-	/** theme.js **/
-	exports.puppies = function applyPuppies () {
-	  // implement puppy theme work
-	  console.log("puppies");
-	}
-	```
+    ```js
+    /** theme.js **/
+    exports.puppies = function applyPuppies () {
+      // implement puppy theme work
+      console.log('puppies');
+    }
+    ```
 
-	**index.js**
+    **index.js**
 
-	```js
-	/** index.js **/
-	require("./theme").puppies();
-	```
+    ```js
+    /** index.js **/
+    require('./theme').puppies();
+    ```
 
-3.  Run the addon.
+4. Run the addon.
 
-	```shell
-	shield run . -- -b Aurora
+    ```shell
+    shield run . -- -b Aurora
 
-	# calls out to `jpm` after setting up all the things
-	```
+    # calls out to `jpm` after setting up all the things
+    ```
 
 :gift: **Shield Bonus**: :zzz: If you are already feeling impatient, [full code is below](#final-code) .
 
@@ -128,14 +128,14 @@ Let's expand the choice of themes.  Organize all the choices into a `variations`
 
 function theme (choice) {
   // do theme work
-  console.log("theme is", choice);
+  console.log('theme is', choice);
 }
 
 exports.variations = {
-  "notheme": () {},
-  "puppies": () => theme("puppies"),
-  "kittens": () => theme("kittens")
-}
+  'notheme': () {},
+  'puppies': () => theme('puppies'),
+  'kittens': () => theme('kittens')
+};
 ```
 
 **index.js**
@@ -144,7 +144,7 @@ exports.variations = {
 /** index.js */
 
 /* give a theme to the user */
-require("./theme").variations.puppies()
+require('./theme').variations.puppies();
 ```
 
 ### More Themes Makes New Problems
@@ -157,25 +157,25 @@ Bad solution: We **could** write our own randomization function to tackle this. 
 
 Better solution: use `shield-studies-addon-utils`, which handles these headaches &ndash; randomization, persistence (and more) &ndash; for you.
 
-1.  Add `shield-studies-addon-utils` to the project.
+1. Add `shield-studies-addon-utils` to the project.
 
-	```shell
-	npm install --save-dev shield-studies-addon-utils
-	```
+    ```shell
+    npm install --save-dev shield-studies-addon-utils
+    ```
 
-2.  Use `shield-studies-addon-utils` in the project code.
+2. Use `shield-studies-addon-utils` in the project code.
 
-	**index.js**
+    **index.js**
 
-	```js
-	/** index.js */
-	const self = require("sdk/self");
+    ```js
+    /** index.js */
+    const self = require('sdk/self');
 
-	const shield = require("shield-studies-addon-utils");
-	const studyConfig = require("./theme");
-	const thisStudy = new shield.Study(studyConfig);
-	thisStudy.startup(self.loadReason);
-	```
+    const shield = require('shield-studies-addon-utils');
+    const studyConfig = require('./theme');
+    const thisStudy = new shield.Study(studyConfig);
+    thisStudy.startup(self.loadReason);
+    ```
 
 Now `thisStudy.startup` **decides** which branch the user receives, by setting these prefs (if unset):
 
@@ -194,9 +194,9 @@ Use the `shield` cli command to run a particular variation for testing and demon
 
 1. demo "kittens" variation on Aurora (Developer Edition)
 
-	```
-	$ shield . kittens  -- -b Aurora
-	```
+    ```shell
+    $ shield . kittens  -- -b Aurora
+    ```
 
 :gift: **Shield Bonus**: Arguments after the `--` are passed along to `jpm`.
 
@@ -209,88 +209,87 @@ Let's generalize `theme.js => feature.js`.
 
 While we are here, we give the study a `config.name`.
 
-1.  Rename `theme.js` to `feature.js`, change the function names.
+1. Rename `theme.js` to `feature.js`, change the function names.
 
-	**feature.js (`theme.js`)**
+    **feature.js (`theme.js`)**
 
-	```js
-	/** feature.js **/
+    ```js
+    /** feature.js **/
 
-	function feature (choice) {
-	  // do feature work
-	  console.log("feature is", choice);
-	}
-	exports.feature = feature;
-	```
+    function feature (choice) {
+      // do feature work
+      console.log('feature is', choice);
+    }
+    exports.feature = feature;
+    ```
 
-2.  Add `config.name`, use `feature`.
+2. Add `config.name`, use `feature`.
 
-	**study.js**
+    **study.js**
 
-	```js
-	/** study.js **/
+    ```js
+    /** study.js **/
 
-	const self = require("sdk/self");
-	const shield = require("shield-studies-addon-utils");
+    const self = require('sdk/self');
+    const shield = require('shield-studies-addon-utils');
 
-	const { feature } = require("./feature");
+    const { feature } = require('./feature');
 
-	const studyConfig = {
-	  name: self.addonId,
-	  variations = {
-	    "notheme": () => feature("notheme"),
-	    "puppies": () => feature("puppies"),
-	    "kittens": () => feature("kittens")
-	  }
-	}
+    const studyConfig = {
+      name: self.addonId,
+      variations = {
+        'notheme': () => feature('notheme'),
+        'puppies': () => feature('puppies'),
+        'kittens': () => feature('kittens')
+      }
+    };
 
-	const thisStudy = new shield.Study(studyConfig);
+    const thisStudy = new shield.Study(studyConfig);
 
-	exports.study = thisStudy;
-	```
+    exports.study = thisStudy;
+    ```
 
 3. Use the `study` in `index.js`
 
-	**index.js (final form)**
+    **index.js (final form)**
 
-	```js
-	/** index.js **/
-   const self = require("sdk/self");
-	require("./study").study.startup(self.loadReason);
-	```
+    ```js
+    /** index.js **/
+    const self = require('sdk/self');
+    require('./study').study.startup(self.loadReason);
+    ```
 
-4.  Let's fancy up the study by subclassing `shield.Study`:
+4. Let's fancy up the study by subclassing `shield.Study`:
 
+    **study.js**
 
-	**study.js**
+    ```js
+    /** study.js **/
+    const self = require('sdk/self');
+    const shield = require('shield-studies-addon-utils');
 
-	```js
-	/** study.js **/
-	const self = require("sdk/self");
-	const shield = require("shield-studies-addon-utils");
+    const { feature } = require('./feature');
 
-	const { feature } = require("./feature");
+    const studyConfig = {
+      name: self.addonId,
+        variations: {
+          'notheme': () => feature('notheme'),
+          'puppies': () => feature('puppies'),
+          'kittens': () => feature('kittens')
+        }
+      }
+    };
 
-	const studyConfig = {
-		name: self.addonId,
-	   variations: {
-	      "notheme": () => feature("notheme"),
-	      "puppies": () => feature("puppies"),
-	      "kittens": () => feature("kittens")
-	    }
-	  }
-	}
+    class OurStudy extends shield.Study {
+      constructor (config) {
+        super(config);
+      }
+    }
 
-	class OurStudy extends shield.Study {
-	  constructor (config) {
-	    super(config);
-	  }
-	}
+    const thisStudy = new OurStudy(studyConfig);
 
-	const thisStudy = new OurStudy(studyConfig);
-
-	exports.study = thisStudy;
-	```
+    exports.study = thisStudy;
+    ```
 
 :gift: **Shield Bonus**: `shield.Study` has a lot of overridable methods.  [Full Shield.Study Api]()
 
@@ -307,7 +306,7 @@ The `Study` sends [shield-study telemetry packets]() for these lifecycle events:
 - `running`: once per day
 - `end-of-study`:  study expires (is complete)
 - `user-ended-study`:  user disabled or uninstalled
-- `ineligible`:  user was not eligilbe
+- `ineligible`:  user was not eligible
 
 These data are enough to answer Research Questions 1.1, 1.2.
 
@@ -331,16 +330,16 @@ Add a `surveyUrls` object to `config`.
 
 ```js
 const studyConfig = {
-	name: self.addonId,
-    surveyUrls:  {
-        'end-of-study': 'some/url'
-        'user-ended-study': 'some/url',
-        'ineligible':  null
-    },
-    variations: {
-		// ...
-    }
-}
+  name: self.addonId,
+  surveyUrls: {
+    'end-of-study': 'some/url',
+    'user-ended-study': 'some/url',
+    'ineligible': null
+  },
+  variations: {
+    // ...
+  }
+};
 ```
 
 :gift: **Shield Bonus**:  Lint `surveyUrls` with `Study.lint()` or the `shield` cli tool.
@@ -377,34 +376,34 @@ So, let's check if they are eligible, and handle them differently:
 /** feature.js **/
 
 const tabs = require('sdk/tabs');
-const prefSvc = require("sdk/preferences/service");
+const prefSvc = require('sdk/preferences/service');
 
 // ...
 
 exports.isEligible = function () {
   return !prefSvc.isSet('some.pref.somewhere');
-}
+};
 ```
 
 **study.js**
 
 ```js
-const { feature, isEligible } = require('./feature')
+const { feature, isEligible } = require('./feature');
 
 class OurStudy extends shield.Study {
   constructor (config) {
-	// ...
+    // ...
   }
   isEligible () {
     // bool Already Has the feature.  Stops install if true
-    return super.isEligible() && isEligible()
+    return super.isEligible() && isEligible();
   }
   whenIneligible () {
-  	  super();
-     // additional actions for 'user isn't eligible'
-     tabs.open(`data:text/html,Uninstalling, you are not eligible for this study`)
+    super();
+    // additional actions for 'user isn't eligible'
+    tabs.open('data:text/html,Uninstalling, you are not eligible for this study');
   }
-	// ...
+  // ...
 }
 ```
 
@@ -423,7 +422,7 @@ const tabs = require('sdk/tabs');
 // ...
 
 exports.orientation = function orientation (choice) {
-  return tabs.open(`data:text/html,You are on choice {choice}.  Stop by, use by etc`)
+  return tabs.open(`data:text/html,You are on choice ${choice}.  Stop by, use by etc`)
 }
 
 // ...
@@ -437,13 +436,14 @@ We have a special issue that the 'control' variation shouldn't have orientation.
 ```js
 /** study.js **/
 class OurStudy extends shield.Study {
-   // ...
+  // ...
 
-	whenInstalled() {
-     // orientation, unless our branch is 'notheme'
-     if (this.variation == 'notheme') return;
-     feature.orientation(this.variation);
-	}
+  whenInstalled() {
+    // orientation, unless our branch is 'notheme'
+    if (this.variation === 'notheme') return;
+    feature.orientation(this.variation);
+  }
+}
 ```
 
 :gift: **Shield bonus**: the `Study.variation` property knows the user's assigned variation.
@@ -456,9 +456,9 @@ We need to tell `study.js` to handle endings (shutdown):
 **study.js**
 
 ```js
-const { when: unload } = require("sdk/system/unload");
+const { when: unload } = require('sdk/system/unload');
 
-//...
+// ...
 unload((reason) => thisStudy.shutdown(reason))
 ```
 
@@ -482,16 +482,16 @@ We decide to collect data for 14 days, to measure longer term retention and sati
 
 **study.js**
 
-```
+```js
 const studyConfig = {
-    name: self.addonId,
-    days: 14,
-    surveyUrls:  {
-		// ...
-    },
-    variations: {
-		// ...
-    }
+  name: self.addonId,
+  days: 14,
+  surveyUrls:  {
+    // ...
+  },
+  variations: {
+    // ...
+  }
 }
 ```
 
@@ -522,34 +522,32 @@ You can add extra probes using `study.Report`.  Let's instrument that the users 
 ```js
 /** study.js **/
 class OurStudy extends shield.Study {
-   // ...
+  // ...
 
-	whenInstalled() {
-     // orientation, unless our branch is 'notheme'
-     if (this.variation == 'notheme') return;
-     this.report({
-     	msg: "addon-orientation",
-     	// ... other fields
-     }
-     feature.orientation(this.variation);
-	}
+  whenInstalled() {
+    // orientation, unless our branch is 'notheme'
+    if (this.variation === 'notheme') return;
+    this.report({
+      msg: 'addon-orientation',
+      // ... other fields
+    }
+    feature.orientation(this.variation);
+  }
 ```
 
 This will report to Telemetry as:
 
 ```js
-
 // usual telemetry environment is also included
 // specific payload
 {
-	"msg": "addon-orientaton",
-	// other fields
-	// standard fields
-	"study_branch": 'the variation',
-	"study_name": 'the name'
-	//...
+  "msg": "addon-orientaton",
+  // other fields
+  // standard fields
+  "study_branch": 'the variation',
+  "study_name": 'the name'
+  //...
 }
-
 ```
 
 :gift: **Shield Bonus**: You can call `shield.report` directly if needed.  `Study.report` is a static convenience method.
@@ -562,14 +560,14 @@ Add some listeners for telemetry and Study state changes.  This might help expla
 **study.js**
 
 ```js
-prefsSvc.set('shield.study.debug', true)
+prefsSvc.set('shield.study.debug', true);
 ```
 
 WOULD turn on debugging:
 
 ```js
-shield.Reporter.on("report",(d)=>console.log("telemetry", d));
-thisStudy.on("change",(newState)=>console.log("newState:", newState));
+shield.Reporter.on('report', (d) => console.log('telemetry', d));
+thisStudy.on('change', (newState) => console.log('newState:', newState));
 ```
 
 :gift: **Shield Bonus**: `shield run . --debug` does the same thing.
@@ -583,37 +581,37 @@ thisStudy.on("change",(newState)=>console.log("newState:", newState));
 
 ### shield-study-addon-template
 
-1.  Check out [shield-studies-addon-template](https://github.com/gregglind/shield-studies-addon-template)
+1. Check out [shield-studies-addon-template](https://github.com/mozilla/shield-studies-addon-template)
 
-	```
-	URL=https://github.com/gregglind/shield-studies-addon-template
-	git clone --depth 1  $URL "your-addon_name" and && cd $_
-	rm -rf .git
-	git init
-	# setup git stuff for your branch
+    ```shell
+    URL=https://github.com/mozilla/shield-studies-addon-template
+    git clone --depth 1  $URL "your-addon_name" and && cd $_
+    rm -rf .git
+    git init
+    # setup git stuff for your branch
 
-	## get to work!
-	```
+    ## get to work!
+    ```
 
-	This is also `shield init my-project`, that does the same thing.
+    This is also `shield init my-project`, that does the same thing.
 
-2.  Modify the things in these files
+2. Modify the things in these files
 
     - `lib/index.js`
     - `lib/study.js`
     - `lib/feature`
     - `package.json`
 
-3.  fix tests
-4.  profit.
+3. Fix tests
+4. Profit.
 
 ### shield-studies-cli
 
-0.  `npm install -g shield-studies-cli`
-1.  use the `shield` cli tool
+1. `npm install -g shield-studies-cli`
+2. use the `shield` cli tool
 
-  - `shield run ./ some-variation`
-  - `shield survey`
+    - `shield run ./ some-variation`
+    - `shield survey`
 
 
 ### Deploy
@@ -629,44 +627,46 @@ Contact your local data science wizard to get the data back from Unified Telemet
 
 ## Other magical magic
 
-1.  Some useful prefs:
+1. Some useful prefs:
 
-	- `shield.study.fakedie`: won't uninstall
-	- `shield.study.debug`:   more debugging
+    - `shield.study.fakedie`: won't uninstall
+    - `shield.study.debug`:   more debugging
 
-2.  Every `Study` objects is an `EventTarget`.  You can listen / emit on it directly.
+2. Every `Study` objects is an `EventTarget`.  You can listen / emit on it directly.
 
-	```js
-	aStudy.once('installed', function onceInstalled () {})
-	```
+    ```js
+    aStudy.once('installed', function onceInstalled () {})
+    ```
 
-3.  Choosing a variation for a demo or QA run.
+3. Choosing a variation for a demo or QA run.
 
-	`shield . variationName`
+    ```shell
+    shield . variationName
+    ```
 
-4.  Unequal (or complex) assignment variations
+4. Unequal (or complex) assignment variations
 
-	Override `decideVariation`.
+    Override `decideVariation`.
 
-	```js
-	unequalVariations (study, rng=Math.random()) {
-		// always return an rng
-		if (rng < .3) {
-			return 'a';
-		elif (rng < .9) {
-			return 'b';
-		} else {
-			return 'c'
-		}
-	}
+    ```js
+    unequalVariations (study, rng=Math.random()) {
+      // always return an rng
+      if (rng < .3) {
+        return 'a';
+      } else if (rng < .9) {
+        return 'b';
+      } else {
+        return 'c';
+      }
+    }
 
-	class UnequalAssigment extends shield.Study {
-		// only used during first `install`
-		decideVariation () {
-			return unequalVariations(this)
-		}
-	}
-	```
+    class UnequalAssigment extends shield.Study {
+      // only used during first `install`
+      decideVariation () {
+        return unequalVariations(this)
+      }
+    }
+    ```
 
 ## Full Study Api
 
@@ -694,57 +694,60 @@ See the [source code](https://github.com/mozilla/shield-studies-addon-utils/blob
 ## Final Code
 
 ### feature.js
+
 ```js
 /** feature.js **/
 
 const tabs = require('sdk/tabs');
-const prefSvc = require("sdk/preferences/service");
+const prefSvc = require('sdk/preferences/service');
 
 exports.which = function whichFeature (choice) {
   // do feature work
-  console.log("feature is", choice);
+  console.log('feature is', choice);
 }
 
 exports.orientation = function orientation (choice) {
-  return tabs.open(`data:text/html,You are on choice {choice}.  Stop by, use by etc`)
+  return tabs.open(`data:text/html,You are on choice ${choice}.  Stop by, use by etc`)
 }
 
 exports.isEligible = function () {
   return !prefSvc.isSet('some.pref.somewhere');
 }
 ```
+
 ### index.js
+
 ```js
 /** index.js **/
-const self = require("sdk/self");
-require("./study").study.startup(self.loadReason);
-
+const self = require('sdk/self');
+require('./study').study.startup(self.loadReason);
 ```
 
 ### study.js
+
 ```js
 /** study.js **/
-const self = require("sdk/self");
-const shield = require("shield-studies-addon-utils");
+const self = require('sdk/self');
+const shield = require('shield-studies-addon-utils');
 const tabs = require('sdk/tabs');
-const { when: unload } = require("sdk/system/unload");
+const { when: unload } = require('sdk/system/unload');
 
-const feature = require("./feature");
+const feature = require('./feature');
 
 const studyConfig = {
   name: self.addonId,
   duration: 14,
-  surveyUrls:  {
-      'end-of-study': 'some/url',
-      'user-ended-study': 'some/url',
-      'ineligible':  null
+  surveyUrls: {
+    'end-of-study': 'some/url',
+    'user-ended-study': 'some/url',
+    'ineligible': null
   },
   variations: {
-    "notheme": () => feature.which("notheme"),
-    "puppies": () => feature.which("puppies"),
-    "kittens": () => feature.which("kittens")
+    'notheme': () => feature.which('notheme'),
+    'puppies': () => feature.which('puppies'),
+    'kittens': () => feature.which('kittens')
   }
-}
+};
 
 class OurStudy extends shield.Study {
   constructor (config) {
@@ -752,17 +755,17 @@ class OurStudy extends shield.Study {
   }
   isEligible () {
     // bool Already Has the feature.  Stops install if true
-    return super.isEligible() && feature.isEligible()
+    return super.isEligible() && feature.isEligible();
   }
   whenIneligible () {
     super.whenIneligible();
     // additional actions for 'user isn't eligible'
-    tabs.open(`data:text/html,Uninstalling, you are not eligible for this study`)
+    tabs.open(`data:text/html,Uninstalling, you are not eligible for this study`);
   }
   whenInstalled () {
     super.whenInstalled();
     // orientation, unless our branch is 'notheme'
-    if (this.variation == 'notheme') {}
+    if (this.variation === 'notheme') {}
     feature.orientation(this.variation);
   }
   cleanup (reason) {
@@ -778,7 +781,7 @@ class OurStudy extends shield.Study {
     super.whenUninstalled();
   }
   decideVariation () {
-    return super.decideVariation() // chooses at random
+    return super.decideVariation(); // chooses at random
     // unequal or non random allocation for example
   }
 }
@@ -792,9 +795,7 @@ exports.studyConfig = studyConfig;
 // for use by index.js
 exports.study = thisStudy;
 
-unload((reason) => thisStudy.shutdown(reason))
-
-
+unload((reason) => thisStudy.shutdown(reason));
 ```
 
 ## Enjoy Kittens and Puppies
@@ -822,32 +823,29 @@ Readers / feedback / wit:
 
 1. <a name="knowing"></a> Insert a long, long digression about epistimology, the nature of knowledge, and statistic methods, perhaps summarized as:
 
-	"By looking at a sample of people like the ones who will use the feature, we can infer what is *likely* to happen if deploy it for real."
+  "By looking at a sample of people like the ones who will use the feature, we can infer what is *likely* to happen if deploy it for real."
 
-	For this to be true we need:
+  For this to be true we need:
 
-   1. **random sample** ascertiained (enrolled) at random
-   2. **from similar popuation** a population "alike-enough" to the "real" popuation
-   3. **sample size** of a large enough size such that observed effects are likely to not be due to chance
-   4. **fidelity of experience** measured using an experience that is "close enough" to how it will be "for real"
-   5. **detectable effect** *but* where the variations are *different enough* to be different from each other and from a control (observe-only) experience &ndash; the effect size must be big enough to observe
-   6. **blinded, random assignment** where each user is *assigned at random* (and blinded to which variation they received)
-   7. **control group** with a control group to see "normal usage"
+  1. **random sample** ascertiained (enrolled) at random
+  2. **from similar popuation** a population "alike-enough" to the "real" popuation
+  3. **sample size** of a large enough size such that observed effects are likely to not be due to chance
+  4. **fidelity of experience** measured using an experience that is "close enough" to how it will be "for real"
+  5. **detectable effect** *but* where the variations are *different enough* to be different from each other and from a control (observe-only) experience &ndash; the effect size must be big enough to observe
+  6. **blinded, random assignment** where each user is *assigned at random* (and blinded to which variation they received)
+  7. **control group** with a control group to see "normal usage"
+
+  The more our experiment differs from these assumptions, the less well it predicts the future.
+
+  Much of the Shield Studies future work is about improving the fidelity of the sample to (real) Release users, and fixing things like:
+
+  - Ascertainment bias (recruitment issues)
+  - blinding
 
 
-	The more our experiment differs from these assumptions, the less well it predicts the future.
-
-	Much of the Shield Studies future work is about improving the fidelity of the sample to (real) Release users, and fixing things like:
-
-	- Ascertainment bias (recruitment issues)
-	- blinding
-
-
-    <a href="#knowing-back">⇧</a>
+  <a href="#knowing-back">⇧</a>
 
 
 2. <a name="notsorry"></a> Sorry, not sorry. <a href="#notsorry-back">⇧</a>
 
 3. <a name="weird-science"></a> The Firefox Strategy + Insights "Weird Science" Subteam - Gregg Lind and friends.  <a href="#weird-science-back">⇧</a>
-
-
