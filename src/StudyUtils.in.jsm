@@ -200,7 +200,7 @@ function mergeQueryArgs(url, ...args) {
 * Note: This is ultimately used to make a hash of the user's telemetry clientID
 * and the study name.
 * @param {string} message - The message to convert.
-* @returns {string} hashHex - a hexadecimal, 256-bit hash
+* @returns {string} - a hexadecimal, 256-bit hash
 */
 async function sha256(message) {
   // encode as UTF-8
@@ -224,8 +224,9 @@ async function sha256(message) {
 * a user receives.
 * @example [.25,.3,.45] => [.25,.55,1.0]; if a user's sample weight were .25,
 * they would fall into the left-most bucket
-* @param {Number[]} arr - An array of sample weights [0, 1)
-* @returns {Number[]} - A cumulative sum array of sample weights [0, 1)
+* @param {Number[]} arr - An array of sample weights (0 <= sample weight < 1)
+* @returns {Number[]} - A cumulative sum array of sample weights
+* (0 <= sample weight <= 1)
 */
 function cumsum(arr) {
   return arr.reduce(function(r, c, i) {
@@ -240,7 +241,7 @@ function cumsum(arr) {
 * at random fraction proportional to the weightVariations object
 * @param {Object[]} weightedVariations - the array of branch name:weight pairs
 * used to randomly assign the user to a branch
-* @param {Number} fraction - a number [0, 1)
+* @param {Number} fraction - a number (0 <= fraction < 1)
 * @returns {Object} - the variation object in weightedVariations for the given
 * fraction
 */
@@ -267,8 +268,8 @@ function chooseWeighted(weightedVariations, fraction = Math.random()) {
 
 /**
 * @async
-* Converts a string into a fraction [0, 1) based on the first X bits of its
-* sha256 hexadecimal representation
+* Converts a string into a fraction (0 <= fraction < 1) based on the first
+* X bits of its sha256 hexadecimal representation
 * Note: Salting (adding the study name to the telemetry clientID) ensures
 * that the same user gets a different bucket/hash for each study.
 * Hashing of the salted string ensures uniform hashing; i.e. that every
@@ -277,7 +278,7 @@ function chooseWeighted(weightedVariations, fraction = Math.random()) {
 * the user
 * @param {Number} bits - The first number of bits to use in the sha256 hex
 * representation
-* @returns {Number} - a fraction between [0, 1)
+* @returns {Number} - a fraction (0 <= fraction < 1)
 */
 async function hashFraction(saltedString, bits = 12) {
   const hash = await sha256(saltedString);
@@ -403,7 +404,7 @@ class StudyUtils {
   * Opens a new tab that loads a page with the specified URL.
   * @param {string} url - the url of a page
   * @param {Object} params - optional, see
-  * http://mdn.beonex.com/en/XUL/Method/addTab.html
+  * https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XUL/Method/addTab
   * @returns {void}
   */
   async openTab(url, params = {}) {
@@ -425,7 +426,7 @@ class StudyUtils {
   /**
   * @async
   * Gets the telemetry client ID for the user.
-  * @returns {string} id - the telemetry client ID
+  * @returns {string} - the telemetry client ID
   */
   async getTelemetryId() {
     const id = TelemetryController.clientID;
@@ -449,7 +450,7 @@ class StudyUtils {
 
   /**
   * Gets the variation for the StudyUtils instance.
-  * @returns {Object} variation - the study variation for this user
+  * @returns {Object} - the study variation for this user
   */
   getVariation() {
     this.throwIfNotSetup("getvariation");
@@ -460,8 +461,8 @@ class StudyUtils {
   * @async
   * Deterministically selects and returns the study variation for the user.
   * @param {Object[]} weightedVariations - see schema.weightedVariations.json
-  * @param {Number} rng - randomly generated number [0,1) of the form returned
-  * by Math.random; can be set explicitly for testing
+  * @param {Number} rng - randomly generated number (0 <= rng < 1) of the form
+  * returned by Math.random; can be set explicitly for testing
   * @returns {Object} - the study variation for this user
   */
   async deterministicVariation(weightedVariations, rng = null) {
@@ -596,10 +597,11 @@ class StudyUtils {
   *  - Sends a telemetry ping about the nature of the ending
   *    (positive, neutral, negative)
   *  - Sends an exit telemetry ping
-  * @param {string} reason - The reason the study is ending, see
+  * @param {Object} param - A details object describing why the study is ending
+  * @param {string} param.reason - The reason the study is ending, see
   * schema.studySetup.json
-  * @param {string} fullname -  optional, the full name of the study state,
-  * see schema.studySetup.json
+  * @param {string} param.fullname -  optional, the full name of the study
+  * state, see schema.studySetup.json
   * @returns {void}
   */
   async endStudy({reason, fullname}) {
@@ -661,7 +663,7 @@ class StudyUtils {
   * @async
   * Builds an object whose properties are query arguments that can be
   * appended to a study ending url
-  * @returns {Object} queryArgs - the query arguments for the study
+  * @returns {Object} - the query arguments for the study
   */
   async endingQueryArgs() {
     // TODO glind, make this back breaking!
@@ -796,7 +798,7 @@ class StudyUtils {
 *   - Console can create linting errors and warnings.
 * @param {string} name - the name of the Logger instance
 * @param {string} levelWord - the Log level (e.g. "trace", "error", ...)
-* @returns {Object} L - the Logger instance, see gre/modules/Log.jsm
+* @returns {Object} - the Logger instance, see gre/modules/Log.jsm
 */
 function createLog(name, levelWord) {
   Cu.import("resource://gre/modules/Log.jsm");
