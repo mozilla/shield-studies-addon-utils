@@ -90,64 +90,9 @@ npm install
 
 Repeat Steps 2-5 as necessary.
 
-## Direcotry Contents
+## Typical Directory Contents of Shield Study add-on
 
-```
-├── .circleci/            # setup for Circle-CI integration
-|
-├── .eslintignore         #
-├── .eslintrc.js          # linting rules: mozilla, json
-|
-├── .git/
-├── .gitignore
-|
-├── README.md             # (this file)
-├── TELEMETRY.md          # Telemetry examples for this addon
-├── TESTPLAN.md           # Manual QA test plan
-|
-├── addon                 # Files that will go into the addon
-│   ├── Config.jsm
-│   ├── StudyUtils.jsm    # (copied in during `prebuild`)
-│   ├── bootstrap.js      # LEGACY Bootstrap.js
-│   ├── chrome.manifest   # (derived from templates)
-│   ├── install.rdf       # (derived from templates)
-│   │
-│   ├── lib               # JSM (Firefox modules)
-│   │   ├── AddonPrefs.jsm
-│   │   └── Feature.jsm
-|   |
-│   └── webextension      # webExtension for Feature and UI
-│       ├── .eslintrc.json
-│       ├── background.js
-│       └── manifest.json
-│
-├── bin                   # Scripts / commands
-│   └── xpi.sh            # build the XPI from contents of `addon/`
-│
-├── dist                  # built xpi's (addons)
-│   ├── @template-shield-study.mozilla.com-1.1.0.xpi
-│   └── linked-addon.xpi -> @template-shield-study.mozilla.com-1.1.0.xpi
-│
-├── package-lock.json
-├── package.json
-├── run-firefox.js        # command
-├── sign/                 # "LEGACY-SIGNED" addons.  used by `npm sign` (TBD)
-│
-│
-├── templates             # mustache templates, filled from `package.json`
-│   ├── chrome.manifest.mustache
-│   └── install.rdf.mustache
-│
-│
-└── test                  # Automated tests `npm test` and circle
-    ├── Dockerfile
-    ├── docker_setup.sh
-    ├── functional_tests.js  # Edit these
-    ├── test-share-study.js  # Examples from another study
-    ├── test_harness.js
-    ├── test_printer.py
-    └── utils.js
-```
+See <https://github.com/mozilla/shield-studies-addon-template/docs/DEV.md>.
 
 ## Parts of A Shield Study (General)
 
