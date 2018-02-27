@@ -11,7 +11,7 @@ The [template](https://github.com/mozilla/shield-studies-addon-template) contain
 - [Typical Directory Contents of Shield Study add-on](#typical-directory-contents-of-shield-study-add-on)
 - [Parts of A Shield Study (General)](#parts-of-a-shield-study-general)
   - [Shield-Studies-Addon-Utils (`studyUtils.jsm`)](#shield-studies-addon-utils-studyutilsjsm)
-  - [Legacy Addons](#legacy-addons)
+  - [Legacy Add-ons](#legacy-add-ons)
   - [Your Feature, with Variations](#your-feature-with-variations)
 - [<span id="shield-telemetry">Shield Telemetry Details</span>](#span-idshield-telemetryshield-telemetry-detailsspan)
   - [Shield Study Life-Cycle Telemetry](#shield-study-life-cycle-telemetry)
@@ -29,7 +29,7 @@ The [template](https://github.com/mozilla/shield-studies-addon-template) contain
   - [General](#general)
   - [studyUtils](#studyutils)
   - [The lifecycle and deployment of the add-on once it gets released](#the-lifecycle-and-deployment-of-the-add-on-once-it-gets-released)
-  - [Legacy Addons](#legacy-addons-1)
+  - [Legacy Add-ons](#legacy-add-ons-1)
   - [s.t.m.o - sql.telemetry.mozilla.org](#stmo---sqltelemetrymozillaorg)
     - [Where are my pings?](#where-are-my-pings)
 - [Glossary](#glossary)
@@ -42,7 +42,7 @@ The [template](https://github.com/mozilla/shield-studies-addon-template) contain
 - [FIXES](#fixes)
 - [TODO](#todo-1)
 - [Template](#template)
-- [Getting QA of your addons](#getting-qa-of-your-addons)
+- [Getting QA of your add-ons](#getting-qa-of-your-add-ons)
 - [Links and References](#links-and-references)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -83,7 +83,7 @@ npm install
    * `package.json`
    * `addon/lib/*`
 
-3. Build the legacy addon xpi. Run **Nightly** with addon
+3. Build the legacy add-on xpi. Run **Nightly** with add-on
 
    `npm run firefox`
 
@@ -92,7 +92,7 @@ npm install
    * [`browser console`][link-browser-console]
    * `about:debugging`.
 
-5. Restart / re-run after addon changes.
+5. Restart / re-run after add-on changes.
 
 Repeat Steps 2-5 as necessary.
 
@@ -105,7 +105,7 @@ See <https://github.com/mozilla/shield-studies-addon-template/docs/DEV.md>.
 Note: see [about the #kittens study](#kittens) for architecture of the particulars of the example study.
 
 * Shield-Studies-Addon-Utils
-* Legacy Addon framing code
+* Legacy Add-on framing code
 * UI / Feature
 
   * (optional) Web Extension, embedded
@@ -156,11 +156,11 @@ studyUtils.telemetry({ evt: "click", button: "share", times: "3" });
 * `node_modules/shield-studies-addon-utils/dist/studyUtils.jsm`
 * Github: [mozilla/shield-studies-addon-utils](https://github.com/mozilla/shield-studies-addon-utils)
 
-### Legacy Addons
+### Legacy Add-ons
 
-**Note**: to send Telemetry and see the ClientId, study addons require `Components.utils` (Chrome) privileges. Firefox webExtensions do not have those privileges. All Study Addons must be [Legacy Extensions][link-legacy].
+**Note**: to send Telemetry and see the ClientId, study add-ons require `Components.utils` (Chrome) privileges. Firefox webExtensions do not have those privileges. All Study Add-ons must be [Legacy Extensions][link-legacy].
 
-A **Legacy Addon** consists of:
+A **Legacy Add-on** consists of:
 
 * files
 
@@ -236,7 +236,7 @@ Note:
 | `install`        | `su.startup(ADDON_INSTALL)`     | During `boostrap.js:startup`                                                               |
 | none sent        | `su.startup(<other reasons>)`   | Never                                                                                      |
 | **ENDINGS**      |                                 | Affected by the `endings` config value.                                                    |
-| `user-disable`   | `su.endStudy("user-disable")`   | Implies user uninstalled or disabled addon, or (BUG) Normandy uninstalled it.              |
+| `user-disable`   | `su.endStudy("user-disable")`   | Implies user uninstalled or disabled add-on, or (BUG) Normandy uninstalled it.              |
 | `expired`        | `su.endStudy("expired")`        | Time-limited study reached expiration.                                                     |
 | `ended-positive` | `su.endStudy("ended-positive")` | General study-defined 'good ending', such as attempting to use feature.                    |
 | `ended-negative` | `su.endStudy("ended-negative")` | General study-defined 'bad ending', such as clicking 'I do not like this feature'.         |
@@ -296,11 +296,11 @@ studyUtils.endStudy("user-attempted-signup");
 
 ### client
 
-1. **Use the QA Helper Addon**
+1. **Use the QA Helper Add-on**
 
    The QA-Shield-Study-Helper lists the `payload.data` field for every `shield-study` and `shield-study-addon` ping.
 
-   [Bugzilla for QA Helper Addon](https://bugzilla.mozilla.org/show_bug.cgi?id=1407757)
+   [Bugzilla for QA Helper Add-on](https://bugzilla.mozilla.org/show_bug.cgi?id=1407757)
    [direct install link for Signed XPI for @qa-shield-study-helper-1.0.0.xpi][qa-helper-addon-direct]
 
    Example output:
@@ -409,11 +409,11 @@ Main telemetry is tagged with the user's currently running experiments so that t
 
 After the experiment, the add-on is remotely uninstalled. In rare occasions, it remains installed until a new Firefox update is released.
 
-### Legacy Addons
+### Legacy Add-ons
 
 Debugging `Cu.import`.
 
-* use `run-firefox` to 'try again' after any change to modules. "Reload addon" will probably not work.
+* use `run-firefox` to 'try again' after any change to modules. "Reload add-on" will probably not work.
 * Based on `chrome.manifest` files.
 * `chrome.manifest` paths can't have `@ # ; : ? /`
 * `chrome.manifest` isn't read yet in `bootstrap.js` main scope, OR during `install`. It is read during `startup` and `shutdown`
@@ -493,7 +493,7 @@ Debugging `Cu.import`.
 
   * Send ending ping
   * Open a url for that ending if defined
-  * Uninstalls addon
+  * Uninstalls add-on
 
 ### Running
 
@@ -577,7 +577,7 @@ if at template...
 say
 Acutally, read the docs at SSAU there.
 
-## Getting QA of your addons
+## Getting QA of your add-ons
 
 https://mana.mozilla.org/wiki/display/PI/PI+Request
 
