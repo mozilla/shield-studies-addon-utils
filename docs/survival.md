@@ -1,4 +1,28 @@
-Surviving on shield island
+# Surviving on Shield island
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Contents**
+
+- [Prologue](#prologue)
+- [Telemetry First Development](#telemetry-first-development)
+- [An EMPTY STUDY.](#an-empty-study)
+- [Do I](#do-i)
+- [But I like making User Interface?](#but-i-like-making-user-interface)
+- [Wait, did you say legacy add-on?](#wait-did-you-say-legacy-add-on)
+- [But I have been buildling UI in pure Legacy Extensions since Firefox 2.](#but-i-have-been-buildling-ui-in-pure-legacy-extensions-since-firefox-2)
+- [Tools and inventory](#tools-and-inventory)
+  - [> x template](#-x-template)
+- [Part 1, instrumenting buttons in an embedded web extension.](#part-1-instrumenting-buttons-in-an-embedded-web-extension)
+  - [Action and Probes](#action-and-probes)
+  - [side-by-side deployment](#side-by-side-deployment)
+  - [building 2 buttons.](#building-2-buttons)
+- [Full List of All Shield Telemetry Spoilers](#full-list-of-all-shield-telemetry-spoilers)
+- [Shield Study Utils Api](#shield-study-utils-api)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## Prologue
 
 You are a wizened and skillful dev. Perhaps you have built a 99.99% uptime website serving millions of users, or you built the firefox awesomebar.... but can you SURVIVE SHIELD ISLAND?
 
