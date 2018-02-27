@@ -1,6 +1,6 @@
 # Engineering Shield Study add-ons
 
-The [template](https://github.com/mozilla/shield-studies-addon-template) contains files for for making a **Shield Study Add-on**. Shield Study Add-ons are **LEGACY ADD-ONS** for Firefox that include the **SHIELD-STUDIES-ADDON-UTILS** (`studyUtils.jsm`) file (4.1.x series).
+The [template](https://github.com/mozilla/shield-studies-addon-template) contains files for making a **Shield Study Add-on**. Shield Study Add-ons are **LEGACY ADD-ONS** for Firefox that include the **SHIELD-STUDIES-ADDON-UTILS** (`studyUtils.jsm`) file (4.1.x series).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -428,7 +428,7 @@ Debugging `Cu.import`.
 2. Is pref set weirdly: `toolkit.telemetry.server => https://incoming.telemetry.mozilla.org`. If you are running from `run_firefox` and maybe lots of other contexts, this pref will not be properly set (because we don’t usually want to send telemetry!) BAD RESULT: “toolkit.telemetry.server”, Pref::new(“https://%(server)s/dummy/telemetry/“))
 3. Have you waited… 3-5 minutes?
 
-* All error messages are misleading. They almost always indicate issues with syntax. Sometimes they indicate mis-spelled fields.
+* All error messages are misleading. They almost always indicate issues with syntax. Sometimes they indicate misspelled fields.
 * No SEMI-COLONS at the end of your sql!
 * Athena >> Presto (10-20x faster!)
 * Be careful with single and double-quotes.
@@ -565,7 +565,7 @@ telemetry();
 
 ## TODO
 
-* debuggin and setting localstore? Prefs are 1000x easier
+* debugging and setting localstore? Prefs are 1000x easier
 * debug both halves.
 
 ## Template
@@ -575,7 +575,7 @@ telemetry();
 
 if at template...
 say
-Acutally, read the docs at SSAU there.
+Actually, read the docs at SSAU there.
 
 ## Getting QA of your add-ons
 

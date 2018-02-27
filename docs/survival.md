@@ -52,7 +52,7 @@ You feel optimistic, despite the long odds of survival.
 You can:
 
 * TELEMETRY: send well-formatted probes
-* SETVARIATION: use the studyName and Telemetry client to consistently and determistically to assign the client to a particular branch
+* SETVARIATION: use the studyName and Telemetry client to consistently and deterministically to assign the client to a particular branch
 
 (see TODO)
 
@@ -70,7 +70,7 @@ Legacy add-on development has challenges.
 
 (taking handbook)
 
-SURVIVAL IN HARD ENVIROMENTS
+SURVIVAL IN HARD ENVIRONMENTS
 
 by Lief Savor
 
@@ -82,7 +82,7 @@ so that you can make decisions about WHICH APPROACH.
 
 ## Telemetry First Development
 
-Everything in a SHIELD STUDY leads to allowing ANALYSTS to get data quickly, reliably, and consistently so that they can do analysis of this form:
+Everything in a SHIELD STUDY leads to allowing ANALYSTS to get data quickly, reliably, and consistently so that they can do an analysis of this form:
 
 * for Which VARIATION of a feature
 * did users 'do best'.
@@ -91,7 +91,7 @@ Your SHIELD-STUDY Legacy Add-on is a DELIVERY MECHANISM to collect that data.
 
 An example analysis table
 
-An exmple telemetry `shield-study-addon` probe that contributes to that.
+An example telemetry `shield-study-addon` probe that contributes to that.
 
 Here is the SQL.
 
@@ -105,17 +105,17 @@ Here is the SQL.
 
 Don't we all?! Mocks are fun! Styling is fun!
 
-starting with Telemetry makes soe of the... unexpected decisions make sense.
+starting with Telemetry makes some of the... unexpected decisions make sense.
 
 ## Wait, did you say legacy add-on?
 
-Yes. Web Extensions CAN'T SEND TELEMETRY. We need Firefox (chrome) privileges to access the `TelemetryController.jsm`. That meanss
+Yes. Web Extensions CAN'T SEND TELEMETRY. We need Firefox (chrome) privileges to access the `TelemetryController.jsm`. That means
 
 > make webExtension
 
 Good idea, for some UI's.
 
-## But I have been buildling UI in pure Legacy Extensions since Firefox 2.
+## But I have been building UI in pure Legacy Extensions since Firefox 2.
 
 Awesome work! Firebug was awesome. You have no further use of this guide, and should go to [TODO:Shield-Studies-Addon-Utils-api.md].
 

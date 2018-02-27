@@ -5,7 +5,7 @@
 # Shield Studies Add-on Utils
 [![Build Status](https://travis-ci.org/mozilla/shield-studies-addon-utils.svg?branch=master)](https://travis-ci.org/mozilla/shield-studies-addon-utils)
 
-A Firefox javascript moduled to be bundled with shield study add-ons (as `StudyUtils.jsm`). Provides these capabilities:
+A Firefox javascript module to be bundled with shield study add-ons (as `StudyUtils.jsm`). Provides these capabilities:
 
 1. **Suggest variation for a client**
 2. **Report study lifecycle data** using Telemetry
