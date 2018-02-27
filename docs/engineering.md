@@ -8,7 +8,6 @@
 
 **Contents**
 
-* [`npm` commands for `Shield-Study-Template`](#npm-commands-for-shield-study-template)
 * [What is a Shield Study?](#what-is-a-shield-study)
 * [tl;dr - Running the Template Study](#tldr---running-the-template-study)
 * [Folder Contents](#folder-contents)
@@ -41,19 +40,6 @@
 * [Links and References](#links-and-references)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-## `npm` commands for `Shield-Study-Template`
-
-```
-    "eslint": "eslint addon --ext jsm --ext js --ext json",
-    "prebuild": "cp node_modules/shield-studies-addon-utils/dist/StudyUtils.jsm addon/",
-    "build": "bash ./bin/xpi.sh",
-    "test": "export XPI=dist/linked-addon.xpi && npm run build && mocha test/functional_tests.js --retry 2",
-    "harness_test": "export XPI=dist/linked-addon.xpi && mocha test/functional_tests.js --retry 2 --reporter json",
-    "firefox": "export XPI=dist/linked-addon.xpi && npm run build && node run-firefox.js",
-    "watch": "onchange 'addon/**' 'package.json' 'template/**' -e addon/install.rdf -e addon/chrome.manifest -e addon/StudyUtils.jsm -- npm run build -- '{{event}} {{changed}} $(date)'",
-    "sign": "echo 'TBD, see: https://bugzilla.mozilla.org/show_bug.cgi?id=1407757'"
-```
 
 ## What is a Shield Study?
 
