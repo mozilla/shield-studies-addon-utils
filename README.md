@@ -14,13 +14,13 @@ A Firefox JavaScript module to be bundled with shield study add-ons (as `StudyUt
 
 The pings end up in the `shield-study-addon` Telemetry bucket for faster analysis.
 
-Allows add-on developers to build [Shield Study][shield-wiki] (Normandy) compatible add-ons without having to think very much.
+Allows add-on developers to build [Shield Study](https://wiki.mozilla.org/Firefox/Shield/Shield_Studies) ([Normandy](https://wiki.mozilla.org/Firefox/Shield#Normandy_-_User_Profile_Matching_and_Recipe_Deployment)) compatible add-ons without having to think very much.
 
 ## What You are Building
 
 - You are building a [LEGACY ADD-ON](https://developer.mozilla.org/Add-ons/Legacy_add_ons). To deploy these after 57, you will need the magic special signing.
 - Web Extensions are not strong enough [yet](https://github.com/mozilla/shield-studies-addon-utils/issues/45).
-- Jetpack / addon-sdk is NOT AT ALL SUPPORTED since v4.
+- Jetpack / addon-sdk is NOT AT ALL SUPPORTED since v4 of this utils library.
 
 ## Get started
 
@@ -70,7 +70,6 @@ Using this, you get this analysis FOR FREE (and it's fast!)
 - open an issue
 - hack and file a PR
 
-
 ## History of major versions
 
 - v4.x: (proposed)  additional functions for common cases
@@ -78,3 +77,11 @@ Using this, you get this analysis FOR FREE (and it's fast!)
 - v3: Attempt to formalize on `shield-study` PACKET version 3.  Jetpack based.  Prototype used for `raymak/page-reload`.  All work abandoned, and no formal npm release in this series.  Work done at `v3-shield-packet-format` branch.  LAST JETPACK (addon-sdk) RELEASE.
 - v2: Code refactor to es6 `class` with event models.  Added cli tooling.  Packet format is still arbitrary and per-study.  Jetpack based.  Last used in studies in Q2 2017.
 - v1: Initial work and thinking.  Telemetry packets are rather arbitrary.  Jetpack based.
+
+### Legacy template repositories
+
+Repositories that should not be used as templates for new studies:
+
+<https://github.com/gregglind/template-shield-study> - The incubation repo for the updated structure and contents of this repo, ported to the official template in late 2017.
+<https://github.com/benmiroglio/shield-study-embedded-webextension-hello-world-example> - A repository that was created in 2017 to help new Shield/Pioneer engineers to quickly get up and running with a Shield add-on, built upon an older and much more verbose add-on template. It's documentation has been ported to the official template repo.
+<https://github.com/johngruen/shield-template> - Despite its name, this repo is for static amo consent pages and does not contain any template for Shield studies
