@@ -21,19 +21,19 @@ Concepts:
 **Contents**
 
 - [Questions?](#questions)
-- [project goal](#project-goal)
+- [Project goal](#project-goal)
 - [Analysis](#analysis)
 - [Engineering steps](#engineering-steps)
   - [WebExtension with a button](#webextension-with-a-button)
   - [Multiple Button Choices](#multiple-button-choices)
   - [Send Message for Telemetry](#send-message-for-telemetry)
   - [Embedded WebExtension](#embedded-webextension)
-  - [incorporating shield to listen](#incorporating-shield-to-listen)
+  - [Incorporating shield to listen](#incorporating-shield-to-listen)
 - [Advanced](#advanced)
   - [Non embedded webExtension](#non-embedded-webextension)
-- [good probes](#good-probes)
+- [Good probes](#good-probes)
 - [Why Shield-Utils?](#why-shield-utils)
-- [surveys?](#surveys)
+- [Surveys?](#surveys)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -45,7 +45,7 @@ Concepts:
 
 (Steps, order unclear)
 
-## project goal
+## Project goal
 
 ## Analysis
 
@@ -67,7 +67,7 @@ Work on TELEMETRY.md
 
 Plumb the listener
 
-### incorporating shield to listen
+### Incorporating shield to listen
 
 * PERMANENT Randomization, revisited.
 * Telemetry sending
@@ -78,11 +78,11 @@ Plumb the listener
 
 ### Non embedded webExtension
 
-## good probes
+## Good probes
 
 * good probes mirror the analysis.
 * Analysis wants to be sql. Try to make the probes reflect that.
 
 ## Why Shield-Utils?
 
-## surveys?
+## Surveys?

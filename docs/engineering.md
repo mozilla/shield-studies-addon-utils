@@ -1,6 +1,6 @@
 # Engineering Shield Study add-ons
 
-The [template](https://github.com/mozilla/shield-studies-addon-template) contains files for making a **Shield Study Add-on**. Shield Study Add-ons are **LEGACY ADD-ONS** for Firefox that include the **SHIELD-STUDIES-ADDON-UTILS** (`studyUtils.jsm`) file (4.1.x series).
+The [template](https://github.com/mozilla/shield-studies-addon-template) contains files for making a **Shield Study Add-on**. Shield Study Add-ons are **LEGACY ADD-ONS** for Firefox that include the **SHIELD-STUDIES-ADDON-UTILS** (`StudyUtils.jsm`) file (4.1.x series).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -10,13 +10,13 @@ The [template](https://github.com/mozilla/shield-studies-addon-template) contain
 - [tl;dr - Creating a new Shield Study add-on based on the template](#tldr---creating-a-new-shield-study-add-on-based-on-the-template)
 - [Typical Directory Contents of Shield Study add-on](#typical-directory-contents-of-shield-study-add-on)
 - [Parts of A Shield Study (General)](#parts-of-a-shield-study-general)
-  - [Shield-Studies-Addon-Utils (`studyUtils.jsm`)](#shield-studies-addon-utils-studyutilsjsm)
+  - [Shield-Studies-Addon-Utils (`StudyUtils.jsm`)](#shield-studies-addon-utils-studyutilsjsm)
   - [Legacy Add-ons](#legacy-add-ons)
   - [Your Feature, with Variations](#your-feature-with-variations)
 - [<span id="shield-telemetry">Shield Telemetry Details</span>](#span-idshield-telemetryshield-telemetry-detailsspan)
   - [Shield Study Life-Cycle Telemetry](#shield-study-life-cycle-telemetry)
   - [Expected ping counts](#expected-ping-counts)
-  - [How Probes are Sent from `studyUtils.jsm`](#how-probes-are-sent-from-studyutilsjsm)
+  - [How Probes are Sent from `StudyUtils.jsm`](#how-probes-are-sent-from-studyutilsjsm)
   - [Send your own probes](#send-your-own-probes)
   - [Defining Custom Study Endings](#defining-custom-study-endings)
 - [Viewing Sent Telemetry Probes](#viewing-sent-telemetry-probes)
@@ -60,32 +60,35 @@ The [template](https://github.com/mozilla/shield-studies-addon-template) contain
 
 1. **One time**:
 
-   * Clone this directory
+   * Clone this repository
 
    ```
-   git clone template
+   git clone https://github.com/mozilla/shield-studies-addon-template.git my-shield-study
+   cd my-shield-study
    rm -rf {.git,docs}/
    git init
    ```
 
    * install dependencies, including [`mozilla/shield-studies-addon-utils`][mozilla-ssau].
 
-```
-npm install
-```
+    ```
+    npm install
+    ```
 
-    * install **Firefox Nightly** for easier development
+   * install **Firefox Nightly** for easier development
 
 2. Edit and examine files:
 
+   * `package.json`
    * `addon/bootstrap.js`
    * `addon/Config.jsm`
-   * `package.json`
    * `addon/lib/*`
 
 3. Build the legacy add-on xpi. Run **Nightly** with add-on
 
-   `npm run firefox`
+    ```
+    npm run firefox
+    ```
 
 4. Debug using
 
@@ -113,13 +116,13 @@ Note: see [about the #kittens study](#kittens) for architecture of the particula
 
 More details on each follow.
 
-### Shield-Studies-Addon-Utils (`studyUtils.jsm`)
+### Shield-Studies-Addon-Utils (`StudyUtils.jsm`)
 
-`studyUtils.jsm` is a Firefox JavaScript module that provides these capabilities:
+`StudyUtils.jsm` is a Firefox JavaScript module that provides these capabilities:
 
 1. **suggest variation for a client**
 
-* deterministic and predicatable: every startup will suggest the same variation for a particular client
+* deterministic and predictable: every startup will suggest the same variation for a particular client
 * per client: uses sha256 hash of (Telemetry Id, study name)
 
 ```javascript
@@ -153,8 +156,8 @@ studyUtils.telemetry({ evt: "click", button: "share", times: "3" });
 **Links** for `studyUtils` code:
 
 * `npm install shield-studies-addon-utils`
-* `node_modules/shield-studies-addon-utils/dist/studyUtils.jsm`
-* Github: [mozilla/shield-studies-addon-utils](https://github.com/mozilla/shield-studies-addon-utils)
+* `node_modules/shield-studies-addon-utils/dist/StudyUtils.jsm`
+* GitHub: [mozilla/shield-studies-addon-utils](https://github.com/mozilla/shield-studies-addon-utils)
 
 ### Legacy Add-ons
 
@@ -211,11 +214,11 @@ If you do not have UI
 
 All **N** enters will eventually have an ending and an exit.
 
-There will be **i** installs ( \\( i \le N \\) ).
+There will be **i** installs `( i <= N )`.
 
-There will be **x** ineligibles ( \\( x \le N \\) ).
+There will be **x** ineligibles `( x <= N )`.
 
-\\( N = i + x \\)
+`( N = i + x )`
 
 ```
      enter  ==  exit
@@ -224,7 +227,7 @@ There will be **x** ineligibles ( \\( x \le N \\) ).
     install == user-disable + expired + ended-*
 ```
 
-### How Probes are Sent from `studyUtils.jsm`
+### How Probes are Sent from `StudyUtils.jsm`
 
 Note:
 
@@ -312,8 +315,6 @@ studyUtils.endStudy("user-attempted-signup");
    study_name    57-perception-shield-study
    addon_version 1.0.0
    version       3
-   ```
-
 
     2017-10-09T14:16:18.042Z shield-study
     {
@@ -355,7 +356,7 @@ studyUtils.endStudy("user-attempted-signup");
 
 2. Use `about:telemetry`, and look for `shield-study` or `shield-study-addon` probes.
 
-### Collector (example s.t.m.o query)
+### Collector (example [s.t.m.o](http://sql.telemetry.mozilla.org/) query)
 
 [Example s.t.m.o study states query for "Pioneer Enrollement"][stmo-study-states] shows the Study lifecycle for every client in the Pioneer Enrollment study.
 
@@ -385,7 +386,7 @@ Style:
 * Embedded Web Extension
 * Telmetry on 'button click'
 * has one "end early" condition: 3 or more button presses during a sesson.
-* Goal: test if 'interest rate is higher for kittens or puppies, using a PROXY MEASURE -- "button clicks"
+* Goal: test if interest rate is higher for kittens or puppies, using a PROXY MEASURE -- "button clicks"
 
 ## Get More Help
 
@@ -397,7 +398,7 @@ Style:
 
 I am on Windows. How can I build?
 
-* (see TODO link to the issue and instructions by JCrawford)
+* See [Windows setup docs in the template repository](https://github.com/mozilla/shield-studies-addon-template/blob/master/docs/WINDOWS_SETUP.md)
 
 ### studyUtils
 
@@ -489,7 +490,7 @@ Debugging `Cu.import`.
 
   If 'install', send an install ping.
 
-* `studyUtils.endStudy(endingName)`;
+* `studyUtils.endStudy(endingName)`
 
   * Send ending ping
   * Open a url for that ending if defined
@@ -536,7 +537,7 @@ startup(reason) {
   studyUtils.startup(reason, isEligible)
 
   if INSTALL {
-    if !isEliglbe endStudy('ineligible')
+    if !isEligible endStudy('ineligible')
 
   }
   startup(reason)

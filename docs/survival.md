@@ -10,7 +10,7 @@
 - [Do I](#do-i)
 - [But I like making User Interface?](#but-i-like-making-user-interface)
 - [Wait, did you say legacy add-on?](#wait-did-you-say-legacy-add-on)
-- [But I have been buildling UI in pure Legacy Extensions since Firefox 2.](#but-i-have-been-buildling-ui-in-pure-legacy-extensions-since-firefox-2)
+- [But I have been building UI in pure Legacy Extensions since Firefox 2.](#but-i-have-been-building-ui-in-pure-legacy-extensions-since-firefox-2)
 - [Tools and inventory](#tools-and-inventory)
   - [> x template](#-x-template)
 - [Part 1, instrumenting buttons in an embedded web extension.](#part-1-instrumenting-buttons-in-an-embedded-web-extension)
@@ -31,7 +31,7 @@ You are a wizened and skillful dev. Perhaps you have built a 99.99% uptime websi
 * Firefox nightly, firefox beta, firefox (release)
 * npm
 * git / github
-* shield-studies-addon-utils (studyUtils.jsm)
+* shield-studies-addon-utils (StudyUtils.jsm)
 
 > Look
 
