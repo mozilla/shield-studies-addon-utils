@@ -22,6 +22,7 @@
     "eslint-plugin-json": "^1.2.0",
     "eslint-plugin-mozilla": "^0.4.0",
     "fixpack": "^2.3.1",
+    "prettier": "^1.11.0",
     "shield-study-schemas": "^0.8.3",
     "webpack": "^2.6.1"
   },
@@ -51,6 +52,7 @@
     "prepack": "fixpack && npm run dist",
     "pretest": "npm run dist && npm run build-test-addon-xpi",
     "test": "export FIREFOX_BINARY=firefox && XPI_NAME=test-addon/test-addon.xpi mocha test",
-    "doctoc": "doctoc --title '**Contents**' docs/*.md"
+    "predocformat": "doctoc --title '**Contents**' docs/*.md",
+    "docformat": "prettier '**/*.md' --write"
   }
 }

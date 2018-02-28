@@ -3,47 +3,49 @@
 The [template](https://github.com/mozilla/shield-studies-addon-template) contains files for making a **Shield Study Add-on**. Shield Study Add-ons are **LEGACY ADD-ONS** for Firefox that include the **SHIELD-STUDIES-ADDON-UTILS** (`StudyUtils.jsm`) file (4.1.x series).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
+
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Contents**
 
-- [What is a Shield Study?](#what-is-a-shield-study)
-- [tl;dr - Creating a new Shield Study add-on based on the template](#tldr---creating-a-new-shield-study-add-on-based-on-the-template)
-- [Typical Directory Contents of Shield Study add-on](#typical-directory-contents-of-shield-study-add-on)
-- [Parts of A Shield Study (General)](#parts-of-a-shield-study-general)
-  - [Shield-Studies-Addon-Utils (`StudyUtils.jsm`)](#shield-studies-addon-utils-studyutilsjsm)
-  - [Legacy Add-ons](#legacy-add-ons)
-  - [Your Feature, with Variations](#your-feature-with-variations)
-- [<span id="shield-telemetry">Shield Telemetry Details</span>](#span-idshield-telemetryshield-telemetry-detailsspan)
-  - [Shield Study Life-Cycle Telemetry](#shield-study-life-cycle-telemetry)
-  - [Expected ping counts](#expected-ping-counts)
-  - [How Probes are Sent from `StudyUtils.jsm`](#how-probes-are-sent-from-studyutilsjsm)
-  - [Send your own probes](#send-your-own-probes)
-  - [Defining Custom Study Endings](#defining-custom-study-endings)
-- [Viewing Sent Telemetry Probes](#viewing-sent-telemetry-probes)
-  - [client](#client)
-  - [Collector (example s.t.m.o query)](#collector-example-stmo-query)
-- [Engineering Side-by-Side (a/b) Feature Variations](#engineering-side-by-side-ab-feature-variations)
-- [Kittens or Puppers, the Critical Study We have all been waiting for](#kittens-or-puppers-the-critical-study-we-have-all-been-waiting-for)
-- [Get More Help](#get-more-help)
-- [Gotchas / FAQ / Ranting](#gotchas--faq--ranting)
-  - [General](#general)
-  - [studyUtils](#studyutils)
-  - [The lifecycle and deployment of the add-on once it gets released](#the-lifecycle-and-deployment-of-the-add-on-once-it-gets-released)
-  - [Legacy Add-ons](#legacy-add-ons-1)
-  - [s.t.m.o - sql.telemetry.mozilla.org](#stmo---sqltelemetrymozillaorg)
-    - [Where are my pings?](#where-are-my-pings)
-- [Glossary](#glossary)
-- [OTHER DOCS](#other-docs)
-- [`StudyUtils.jsm` api used in `bootstrap.js`](#studyutilsjsm-api-used-in-bootstrapjs)
-  - [Configuration](#configuration)
-  - [Lifecycle](#lifecycle)
-  - [Running](#running)
-  - [TODO](#todo)
-- [FIXES](#fixes)
-- [TODO](#todo-1)
-- [Template](#template)
-- [Getting QA of your add-ons](#getting-qa-of-your-add-ons)
-- [Links and References](#links-and-references)
+* [What is a Shield Study?](#what-is-a-shield-study)
+* [tl;dr - Creating a new Shield Study add-on based on the template](#tldr---creating-a-new-shield-study-add-on-based-on-the-template)
+* [Typical Directory Contents of Shield Study add-on](#typical-directory-contents-of-shield-study-add-on)
+* [Parts of A Shield Study (General)](#parts-of-a-shield-study-general)
+  * [Shield-Studies-Addon-Utils (`StudyUtils.jsm`)](#shield-studies-addon-utils-studyutilsjsm)
+  * [Legacy Add-ons](#legacy-add-ons)
+  * [Your Feature, with Variations](#your-feature-with-variations)
+* [<span id="shield-telemetry">Shield Telemetry Details</span>](#span-idshield-telemetryshield-telemetry-detailsspan)
+  * [Shield Study Life-Cycle Telemetry](#shield-study-life-cycle-telemetry)
+  * [Expected ping counts](#expected-ping-counts)
+  * [How Probes are Sent from `StudyUtils.jsm`](#how-probes-are-sent-from-studyutilsjsm)
+  * [Send your own probes](#send-your-own-probes)
+  * [Defining Custom Study Endings](#defining-custom-study-endings)
+* [Viewing Sent Telemetry Probes](#viewing-sent-telemetry-probes)
+  * [client](#client)
+  * [Collector (example s.t.m.o query)](#collector-example-stmo-query)
+* [Engineering Side-by-Side (a/b) Feature Variations](#engineering-side-by-side-ab-feature-variations)
+* [Kittens or Puppers, the Critical Study We have all been waiting for](#kittens-or-puppers-the-critical-study-we-have-all-been-waiting-for)
+* [Get More Help](#get-more-help)
+* [Gotchas / FAQ / Ranting](#gotchas--faq--ranting)
+  * [General](#general)
+  * [studyUtils](#studyutils)
+  * [The lifecycle and deployment of the add-on once it gets released](#the-lifecycle-and-deployment-of-the-add-on-once-it-gets-released)
+  * [Legacy Add-ons](#legacy-add-ons-1)
+  * [s.t.m.o - sql.telemetry.mozilla.org](#stmo---sqltelemetrymozillaorg)
+    * [Where are my pings?](#where-are-my-pings)
+* [Glossary](#glossary)
+* [OTHER DOCS](#other-docs)
+* [`StudyUtils.jsm` api used in `bootstrap.js`](#studyutilsjsm-api-used-in-bootstrapjs)
+  * [Configuration](#configuration)
+  * [Lifecycle](#lifecycle)
+  * [Running](#running)
+  * [TODO](#todo)
+* [FIXES](#fixes)
+* [TODO](#todo-1)
+* [Template](#template)
+* [Getting QA of your add-ons](#getting-qa-of-your-add-ons)
+* [Links and References](#links-and-references)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -58,44 +60,45 @@ The [template](https://github.com/mozilla/shield-studies-addon-template) contain
 
 ## tl;dr - Creating a new Shield Study add-on based on the template
 
-1. **One time**:
+1.  **One time**:
 
-   * Clone this repository
+    * Clone this repository
 
-   ```
-   git clone https://github.com/mozilla/shield-studies-addon-template.git my-shield-study
-   cd my-shield-study
-   rm -rf {.git,docs}/
-   git init
-   ```
+    ```
+    git clone https://github.com/mozilla/shield-studies-addon-template.git my-shield-study
+    cd my-shield-study
+    rm -rf {.git,docs}/
+    git init
+    ```
 
-   * install dependencies, including [`mozilla/shield-studies-addon-utils`][mozilla-ssau].
+    * install dependencies, including [`mozilla/shield-studies-addon-utils`][mozilla-ssau].
+
 
     ```
     npm install
     ```
 
-   * install **Firefox Nightly** for easier development
+    * install **Firefox Nightly** for easier development
 
-2. Edit and examine files:
+2.  Edit and examine files:
 
-   * `package.json`
-   * `addon/bootstrap.js`
-   * `addon/Config.jsm`
-   * `addon/lib/*`
+    * `package.json`
+    * `addon/bootstrap.js`
+    * `addon/Config.jsm`
+    * `addon/lib/*`
 
-3. Build the legacy add-on xpi. Run **Nightly** with add-on
+3.  Build the legacy add-on xpi. Run **Nightly** with add-on
 
     ```
     npm run firefox
     ```
 
-4. Debug using
+4.  Debug using
 
-   * [`browser console`][link-browser-console]
-   * `about:debugging`.
+    * [`browser console`][link-browser-console]
+    * `about:debugging`.
 
-5. Restart / re-run after add-on changes.
+5.  Restart / re-run after add-on changes.
 
 Repeat Steps 2-5 as necessary.
 
@@ -120,7 +123,7 @@ More details on each follow.
 
 `StudyUtils.jsm` is a Firefox JavaScript module that provides these capabilities:
 
-1. **suggest variation for a client**
+1.  **suggest variation for a client**
 
 * deterministic and predictable: every startup will suggest the same variation for a particular client
 * per client: uses sha256 hash of (Telemetry Id, study name)
@@ -130,7 +133,7 @@ const variation = await studyUtils.deterministicVariation(myWeightedVariations);
 studyUtils.setVariation(variation);
 ```
 
-2. **Report lifecycle data** using Telemetry
+2.  **Report lifecycle data** using Telemetry
 
 * `shield-study` Telemetry bucket
 * [about Shield Telemetry](#shield-telemetry)
@@ -142,7 +145,7 @@ studyUtils.endStudy(reason);
 studyUtils.startup(ADDON_INSTALL);
 ```
 
-3. **Report feature interaction and success data** using Telemetry
+3.  **Report feature interaction and success data** using Telemetry
 
 * `shield-study-addon` Telemetry bucket
 
@@ -151,7 +154,7 @@ studyUtils.startup(ADDON_INSTALL);
 studyUtils.telemetry({ evt: "click", button: "share", times: "3" });
 ```
 
-4. **Annotate Telemetry Enviroment** to mark the user as special, and copy every `main` and other ping to a special bucket for faster analysis.
+4.  **Annotate Telemetry Enviroment** to mark the user as special, and copy every `main` and other ping to a special bucket for faster analysis.
 
 **Links** for `studyUtils` code:
 
@@ -239,7 +242,7 @@ Note:
 | `install`        | `su.startup(ADDON_INSTALL)`     | During `boostrap.js:startup`                                                               |
 | none sent        | `su.startup(<other reasons>)`   | Never                                                                                      |
 | **ENDINGS**      |                                 | Affected by the `endings` config value.                                                    |
-| `user-disable`   | `su.endStudy("user-disable")`   | Implies user uninstalled or disabled add-on, or (BUG) Normandy uninstalled it.              |
+| `user-disable`   | `su.endStudy("user-disable")`   | Implies user uninstalled or disabled add-on, or (BUG) Normandy uninstalled it.             |
 | `expired`        | `su.endStudy("expired")`        | Time-limited study reached expiration.                                                     |
 | `ended-positive` | `su.endStudy("ended-positive")` | General study-defined 'good ending', such as attempting to use feature.                    |
 | `ended-negative` | `su.endStudy("ended-negative")` | General study-defined 'bad ending', such as clicking 'I do not like this feature'.         |
@@ -255,7 +258,6 @@ Note:
 * exactly one 'ending' ping (which might be INELIGIBLE, EXPIRED, USER-DISABLE, ENDED-\*)
 
 **Note**: [Full Schemas - gregglind/shield-study-schemas](https://github.com/gregglind/shield-study-schemas/tree/master/schemas-client)
-
 
 ### Send your own probes
 
@@ -299,62 +301,62 @@ studyUtils.endStudy("user-attempted-signup");
 
 ### client
 
-1. **Use the QA Helper Add-on**
+1.  **Use the QA Helper Add-on**
 
-   The QA-Shield-Study-Helper lists the `payload.data` field for every `shield-study` and `shield-study-addon` ping.
+    The QA-Shield-Study-Helper lists the `payload.data` field for every `shield-study` and `shield-study-addon` ping.
 
-   [Bugzilla for QA Helper Add-on](https://bugzilla.mozilla.org/show_bug.cgi?id=1407757)
-   [direct install link for Signed XPI for @qa-shield-study-helper-1.0.0.xpi][qa-helper-addon-direct]
+    [Bugzilla for QA Helper Add-on](https://bugzilla.mozilla.org/show_bug.cgi?id=1407757)
+    [direct install link for Signed XPI for @qa-shield-study-helper-1.0.0.xpi][qa-helper-addon-direct]
 
-   Example output:
+    Example output:
 
-   ```text
-   // common fields
+    ```text
+    // common fields
 
-   branch        up-to-expectations-1        // should describe Question text
-   study_name    57-perception-shield-study
-   addon_version 1.0.0
-   version       3
+    branch        up-to-expectations-1        // should describe Question text
+    study_name    57-perception-shield-study
+    addon_version 1.0.0
+    version       3
 
-    2017-10-09T14:16:18.042Z shield-study
-    {
-      "study_state": "enter"
-    }
-    2017-10-09T14:16:18.055Z shield-study
-    {
-      "study_state": "installed"
-    }
-    2017-10-09T14:16:18.066Z shield-study-addon
-    {
-      "attributes": {
-        "event": "prompted",
-        "promptType": "notificationBox-strings-1"
-      }
-    }
-    2017-10-09T16:29:44.109Z shield-study-addon
-    {
-      "attributes": {
-        "promptType": "notificationBox-strings-1",
-        "event": "answered",
-        "yesFirst": "1",
-        "score": "0",
-        "label": "not sure",
-        "branch": "up-to-expectations-1",
-        "message": "Is Firefox performing up to your expectations?"
-      }
-    }
-    2017-10-09T16:29:44.188Z shield-study
-    {
-      "study_state": "ended-neutral",
-      "study_state_fullname": "voted"
-    }
-    2017-10-09T16:29:44.191Z shield-study
-    {
-      "study_state": "exit"
-    }
+     2017-10-09T14:16:18.042Z shield-study
+     {
+       "study_state": "enter"
+     }
+     2017-10-09T14:16:18.055Z shield-study
+     {
+       "study_state": "installed"
+     }
+     2017-10-09T14:16:18.066Z shield-study-addon
+     {
+       "attributes": {
+         "event": "prompted",
+         "promptType": "notificationBox-strings-1"
+       }
+     }
+     2017-10-09T16:29:44.109Z shield-study-addon
+     {
+       "attributes": {
+         "promptType": "notificationBox-strings-1",
+         "event": "answered",
+         "yesFirst": "1",
+         "score": "0",
+         "label": "not sure",
+         "branch": "up-to-expectations-1",
+         "message": "Is Firefox performing up to your expectations?"
+       }
+     }
+     2017-10-09T16:29:44.188Z shield-study
+     {
+       "study_state": "ended-neutral",
+       "study_state_fullname": "voted"
+     }
+     2017-10-09T16:29:44.191Z shield-study
+     {
+       "study_state": "exit"
+     }
     ```
 
-2. Use `about:telemetry`, and look for `shield-study` or `shield-study-addon` probes.
+2.  Use `about:telemetry`, and look for `shield-study` or `shield-study-addon` probes.
 
 ### Collector (example [s.t.m.o](http://sql.telemetry.mozilla.org/) query)
 
@@ -364,20 +366,20 @@ studyUtils.endStudy("user-attempted-signup");
 
 Note: this is a gloss / summary.
 
-1. Your feature has a `startup` or `configuration` method that does different things depending on which variation is chosen.
+1.  Your feature has a `startup` or `configuration` method that does different things depending on which variation is chosen.
 
-   ```javascript
-   // bootstrap.js startup()...
-   const variation = await studyUtils.deterministicVariation(myWeightedVariations);
-   studyUtils.setVariation(variation);
+    ```javascript
+    // bootstrap.js startup()...
+    const variation = await studyUtils.deterministicVariation(myWeightedVariations);
+    studyUtils.setVariation(variation);
 
-   //...
+    //...
 
-   // start the feature
-   TheFeature.startup(variation)
-   ```
+    // start the feature
+    TheFeature.startup(variation)
+    ```
 
-2. Ensure that your Feature measures every variation, including the Control (no-effect).
+2.  Ensure that your Feature measures every variation, including the Control (no-effect).
 
 ## Kittens or Puppers, the Critical Study We have all been waiting for
 
@@ -425,9 +427,9 @@ Debugging `Cu.import`.
 
 #### Where are my pings?
 
-1. Are you seeing them in `about:telemetry` and / or the QA-Study-Helper. If YES, then they are being reported at client, good! If NO: check the config settings for your study for `telemetry.send => true`
-2. Is pref set weirdly: `toolkit.telemetry.server => https://incoming.telemetry.mozilla.org`. If you are running from `run_firefox` and maybe lots of other contexts, this pref will not be properly set (because we don’t usually want to send telemetry!) BAD RESULT: “toolkit.telemetry.server”, Pref::new(“https://%(server)s/dummy/telemetry/“))
-3. Have you waited… 3-5 minutes?
+1.  Are you seeing them in `about:telemetry` and / or the QA-Study-Helper. If YES, then they are being reported at client, good! If NO: check the config settings for your study for `telemetry.send => true`
+2.  Is pref set weirdly: `toolkit.telemetry.server => https://incoming.telemetry.mozilla.org`. If you are running from `run_firefox` and maybe lots of other contexts, this pref will not be properly set (because we don’t usually want to send telemetry!) BAD RESULT: “toolkit.telemetry.server”, Pref::new(“https://%(server)s/dummy/telemetry/“))
+3.  Have you waited… 3-5 minutes?
 
 * All error messages are misleading. They almost always indicate issues with syntax. Sometimes they indicate misspelled fields.
 * No SEMI-COLONS at the end of your sql!

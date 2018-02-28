@@ -2,8 +2,8 @@
 
 Learner goals:
 
-1. build a shield-instrumented Embedded Web Extension
-2. understand how probes, analysis, code relate
+1.  build a shield-instrumented Embedded Web Extension
+2.  understand how probes, analysis, code relate
 
 Concepts:
 
@@ -17,23 +17,25 @@ Concepts:
   * `run-firefox.js`
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
+
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Contents**
 
-- [Questions?](#questions)
-- [Project goal](#project-goal)
-- [Analysis](#analysis)
-- [Engineering steps](#engineering-steps)
-  - [WebExtension with a button](#webextension-with-a-button)
-  - [Multiple Button Choices](#multiple-button-choices)
-  - [Send Message for Telemetry](#send-message-for-telemetry)
-  - [Embedded WebExtension](#embedded-webextension)
-  - [Incorporating shield to listen](#incorporating-shield-to-listen)
-- [Advanced](#advanced)
-  - [Non embedded webExtension](#non-embedded-webextension)
-- [Good probes](#good-probes)
-- [Why Shield-Utils?](#why-shield-utils)
-- [Surveys?](#surveys)
+* [Questions?](#questions)
+* [Project goal](#project-goal)
+* [Analysis](#analysis)
+* [Engineering steps](#engineering-steps)
+  * [WebExtension with a button](#webextension-with-a-button)
+  * [Multiple Button Choices](#multiple-button-choices)
+  * [Send Message for Telemetry](#send-message-for-telemetry)
+  * [Embedded WebExtension](#embedded-webextension)
+  * [Incorporating shield to listen](#incorporating-shield-to-listen)
+* [Advanced](#advanced)
+  * [Non embedded webExtension](#non-embedded-webextension)
+* [Good probes](#good-probes)
+* [Why Shield-Utils?](#why-shield-utils)
+* [Surveys?](#surveys)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
