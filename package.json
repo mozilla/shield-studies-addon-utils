@@ -52,7 +52,6 @@
     "prepack": "fixpack && npm run dist",
     "pretest": "npm run dist && npm run build-test-addon-xpi",
     "test": "export FIREFOX_BINARY=firefox && XPI_NAME=test-addon/test-addon.xpi mocha test",
-    "predocformat": "doctoc --title '**Contents**' docs/*.md",
-    "docformat": "prettier '**/*.md' --write"
+    "docformat": "doctoc --title '**Contents**' docs/*.md && prettier '**/*.md' --write"
   }
 }
