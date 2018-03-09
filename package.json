@@ -17,10 +17,12 @@
   },
   "devDependencies": {
     "ajv": "^4.11.2",
+    "doctoc": "^1.3.1",
     "eslint": "^4.0.0",
     "eslint-plugin-json": "^1.2.0",
     "eslint-plugin-mozilla": "^0.4.0",
     "fixpack": "^2.3.1",
+    "prettier": "^1.11.0",
     "shield-study-schemas": "^0.8.3",
     "webpack": "^2.6.1"
   },
@@ -49,6 +51,7 @@
     "predist": "npm run eslint",
     "prepack": "fixpack && npm run dist",
     "pretest": "npm run dist && npm run build-test-addon-xpi",
-    "test": "export FIREFOX_BINARY=firefox && XPI_NAME=test-addon/test-addon.xpi mocha test"
+    "test": "export FIREFOX_BINARY=firefox && XPI_NAME=test-addon/test-addon.xpi mocha test",
+    "docformat": "doctoc --title '**Contents**' docs/*.md && prettier '**/*.md' --write"
   }
 }
