@@ -1,5 +1,5 @@
-| [README.md](#) | [Add-on template](https://github.com/mozilla/shield-studies-addon-template/) | [Engineering hints](#engineering-and-process) | [More documentation](./docs/) | [Shield - Mozilla Wiki](https://wiki.mozilla.org/Firefox/Shield) |
-| -------------- | ---------------------------------------------------------------------------- | --------------------------------------------- | ----------------------------- | ---------------------------------------------------------------- |
+| [Add-on template](https://github.com/mozilla/shield-studies-addon-template/) | [Engineering hints](#engineering-and-process) | [More documentation](./docs/) | [Shield - Mozilla Wiki](https://wiki.mozilla.org/Firefox/Shield) |
+| ---------------------------------------------------------------------------- | --------------------------------------------- | ----------------------------- | ---------------------------------------------------------------- |
 
 
 # Shield Studies Add-on Utils
@@ -8,20 +8,22 @@
 
 A Firefox JavaScript module to be bundled with shield study add-ons (as `StudyUtils.jsm`). Provides these capabilities:
 
-1.  **Suggest variation for a client**
+1.  **Suggest variation for a client** (Deterministically! i.e. based on a hash of non-PII user info, they will always get assigned to the same branch every time the study launches)
 2.  **Report study lifecycle data** using Telemetry
 3.  **Report feature interaction and success data** using Telemetry
-4.  **Annotate Telemetry Environment** to mark the user as special in the `main` ping.
+4.  **Registers/uregisters the study as an active experiment** (By annotating the Telemetry Environment, marking the user as special in the `main` ping).
+5.  **Validates schema for study config**
+6.  **Handles study endings** (endStudy method bundles lots of tasks in one, including appending survey URLs specified in Config.jsm with query strings/sending the user to a survey and uninstalling the add-on)
 
-The pings end up in the `shield-study-addon` Telemetry bucket for faster analysis.
+The pings end up in the `shield-study` and `shield-study-addon` Telemetry buckets for faster analysis.
 
 Allows add-on developers to build [Shield Study](https://wiki.mozilla.org/Firefox/Shield/Shield_Studies) ([Normandy](https://wiki.mozilla.org/Firefox/Shield#Normandy_-_User_Profile_Matching_and_Recipe_Deployment)) compatible add-ons without having to think very much.
 
 ## What You are Building
 
-* You are building a [LEGACY ADD-ON](https://developer.mozilla.org/Add-ons/Legacy_add_ons). To deploy these after 57, you will need the magic special signing.
-* Web Extensions are not strong enough [yet](https://github.com/mozilla/shield-studies-addon-utils/issues/45).
-* Jetpack / addon-sdk is NOT AT ALL SUPPORTED since v4 of this utils library.
+* You are building a [legacy add-on](https://developer.mozilla.org/Add-ons/Legacy_add_ons). To deploy these after 57, you will need the magic special signing.
+* Shield study add-ons can not be based on Web Extensions [yet](https://github.com/mozilla/shield-studies-addon-utils/issues/45).
+* Jetpack / addon-sdk is not at all supported since v4 of this utils library.
 
 ## Get started
 
@@ -34,20 +36,6 @@ npm install --save-dev shield-studies-addon-utils
 ```
 
 Copy `dist/StudyUtils.jsm` to your `addon` source directory, where it will be zipped up.
-
-## Summary
-
-### Design Case
-
-Your Study is:
-
-* side-by-side variations (1 or more)
-
-### Benefits
-
-Using this, you get this analysis FOR FREE (and it's fast!)
-
-* Branch x channel x VARIATION x experiment-id x PHASE (install, reject, alive etc) using UNIFIED TELEMETRY
 
 ## Engineering and Process
 
@@ -73,7 +61,8 @@ Using this, you get this analysis FOR FREE (and it's fast!)
 
 ## History of major versions
 
-* v4.x: (proposed) additional functions for common cases
+* v5: (In development) API exposed as a Web Extension Experiment
+* v4.1: Improved utils for common cases
 * v4: First `.jsm` release. Uses packet format for PACKET version 3.
 * v3: Attempt to formalize on `shield-study` PACKET version 3. Jetpack based. Prototype used for `raymak/page-reload`. All work abandoned, and no formal npm release in this series. Work done at `v3-shield-packet-format` branch. LAST JETPACK (addon-sdk) RELEASE.
 * v2: Code refactor to es6 `class` with event models. Added cli tooling. Packet format is still arbitrary and per-study. Jetpack based. Last used in studies in Q2 2017.
