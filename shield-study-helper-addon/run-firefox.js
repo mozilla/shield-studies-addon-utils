@@ -10,7 +10,6 @@
 
 console.log("Starting up firefox");
 
-
 require("geckodriver");
 const firefox = require("selenium-webdriver/firefox");
 const cmd = require("selenium-webdriver/lib/command");
@@ -60,11 +59,11 @@ async function promiseActualBinary(binary) {
   }
 }
 
-promiseSetupDriver = async() => {
+promiseSetupDriver = async () => {
   const profile = new firefox.Profile();
 
   // TODO, allow 'actually send telemetry' here.
-  Object.keys(FIREFOX_PREFERENCES).forEach((key) => {
+  Object.keys(FIREFOX_PREFERENCES).forEach(key => {
     profile.setPreference(key, FIREFOX_PREFERENCES[key]);
   });
 
@@ -76,7 +75,9 @@ promiseSetupDriver = async() => {
     .forBrowser("firefox")
     .setFirefoxOptions(options);
 
-  const binaryLocation = await promiseActualBinary(process.env.FIREFOX_BINARY || "nightly");
+  const binaryLocation = await promiseActualBinary(
+    process.env.FIREFOX_BINARY || "nightly",
+  );
   await options.setBinary(new firefox.Binary(binaryLocation));
   const driver = await builder.build();
   // Firefox will be started up by now
@@ -85,21 +86,28 @@ promiseSetupDriver = async() => {
   return driver;
 };
 
-installAddon = async(driver, fileLocation) => {
+installAddon = async (driver, fileLocation) => {
   // references:
   //    https://bugzilla.mozilla.org/show_bug.cgi?id=1298025
   //    https://github.com/mozilla/geckodriver/releases/tag/v0.17.0
   const executor = driver.getExecutor();
-  executor.defineCommand("installAddon", "POST", "/session/:sessionId/moz/addon/install");
+  executor.defineCommand(
+    "installAddon",
+    "POST",
+    "/session/:sessionId/moz/addon/install",
+  );
   const installCmd = new cmd.Command("installAddon");
 
   const session = await driver.getSession();
-  installCmd.setParameters({ sessionId: session.getId(), path: fileLocation, temporary: true });
+  installCmd.setParameters({
+    sessionId: session.getId(),
+    path: fileLocation,
+    temporary: true,
+  });
   return executor.execute(installCmd);
 };
 
-
-(async() => {
+(async () => {
   try {
     const driver = await promiseSetupDriver();
 
@@ -114,7 +122,6 @@ installAddon = async(driver, fileLocation) => {
     // navigate to a regular page
     driver.setContext(Context.CONTENT);
     driver.get("about:debugging");
-
   } catch (e) {
     console.error(e); // eslint-disable-line no-console
   }

@@ -1,6 +1,9 @@
 /* eslint no-unused-vars: "off" */
 
-const { studyUtils } = Components.utils.import("resource://test-addon/StudyUtils.jsm", {});
+const { studyUtils } = Components.utils.import(
+  "resource://test-addon/StudyUtils.jsm",
+  {},
+);
 Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
 Components.utils.import("resource://gre/modules/Console.jsm");
 
@@ -11,8 +14,8 @@ function fakeSetup() {
     study: {
       studyName: "shield-utils-test",
       endings: {
-        "expired": {
-          "baseUrl": "http://www.example.com/?reason=expired",
+        expired: {
+          baseUrl: "http://www.example.com/?reason=expired",
         },
       },
       telemetry: { send: true, removeTestingFlag: false },
@@ -23,7 +26,7 @@ function fakeSetup() {
         level: "Warn",
       },
     },
-    addon: {id: "1", version: "1"},
+    addon: { id: "1", version: "1" },
   });
   studyUtils.setVariation({ name: "puppers", weight: "2" });
 }
@@ -36,6 +39,8 @@ async function getMostRecentPingsByType(type) {
   const filteredPings = pings.filter(p => p.type === type);
   filteredPings.sort((a, b) => b.timestampCreated - a.timestampCreated);
 
-  const pingData = filteredPings.map(ping => TelemetryArchive.promiseArchivedPingById(ping.id));
+  const pingData = filteredPings.map(ping =>
+    TelemetryArchive.promiseArchivedPingById(ping.id),
+  );
   return Promise.all(pingData);
 }

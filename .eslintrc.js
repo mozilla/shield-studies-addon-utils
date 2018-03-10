@@ -2,23 +2,17 @@
 
 module.exports = {
   env: {
-    "node": true
+    node: true,
   },
-  extends: [
-    "eslint:recommended",
-    "plugin:mozilla/recommended",
-  ],
+  extends: ["eslint:recommended", "plugin:mozilla/recommended"],
 
-  plugins: [
-    "mozilla",
-    "json"
-  ],
+  plugins: ["mozilla", "json"],
 
   rules: {
     "babel/new-cap": "off",
     "comma-dangle": ["error", "always-multiline"],
-    "eqeqeq": "error",
-    "indent": ["warn", 2, {SwitchCase: 1}],
+    eqeqeq: "error",
+    indent: ["warn", 2, { SwitchCase: 1 }],
     "mozilla/no-aArgs": "warn",
     "mozilla/balanced-listeners": 0,
     "no-console": "warn",
@@ -26,7 +20,7 @@ module.exports = {
     "no-shadow": ["error"],
     "no-unused-vars": "error",
     "prefer-const": "warn",
-    "semi": ["error", "always"],
+    semi: ["error", "always"],
     "require-jsdoc": "warn",
     "valid-jsdoc": "warn",
     "max-len": ["warn", 80],

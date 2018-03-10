@@ -46,6 +46,7 @@
   "scripts": {
     "build-test-addon-xpi": "./bin/make_xpi.sh",
     "dist": "webpack",
+    "docformat": "doctoc --title '**Contents**' docs/*.md && prettier '**/*.md' --write",
     "eslint": "eslint src --ext jsm --ext js --ext json",
     "eslint-fix": "npm run eslint -- --fix",
     "format": "prettier '**/*.{css,js,jsm,json,md}' --trailing-comma=all --ignore-path=.eslintignore --write",
@@ -53,7 +54,6 @@
     "predist": "npm run eslint",
     "prepack": "fixpack && npm run dist",
     "pretest": "npm run dist && npm run build-test-addon-xpi",
-    "test": "export FIREFOX_BINARY=firefox && XPI_NAME=test-addon/test-addon.xpi mocha test",
-    "docformat": "doctoc --title '**Contents**' docs/*.md && prettier '**/*.md' --write"
+    "test": "export FIREFOX_BINARY=firefox && XPI_NAME=test-addon/test-addon.xpi mocha test"
   }
 }

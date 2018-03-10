@@ -1,6 +1,10 @@
 const { classes: Cc, interfaces: Ci, utils: Cu } = Components;
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
-XPCOMUtils.defineLazyModuleGetter(this, "studyUtils", "resource://test-addon/StudyUtils.jsm");
+XPCOMUtils.defineLazyModuleGetter(
+  this,
+  "studyUtils",
+  "resource://test-addon/StudyUtils.jsm",
+);
 
 this.install = function(data, reason) {};
 

@@ -3,15 +3,15 @@
 /* global  __SCRIPT_URI_SPEC__, Feature, studyUtils, config */
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(startup|shutdown|install|uninstall)" }]*/
 
-async function getTelemetryPings (options) {
+async function getTelemetryPings(options) {
   // type is String or Array
-  const {type, n, timestamp, headersOnly} = options;
+  const { type, n, timestamp, headersOnly } = options;
   Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
   // {type, id, timestampCreated}
   let pings = await TelemetryArchive.promiseArchivedPingList();
   if (type) {
     if (!(type instanceof Array)) {
-      type = [type];  // Array-ify if it's a string
+      type = [type]; // Array-ify if it's a string
     }
   }
   if (type) pings = pings.filter(p => type.includes(p.type));
@@ -19,23 +19,26 @@ async function getTelemetryPings (options) {
 
   pings.sort((a, b) => b.timestampCreated - a.timestampCreated);
   if (n) pings = pings.slice(0, n);
-  const pingData = headersOnly ? pings : pings.map(ping => TelemetryArchive.promiseArchivedPingById(ping.id));
-  return Promise.all(pingData)
+  const pingData = headersOnly
+    ? pings
+    : pings.map(ping => TelemetryArchive.promiseArchivedPingById(ping.id));
+  return Promise.all(pingData);
 }
 
-async function pingsReport () {
+async function pingsReport() {
   async function getPings() {
     const ar = ["shield-study", "shield-study-addon"];
-    return getTelemetryPings({type: ["shield-study", "shield-study-addon"]});
+    return getTelemetryPings({ type: ["shield-study", "shield-study-addon"] });
   }
 
   const pings = (await getPings()).reverse();
   if (pings.length == 0) {
-    return {"report": "No pings found"}
+    return { report: "No pings found" };
   }
   const p0 = pings[0].payload;
   // print common fields
-  const report = `
+  const report =
+    `
 // common fields
 
 branch        ${p0.branch}        // should describe Question text
@@ -43,19 +46,22 @@ study_name    ${p0.study_name}
 addon_version ${p0.addon_version}
 version       ${p0.version}
 
-` + pings.map((p,i)=>`${i} ${p.creationDate} ${p.payload.type}
-${JSON.stringify(p.payload.data,null,2)}
+` +
+    pings
+      .map(
+        (p, i) => `${i} ${p.creationDate} ${p.payload.type}
+${JSON.stringify(p.payload.data, null, 2)}
 
-`).join('\n');
+`,
+      )
+      .join("\n");
 
-  return {"report": report};
+  return { report: report };
   //pings.forEach(p=>{
   //  console.log(p.creationDate, p.payload.type);
   //  console.log(JSON.stringify(p.payload.data,null,2))
   //})
 }
-
-
 
 async function listenFromWebExtension(msg, sender, sendResponse) {
   //await pingsReport();
@@ -76,12 +82,11 @@ async function listenFromWebExtension(msg, sender, sendResponse) {
   return false;
 }
 
-
 async function startup(addonData, reason) {
-  console.log('starting up debugger')
+  console.log("starting up debugger");
   const webExtension = addonData.webExtension;
   webExtension.startup().then(api => {
-    const {browser} = api;
+    const { browser } = api;
     // messages intended for shieldn:  {shield:true,msg=[info|endStudy|telemetry],data=data}
     browser.runtime.onMessage.addListener(listenFromWebExtension);
     //  other message handlers from your addon, if any
