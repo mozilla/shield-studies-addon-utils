@@ -3,7 +3,7 @@ cp dist/StudyUtils.jsm test-addon/
 
 set -eu
 
-BASE_DIR="$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")""/test-addon"
+BASE_DIR="$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")"""
 TMP_DIR=$(mktemp -d)
 DEST="${TMP_DIR}/test-addon"
 mkdir -p $DEST
