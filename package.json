@@ -39,10 +39,10 @@
     "shield-study"
   ],
   "license": "MPL-2.0",
-  "main": "lib/index.js",
+  "main": "src/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mozilla/shield-studies-addon-utils.git"
+    "url": "git://github.com/mozilla/shield-studies-addon-utils.git"
   },
   "scripts": {
     "build": "webpack",
@@ -57,7 +57,6 @@
     "postformat": "npm run eslint-fix && fixpack",
     "prebuild": "npm run lint",
     "prepack": "fixpack && npm run build",
-    "prepare": "npm run test",
     "pretest": "npm run build && npm run build-test-addon-xpi",
     "test": "export FIREFOX_BINARY=firefox && XPI_NAME=test-addon/test-addon.xpi mocha test --bail"
   }
