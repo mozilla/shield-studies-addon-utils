@@ -67,7 +67,8 @@ this.Bootstrap = function(config, studyUtils) {
 
     initStudyUtils(id, version) {
       // validate study config
-      studyUtils.setup({ ...config, addon: { id, version } });
+      config.addon = { id, version };
+      studyUtils.setup(config);
       // TODO bdanforth: patch studyUtils to setLoggingLevel as part of setup method
       studyUtils.setLoggingLevel(config.log.studyUtils.level);
     },

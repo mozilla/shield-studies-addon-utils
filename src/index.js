@@ -1,3 +1,5 @@
+/* eslint-env commonjs */
+
 /* global ExtensionAPI */
 
 this.shieldUtils = class extends ExtensionAPI {
@@ -34,18 +36,10 @@ this.shieldUtils = class extends ExtensionAPI {
     );
 
     // TODO: Select classes to import based on config (Pioneer or not)
-    const { studyUtils } = ChromeUtils.import(
-      context.extension.getURL("privileged/shieldUtils/jsm/StudyUtils.jsm"),
-    );
-    const studyUtilsBootstrap = ChromeUtils.import(
-      context.extension.getURL(
-        "privileged/shieldUtils/jsm/StudyUtilsBootstrap.jsm",
-      ),
-    );
-    // const { PioneerUtils } = ChromeUtils.import(context.extension
-    // .getURL("privileged/shieldUtils/jsm/PioneerUtils.jsm"));
-    // const { PioneerUtilsBootstrap } = ChromeUtils.import(context.extension
-    // .getURL("privileged/shieldUtils/jsm/PioneerUtilsBootstrap.jsm"));
+    const { studyUtils } = require("./StudyUtils.in.jsm");
+    const studyUtilsBootstrap = require("./StudyUtilsBootstrap.jsm");
+    // const { PioneerUtils } = require("pioneer-utils/PioneerUtils.jsm");
+    // const pioneerUtilsBootstrap = require("./PioneerUtilsBootstrap.jsm");
     const bootstrap = studyUtilsBootstrap.Bootstrap(config, studyUtils);
 
     /*

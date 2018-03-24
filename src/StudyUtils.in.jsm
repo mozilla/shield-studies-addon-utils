@@ -27,6 +27,10 @@ Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
 
+// Steal globals only available in JSM scope (and not Sandbox one)
+// Example globals: ChromeUtils, HeapSnapshot, XMLHttpRequest, atob, btoa, TextEncoder, TextDecoder
+const { TextEncoder } = Cu.getGlobalForObject(Services);
+
 let log;
 
 // telemetry utils
