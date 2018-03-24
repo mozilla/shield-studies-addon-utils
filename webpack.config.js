@@ -2,10 +2,10 @@
 const path = require("path");
 
 module.exports = {
-  entry: "./src/StudyUtils.in.jsm",
+  entry: "./src/index.js",
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "StudyUtils.jsm",
+    filename: "api.js",
     libraryTarget: "this", // Possible value - amd, commonjs, commonjs2, commonjs-module, this, var
   },
 };

@@ -6,7 +6,7 @@
 
 [![Build Status](https://travis-ci.org/mozilla/shield-studies-addon-utils.svg?branch=master)](https://travis-ci.org/mozilla/shield-studies-addon-utils)
 
-A Firefox JavaScript module to be bundled with shield study add-ons (as `StudyUtils.jsm`). Provides these capabilities:
+A Firefox WebExtension Experiments API to be bundled with shield study add-ons (`browser.shieldUtils.*`). Provides these capabilities:
 
 1.  **Suggest variation for a client** (Deterministically! i.e. based on a hash of non-PII user info, they will always get assigned to the same branch every time the study launches)
 2.  **Report study lifecycle data** using Telemetry
@@ -29,13 +29,26 @@ Allows add-on developers to build [Shield Study](https://wiki.mozilla.org/Firefo
 
 Check out [mozilla/shield-studies-addon-template/](https://github.com/mozilla/shield-studies-addon-template/) to get started with an example study where shield-studies-addon-utils is already installed and configured.
 
-## Installing the `StudyUtils.jsm` in your add-on
+## Installing the utils in your add-on
 
 ```
 npm install --save-dev shield-studies-addon-utils
 ```
 
-Copy `dist/StudyUtils.jsm` to your `addon` source directory, where it will be zipped up.
+Copy `dist/api.js` and `schema.json` to your add-on's source directory under `privileged/shieldUtils`, then add-the following to your add-on's manifest.json:
+
+```
+  "experiment_apis": {
+    "shieldUtils": {
+      "schema": "./privileged/shieldUtils/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "./privileged/shieldUtils/api.js",
+        "paths": [["shieldUtils"]]
+      }
+    }
+  },
+```
 
 ## Engineering and Process
 
