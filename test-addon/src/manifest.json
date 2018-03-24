@@ -1,0 +1,33 @@
+{
+  "name": "Shield Utils Test Add-on",
+  "description": "Used for functional testing of shield-studies-addon-utils",
+  "version": "1.0.0",
+  "manifest_version": 2,
+  "applications": {
+    "gecko": {
+      "id": "shield-utils-test-addon@shield.mozilla.org",
+      "strict_min_version": "59.0"
+    }
+  },
+  "experiment_apis": {
+    "shieldUtils": {
+      "schema": "./privileged/shieldUtils/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "./privileged/shieldUtils/api.js",
+        "paths": [["shieldUtils"]]
+      }
+    }
+  },
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "icons": {
+    "48": "icons/shield-icon.svg"
+  },
+  "browser_action": {
+    "browser_style": true,
+    "default_icon": "icons/shield-icon.svg",
+    "default_title": "Test"
+  }
+}

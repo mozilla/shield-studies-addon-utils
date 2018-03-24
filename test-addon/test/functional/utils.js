@@ -23,12 +23,25 @@ const FIREFOX_PREFERENCES = {
   "browser.tabs.remote.autostart": true,
   "browser.tabs.remote.autostart.1": true,
   "browser.tabs.remote.autostart.2": true,
-  // These are good to have set up if you're debugging tests with the browser
-  // toolbox.
+
+  // Improve debugging using `browser toolbox`.
   "devtools.chrome.enabled": true,
   "devtools.debugger.remote-enabled": true,
   "devtools.debugger.prompt-connection": false,
+
+  // Removing warning for `about:config`
   "general.warnOnAboutConfig": false,
+
+  // Force variation for testing
+  "extensions.button_icon_preference.variation": "puppers",
+
+  /** WARNING: gecko webdriver sets many additional prefs at:
+   * https://dxr.mozilla.org/mozilla-central/source/testing/geckodriver/src/prefs.rs
+   *
+   * In, particular, this DISABLES actual telemetry uploading
+   * ("toolkit.telemetry.server", Pref::new("https://%(server)s/dummy/telemetry/")),
+   *
+   */
 };
 
 // useful if we need to test on a specific version of Firefox
@@ -92,10 +105,11 @@ module.exports.installAddon = async driver => {
     path: fileLocation,
     temporary: true,
   });
-  return executor.execute(installCmd);
+  await executor.execute(installCmd);
+  console.log(`Add-on at ${fileLocation} installed`);
 };
 
-module.exports.uninstallAddon = async (driver, id) => {
+module.exports.uninstallAddon = async(driver, id) => {
   const executor = driver.getExecutor();
   executor.defineCommand(
     "uninstallAddon",
