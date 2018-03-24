@@ -35,24 +35,13 @@ this.shieldUtils = class extends ExtensionAPI {
       context.extension.getURL("privileged/Config.jsm"),
     );
 
-    // TODO: Select classes to import based on config (Pioneer or not)
     const { studyUtils } = require("./StudyUtils.in.jsm");
     const studyUtilsBootstrap = require("./StudyUtilsBootstrap.jsm");
     // const { PioneerUtils } = require("pioneer-utils/PioneerUtils.jsm");
     // const pioneerUtilsBootstrap = require("./PioneerUtilsBootstrap.jsm");
     const bootstrap = studyUtilsBootstrap.Bootstrap(config, studyUtils);
 
-    /*
-    console.log("config", config);
-    console.log("studyUtils", studyUtils);
-    console.log("studyUtilsBootstrap", studyUtilsBootstrap);
-    console.log("bootstrap", bootstrap);
-    console.log("this.extension", this.extension);
-    */
-
     const { extension } = this;
-
-    // console.log("PioneerUtils", PioneerUtils);
 
     return {
       shieldUtils: {
