@@ -1,27 +1,52 @@
+/* eslint-env node */
+
 "use strict";
+
+// All Mozilla specific rules and environments at:
+// http://firefox-source-docs.mozilla.org/tools/lint/linters/eslint-plugin-mozilla.html
 
 module.exports = {
   env: {
-    node: true,
+    es6: true,
   },
-  extends: ["eslint:recommended", "plugin:mozilla/recommended"],
-
-  plugins: ["mozilla", "json"],
-
+  extends: [
+    "eslint:recommended",
+    // list of rules at: https://dxr.mozilla.org/mozilla-central/source/tools/lint/eslint/eslint-plugin-mozilla/lib/configs/recommended.js
+    "plugin:mozilla/recommended",
+  ],
+  overrides: [
+    {
+      files: "src/**",
+      env: {
+        browser: true,
+        webextensions: true,
+      },
+    },
+  ],
+  parserOptions: {
+    ecmaVersion: 8,
+    sourceType: "module",
+    ecmaFeatures: {
+      jsx: false,
+      experimentalObjectRestSpread: true,
+    },
+  },
+  plugins: ["json", "mozilla"],
+  root: true,
   rules: {
     "babel/new-cap": "off",
+    "mozilla/no-aArgs": "warn",
+    "mozilla/balanced-listeners": "off",
     "comma-dangle": ["error", "always-multiline"],
     eqeqeq: "error",
     indent: ["warn", 2, { SwitchCase: 1 }],
-    "mozilla/no-aArgs": "warn",
-    "mozilla/balanced-listeners": 0,
     "no-console": "warn",
-    "no-debugger": "warn",
-    "no-shadow": ["error"],
+    "no-var": "error",
+    "no-shadow": "error",
     "no-unused-vars": "error",
     "prefer-const": "warn",
+    "prefer-spread": "error",
     semi: ["error", "always"],
-    "require-jsdoc": "warn",
     "valid-jsdoc": "warn",
     "max-len": ["warn", 80],
   },
