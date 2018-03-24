@@ -1,5 +1,5 @@
-var path = require("path");
-const webpack = require("webpack"); //to access built-in plugins
+/* eslint-env node */
+const path = require("path");
 
 module.exports = {
   entry: "./src/StudyUtils.in.jsm",

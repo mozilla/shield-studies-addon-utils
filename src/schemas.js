@@ -1,3 +1,5 @@
+/* eslint-env commonjs */
+
 module.exports = {
   "shield-study": require("shield-study-schemas/schemas-client/shield-study.schema.json"), // eslint-disable-line max-len
   "shield-study-addon": require("shield-study-schemas/schemas-client/shield-study-addon.schema.json"), // eslint-disable-line max-len

@@ -18,9 +18,10 @@ this.shieldUtils = class extends ExtensionAPI {
 
   /**
    * Extension Shutdown
-   * APIs that allocate any resources (e.g., adding elements to the browser’s user interface,
-   * setting up internal event listeners, etc.) must free these resources when the extension
-   * for which they are allocated is shut down.
+   * APIs that allocate any resources (e.g., adding elements to the browser’s
+   * user interface, setting up internal event listeners, etc.) must free
+   * these resources when the extension for which they are allocated is
+   * shut down.
    */
   onShutdown(shutdownReason) {
     console.log("onShutdown", shutdownReason);
@@ -41,8 +42,10 @@ this.shieldUtils = class extends ExtensionAPI {
         "privileged/shieldUtils/jsm/StudyUtilsBootstrap.jsm",
       ),
     );
-    // const { PioneerUtils } = ChromeUtils.import(context.extension.getURL("privileged/shieldUtils/jsm/PioneerUtils.jsm"));
-    // const { PioneerUtilsBootstrap } = ChromeUtils.import(context.extension.getURL("privileged/shieldUtils/jsm/PioneerUtilsBootstrap.jsm"));
+    // const { PioneerUtils } = ChromeUtils.import(context.extension
+    // .getURL("privileged/shieldUtils/jsm/PioneerUtils.jsm"));
+    // const { PioneerUtilsBootstrap } = ChromeUtils.import(context.extension
+    // .getURL("privileged/shieldUtils/jsm/PioneerUtilsBootstrap.jsm"));
     const bootstrap = studyUtilsBootstrap.Bootstrap(config, studyUtils);
 
     /*
@@ -60,7 +63,8 @@ this.shieldUtils = class extends ExtensionAPI {
     return {
       shieldUtils: {
         /**
-         * ensure we have configured shieldUtils and are supposed to run our feature
+         * ensure we have configured shieldUtils
+         * and are supposed to run our feature
          * @returns {Promise<void>}
          */
         async bootstrapStudy() {
@@ -85,8 +89,9 @@ this.shieldUtils = class extends ExtensionAPI {
          * Good practice: send all Telemetry from one function for easier
          * logging, debugging, validation
          *
-         * Note: keys, values must be strings to fulfill the `shield-study-addon`
-         *   ping-type validation.  This allows `payload.data.attributes` to store
+         * Note: keys, values must be strings to fulfill the
+         *   `shield-study-addon` ping-type validation.
+         *   This allows `payload.data.attributes` to store
          *   correctly at Parquet at s.t.m.o.
          *
          *   Bold claim:  catching errors here

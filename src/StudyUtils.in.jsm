@@ -1,3 +1,5 @@
+/* eslint-env commonjs */
+
 "use strict";
 
 /*
@@ -62,7 +64,7 @@ const schemas = require("./schemas.js");
 const Ajv = require("ajv/dist/ajv.min.js");
 const ajv = new Ajv();
 
-var jsonschema = {
+const jsonschema = {
   /**
    * Validates input data based on a specified schema
    * @param {Object} data - The data to be validated
@@ -70,7 +72,7 @@ var jsonschema = {
    * @returns {boolean} - Will return true if the data is valid
    */
   validate(data, schema) {
-    var valid = ajv.validate(schema, data);
+    const valid = ajv.validate(schema, data);
     return { valid, errors: ajv.errors || [] };
   },
   /**
@@ -266,7 +268,7 @@ function chooseWeighted(weightedVariations, fraction = Math.random()) {
   */
   jsonschema.validateOrThrow(weightedVariations, schemas.weightedVariations);
 
-  var weights = weightedVariations.map(x => x.weight || 1);
+  const weights = weightedVariations.map(x => x.weight || 1);
   const partial = cumsum(weights);
   const total = weights.reduce((a, b) => a + b);
   for (let ii = 0; ii < weightedVariations.length; ii++) {
@@ -816,7 +818,7 @@ class StudyUtils {
  */
 function createLog(name, levelWord) {
   Cu.import("resource://gre/modules/Log.jsm");
-  var L = Log.repository.getLogger(name);
+  const L = Log.repository.getLogger(name);
   L.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
   // should be a config / pref
   L.level = Log.Level[levelWord] || Log.Level.Debug;
@@ -840,7 +842,7 @@ for (const r in REASONS) {
 }
 
 // Actually create the singleton.
-var studyUtils = new StudyUtils();
+const studyUtils = new StudyUtils();
 
 // to make this work with webpack!
 this.EXPORTED_SYMBOLS = EXPORTED_SYMBOLS;
