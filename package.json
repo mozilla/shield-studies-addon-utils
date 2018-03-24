@@ -58,6 +58,6 @@
     "prebuild": "npm run lint",
     "prepack": "fixpack && npm run build",
     "pretest": "npm run build && npm run build-test-addon-xpi",
-    "test": "export FIREFOX_BINARY=firefox && XPI_NAME=test-addon/test-addon.xpi mocha test --bail"
+    "test": "export FIREFOX_BINARY=${FIREFOX_BINARY:-nightly} && XPI_NAME=test-addon/test-addon.xpi mocha test/functional/ --bail"
   }
 }

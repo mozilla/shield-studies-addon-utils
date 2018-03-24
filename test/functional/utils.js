@@ -1,14 +1,15 @@
 /* eslint-env node */
+/* eslint no-console:off */
+
 // The geckodriver package downloads and installs geckodriver for us.
 // We use it by requiring it.
 require("geckodriver");
-// const assert = require("assert");
 const cmd = require("selenium-webdriver/lib/command");
 const firefox = require("selenium-webdriver/firefox");
-const Fs = require("fs-extra");
-const FxRunnerUtils = require("fx-runner/lib/utils");
-const path = require("path");
 const webdriver = require("selenium-webdriver");
+const FxRunnerUtils = require("fx-runner/lib/utils");
+const Fs = require("fs-extra");
+const path = require("path");
 
 // const By = webdriver.By;
 const Context = firefox.Context;
@@ -33,7 +34,8 @@ const FIREFOX_PREFERENCES = {
 // useful if we need to test on a specific version of Firefox
 async function promiseActualBinary(binary) {
   try {
-    const normalizedBinary = await FxRunnerUtils.normalizeBinary(binary);
+    let normalizedBinary = await FxRunnerUtils.normalizeBinary(binary);
+    normalizedBinary = path.resolve(normalizedBinary);
     await Fs.stat(normalizedBinary);
     return normalizedBinary;
   } catch (ex) {
@@ -44,7 +46,10 @@ async function promiseActualBinary(binary) {
   }
 }
 
-module.exports.promiseSetupDriver = async () => {
+/**
+ * Uses process.env.FIREFOX_BINARY
+ */
+module.exports.promiseSetupDriver = async() => {
   const profile = new firefox.Profile();
 
   Object.keys(FIREFOX_PREFERENCES).forEach(key => {
@@ -63,6 +68,7 @@ module.exports.promiseSetupDriver = async () => {
   );
   await options.setBinary(new firefox.Binary(binaryLocation));
   const driver = await builder.build();
+  // Firefox will be started up by now
   driver.setContext(Context.CHROME);
   return driver;
 };
