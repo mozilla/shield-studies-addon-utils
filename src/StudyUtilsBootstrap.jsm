@@ -5,7 +5,7 @@ const EXPORTED_SYMBOLS = ["Bootstrap"];
 const { utils: Cu } = Components;
 Cu.import("resource://gre/modules/Services.jsm");
 
-this.Bootstrap = function(config, studyUtils) {
+this.Bootstrap = function(studyConfig, studyUtils) {
   return {
     /**
      * Use console as our logger until there is a log() method in studyUtils that we can rely on
@@ -38,10 +38,10 @@ this.Bootstrap = function(config, studyUtils) {
       ) {
         //  telemetry "enter" ONCE
         studyUtils.firstSeen();
-        const eligible = await config.isEligible();
+        const eligible = await studyConfig.isEligible();
         if (!eligible) {
           this.log.debug("User is ineligible, ending study.");
-          // 1. uses config.endings.ineligible.url if any,
+          // 1. uses studyConfig.endings.ineligible.url if any,
           // 2. sends UT for "ineligible"
           // 3. then uninstalls addon
           await studyUtils.endStudy({ reason: "ineligible" });
@@ -49,7 +49,7 @@ this.Bootstrap = function(config, studyUtils) {
         }
       }
 
-      const expired = await config.hasExpired();
+      const expired = await studyConfig.hasExpired();
       if (expired) {
         await studyUtils.endStudy({ reason: "expired" });
         return;
@@ -67,19 +67,19 @@ this.Bootstrap = function(config, studyUtils) {
 
     initStudyUtils(id, version) {
       // validate study config
-      config.addon = { id, version };
-      studyUtils.setup(config);
+      studyConfig.addon = { id, version };
+      studyUtils.setup(studyConfig);
       // TODO bdanforth: patch studyUtils to setLoggingLevel as part of setup method
-      studyUtils.setLoggingLevel(config.log.studyUtils.level);
+      studyUtils.setLoggingLevel(studyConfig.log.studyUtils.level);
     },
 
     // choose the variation for this particular user, then set it.
     async selectVariation() {
       const variation =
-        this.getVariationFromPref(config.weightedVariations) ||
-        (await studyUtils.deterministicVariation(config.weightedVariations));
+        this.getVariationFromPref(studyConfig.weightedVariations) ||
+        (await studyUtils.deterministicVariation(studyConfig.weightedVariations));
       studyUtils.setVariation(variation);
-      this.log.debug(`studyUtils has config and variation.name: ${
+      this.log.debug(`studyUtils has studyConfig and variation.name: ${
         variation.name
       }.
       Ready to send telemetry`);
@@ -89,14 +89,14 @@ this.Bootstrap = function(config, studyUtils) {
     // helper to let Dev or QA set the variation name
     getVariationFromPref(weightedVariations) {
       const name = Services.prefs.getCharPref(
-        config.variationOverridePreference,
+        studyConfig.variationOverridePreference,
         "",
       );
       if (name !== "") {
         const variation = weightedVariations.filter(x => x.name === name)[0];
         if (!variation) {
           throw new Error(`about:config => ${
-            config.variationOverridePreference
+            studyConfig.variationOverridePreference
           } set to ${name},
           but no variation with that name exists.`);
         }
