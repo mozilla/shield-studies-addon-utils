@@ -9,7 +9,7 @@
 * Note: There are a number of methods that won't work if the 
 * setup method has not executed (they perform a check with the 
 * `throwIfNotSetup` method). The setup method ensures that the
-* config data passed in is valid per the studySetup schema.
+* studySetup data passed in is valid per the studySetup schema.
 */
 
 /*
@@ -395,16 +395,16 @@ class StudyUtils {
 
   /**
    * Validates the studySetup object passed in from the addon.
-   * @param {Object} config - the studySetup object, see schema.studySetup.json
+   * @param {Object} studySetup - the studySetup object, see schema.studySetup.json
    * @returns {StudyUtils} - the StudyUtils class instance
    */
-  setup(config) {
-    log = createLog("shield-study-utils", config.log.studyUtils.level);
+  setup(studySetup) {
+    log = createLog("shield-study-utils", studySetup.log.studyUtils.level);
 
     log.debug("setting up!");
-    jsonschema.validateOrThrow(config, schemas.studySetup);
+    jsonschema.validateOrThrow(studySetup, schemas.studySetup);
 
-    this.config = config;
+    this.studySetup = studySetup;
     this._isSetup = true;
     return this;
   }
@@ -414,7 +414,7 @@ class StudyUtils {
    * @returns {void}
    */
   reset() {
-    this.config = {};
+    this.studySetup = {};
     delete this._variation;
     this._isSetup = false;
   }
@@ -493,7 +493,7 @@ class StudyUtils {
     let fraction = rng;
     if (fraction === null) {
       const clientId = await this.getTelemetryId();
-      const studyName = this.config.study.studyName;
+      const studyName = this.studySetup.study.studyName;
       fraction = await this.sample.hashFraction(studyName + clientId, 12);
     }
     return this.sample.chooseWeighted(weightedVariations, fraction);
@@ -516,8 +516,8 @@ class StudyUtils {
     log.debug("getting info");
     this.throwIfNotSetup("info");
     return {
-      studyName: this.config.study.studyName,
-      addon: this.config.addon,
+      studyName: this.studySetup.study.studyName,
+      addon: this.studySetup.addon,
       variation: this.getVariation(),
       shieldId: this.getShieldId(),
     };
@@ -530,7 +530,7 @@ class StudyUtils {
   // TODO glind, maybe this is getter / setter?
   get telemetryConfig() {
     this.throwIfNotSetup("telemetryConfig");
-    return this.config.study.telemetry;
+    return this.studySetup.study.telemetry;
   }
 
   /**
@@ -640,7 +640,7 @@ class StudyUtils {
     * Check if the study ending shows the user a page in a new tab
     * (ex: survey, explanation, etc.)
     */
-    const ending = this.config.study.endings[reason];
+    const ending = this.studySetup.study.endings[reason];
     if (ending) {
       // baseUrl: needs to be appended with query arguments before use,
       // exactUrl: used as is
@@ -813,7 +813,7 @@ class StudyUtils {
  * Note: Log.jsm is used over Console.log/warn/error because:
  *   - Console has limited log levels
  *   - Console is not pref-controllable. Log can be turned on and off using
- *     config.log (see ./addon/Config.jsm in
+ *     studySetup.log (see ./addon/Config.jsm in
  *     github.com/mozilla/shield-study-addon-template)
  *   - Console can create linting errors and warnings.
  * @param {string} name - the name of the Logger instance

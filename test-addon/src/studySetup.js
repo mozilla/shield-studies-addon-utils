@@ -1,4 +1,4 @@
-const studyConfig = {
+const studySetup = {
   study: {
     /** Required for studyUtils.setup():
      *

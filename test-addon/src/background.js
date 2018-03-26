@@ -1,5 +1,5 @@
 /* eslint no-console:off */
-/* global studyConfig */
+/* global studySetup */
 
 "use strict";
 
@@ -22,10 +22,10 @@ class Study {
 
 async function runOnce() {
   // Set dynamic study configuration flags
-  studyConfig.eligible = await Study.isEligible();
-  studyConfig.expired = await Study.hasExpired();
+  studySetup.eligible = await Study.isEligible();
+  studySetup.expired = await Study.hasExpired();
   // Ensure we have configured shieldUtils and are supposed to run our feature
-  await browser.shieldUtils.bootstrapStudy(studyConfig);
+  await browser.shieldUtils.bootstrapStudy(studySetup);
   // Get study variation
   const { variation } = await browser.shieldUtils.info();
   // Initiate the study
