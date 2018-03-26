@@ -2,17 +2,10 @@
 
 "use strict";
 
-/**
- * CONFIGURE and INSTRUMENT the BrowserAction button for a specific variation
- *
- *  1. Request 'info' from the shieldUtils
- *  2. We only care about the `variation` key.
- *  3. initialize the feature, using our specific variation
- */
 async function runOnce() {
-  // ensure we have configured shieldUtils and are supposed to run our feature
-  await browser.shieldUtils.bootstrapStudy();
-  // get study variation
+  // Ensure we have configured shieldUtils and are supposed to run our feature
+  await browser.shieldUtils.bootstrapStudy(studyConfig);
+  // Get study variation
   const { variation } = await browser.shieldUtils.info();
 }
 
