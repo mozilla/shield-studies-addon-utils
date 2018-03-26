@@ -61,7 +61,7 @@
     "pretest-addon:run": "npm run pretest",
     "test": "FIREFOX_BINARY=${FIREFOX_BINARY:-firefox} XPI_NAME=test-addon/dist/shield_utils_test_add-on-1.0.0.zip mocha test-addon/test/functional/ --bail",
     "test-addon:build": "cd test-addon && web-ext build",
-    "test-addon:bundle-utils": "mkdir -p test-addon/src/privileged/shieldUtils/jsm && cp src/StudyUtilsBootstrap.jsm test-addon/src/privileged/shieldUtils/jsm/StudyUtilsBootstrap.jsm && cp dist/api.js test-addon/src/privileged/shieldUtils/api.js && cp schema.json test-addon/src/privileged/shieldUtils/schema.json",
+    "test-addon:bundle-utils": "mkdir -p test-addon/src/privileged/shieldUtils && cp dist/api.js test-addon/src/privileged/shieldUtils/api.js && cp schema.json test-addon/src/privileged/shieldUtils/schema.json",
     "test-addon:run": "cd test-addon && web-ext run --no-reload"
   }
 }
