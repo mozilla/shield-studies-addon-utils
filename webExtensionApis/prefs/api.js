@@ -43,8 +43,8 @@ this.prefs = class extends ExtensionAPI {
         },
         async set(prefName, value) {
           return "set";
-        }
-      }
+        },
+      },
     };
   }
-}
+};

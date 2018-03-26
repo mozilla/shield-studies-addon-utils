@@ -21,7 +21,6 @@ class Study {
 }
 
 async function runOnce() {
-
   //browser.prefs.get('my.favorite.pref');
 
   // Set dynamic study configuration flags
