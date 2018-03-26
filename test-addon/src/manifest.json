@@ -20,7 +20,7 @@
     }
   },
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["studyConfig.js", "background.js"]
   },
   "icons": {
     "48": "icons/shield-icon.svg"

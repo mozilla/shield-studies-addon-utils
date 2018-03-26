@@ -38,8 +38,7 @@ this.Bootstrap = function(studyConfig, studyUtils) {
       ) {
         //  telemetry "enter" ONCE
         studyUtils.firstSeen();
-        const eligible = await studyConfig.isEligible();
-        if (!eligible) {
+        if (!studyConfig.eligible) {
           this.log.debug("User is ineligible, ending study.");
           // 1. uses studyConfig.endings.ineligible.url if any,
           // 2. sends UT for "ineligible"
@@ -49,8 +48,7 @@ this.Bootstrap = function(studyConfig, studyUtils) {
         }
       }
 
-      const expired = await studyConfig.hasExpired();
-      if (expired) {
+      if (studyConfig.expired) {
         await studyUtils.endStudy({ reason: "expired" });
         return;
       }

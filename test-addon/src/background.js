@@ -1,12 +1,35 @@
 /* eslint no-console:off */
+/* global studyConfig */
 
 "use strict";
 
+class Study {
+  constructor(variation) {}
+
+  // Will run only during first install attempt
+  static async isEligible() {
+    // get whatever prefs, addons, telemetry, anything!
+    // Cu.import can see 'firefox things', but not package things.
+    return true;
+  }
+
+  // Expiration checks should be implemented in a very reliable way by
+  // the add-on since Normandy does not handle study expiration in a reliable manner
+  static async hasExpired() {
+    return false;
+  }
+}
+
 async function runOnce() {
+  // Set dynamic study configuration flags
+  studyConfig.eligible = await Study.isEligible();
+  studyConfig.expired = await Study.hasExpired();
   // Ensure we have configured shieldUtils and are supposed to run our feature
   await browser.shieldUtils.bootstrapStudy(studyConfig);
   // Get study variation
   const { variation } = await browser.shieldUtils.info();
+  // Initiate the study
+  new Study(variation);
 }
 
 /**

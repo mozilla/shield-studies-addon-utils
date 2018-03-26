@@ -1,19 +1,4 @@
-"use strict";
-
-/* to use:
-
-- Recall this file has chrome privileges
-- Cu.import in this file will work for any 'general firefox things' (Services,etc)
-  but NOT for addon-specific libs
-*/
-
-/* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(config|EXPORTED_SYMBOLS)" }]*/
-const EXPORTED_SYMBOLS = ["config"];
-
-// Anything else than "var" here will result in config being undefined when included in other js modules
-// prettier-ignore
-var config = { // eslint-disable-line no-var
-               // required STUDY key
+const studyConfig = {
   study: {
     /** Required for studyUtils.setup():
      *
@@ -79,19 +64,6 @@ var config = { // eslint-disable-line no-var
     studyUtils: {
       level: "Trace",
     },
-  },
-
-  // Will run only during first install attempt
-  async isEligible() {
-    // get whatever prefs, addons, telemetry, anything!
-    // Cu.import can see 'firefox things', but not package things.
-    return true;
-  },
-
-  // Expiration checks should be implemented in a very reliable way by
-  // the add-on since Normandy does not handle study expiration in a reliable manner
-  async hasExpired() {
-    return false;
   },
 
   /* Button study branches and sample weights

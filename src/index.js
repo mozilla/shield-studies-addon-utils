@@ -31,15 +31,10 @@ this.shieldUtils = class extends ExtensionAPI {
   }
 
   getAPI(context) {
-    const { config } = ChromeUtils.import(
-      context.extension.getURL("privileged/Config.jsm"),
-    );
-
     const { studyUtils } = require("./StudyUtils.in.jsm");
     const studyUtilsBootstrap = require("./StudyUtilsBootstrap.jsm");
     // const { PioneerUtils } = require("pioneer-utils/PioneerUtils.jsm");
     // const pioneerUtilsBootstrap = require("./PioneerUtilsBootstrap.jsm");
-    const bootstrap = studyUtilsBootstrap.Bootstrap(config, studyUtils);
 
     const { extension } = this;
 
@@ -50,7 +45,11 @@ this.shieldUtils = class extends ExtensionAPI {
          * and are supposed to run our feature
          * @returns {Promise<void>}
          */
-        async bootstrapStudy() {
+        async bootstrapStudy(studyConfig) {
+          const bootstrap = studyUtilsBootstrap.Bootstrap(
+            studyConfig,
+            studyUtils,
+          );
           await bootstrap.startup(extension);
         },
 

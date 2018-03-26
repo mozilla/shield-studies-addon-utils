@@ -8,7 +8,12 @@
         "type": "function",
         "description": "TODO",
         "async": true,
-        "parameters": []
+        "parameters": [
+          {
+            "name": "studyConfig",
+            "type": "any"
+          }
+        ]
       },
       {
         "name": "info",
