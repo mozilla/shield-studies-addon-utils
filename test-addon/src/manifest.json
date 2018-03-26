@@ -10,6 +10,14 @@
     }
   },
   "experiment_apis": {
+    "prefs": {
+      "schema": "./privileged/prefs/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "./privileged/prefs/api.js",
+        "paths": [["prefs"]]
+      }
+    },
     "shieldUtils": {
       "schema": "./privileged/shieldUtils/schema.json",
       "parent": {

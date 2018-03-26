@@ -21,7 +21,11 @@ class Study {
 }
 
 async function runOnce() {
+
+  //browser.prefs.get('my.favorite.pref');
+
   // Set dynamic study configuration flags
+  // TODO
   studySetup.eligible = await Study.isEligible();
   studySetup.expired = await Study.hasExpired();
   // Ensure we have configured shieldUtils and are supposed to run our feature
