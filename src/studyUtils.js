@@ -64,7 +64,7 @@ const { TelemetryEnvironment } = Cu.import(
 *      StudyUtils.respondToWebExtensionMessage method
 *    - "studySetup": the options object passed into the StudyUtils.setup method
 */
-const schemas = require("./schemas.js");
+const schemas = require("./schemas/index.js");
 const Ajv = require("ajv/dist/ajv.min.js");
 const ajv = new Ajv();
 
