@@ -18,7 +18,7 @@
 */
 const EXPORTED_SYMBOLS = ["studyUtils"];
 
-const UTILS_VERSION = require("../package.json").version;
+const UTILS_VERSION = require("../../package.json").version;
 const PACKET_VERSION = 3;
 
 const { utils: Cu } = Components;
