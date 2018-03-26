@@ -75,7 +75,9 @@ this.Bootstrap = function(studyConfig, studyUtils) {
     async selectVariation() {
       const variation =
         this.getVariationFromPref(studyConfig.weightedVariations) ||
-        (await studyUtils.deterministicVariation(studyConfig.weightedVariations));
+        (await studyUtils.deterministicVariation(
+          studyConfig.weightedVariations,
+        ));
       studyUtils.setVariation(variation);
       this.log.debug(`studyUtils has studyConfig and variation.name: ${
         variation.name

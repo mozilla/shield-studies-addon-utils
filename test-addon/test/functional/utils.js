@@ -62,7 +62,7 @@ async function promiseActualBinary(binary) {
 /**
  * Uses process.env.FIREFOX_BINARY
  */
-module.exports.promiseSetupDriver = async() => {
+module.exports.promiseSetupDriver = async () => {
   const profile = new firefox.Profile();
 
   Object.keys(FIREFOX_PREFERENCES).forEach(key => {
@@ -109,7 +109,7 @@ module.exports.installAddon = async driver => {
   console.log(`Add-on at ${fileLocation} installed`);
 };
 
-module.exports.uninstallAddon = async(driver, id) => {
+module.exports.uninstallAddon = async (driver, id) => {
   const executor = driver.getExecutor();
   executor.defineCommand(
     "uninstallAddon",
