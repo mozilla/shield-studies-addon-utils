@@ -31,10 +31,10 @@ this.shieldUtils = class extends ExtensionAPI {
   }
 
   getAPI(context) {
-    const { studyUtils } = require("./StudyUtils.in.jsm");
-    const studyUtilsBootstrap = require("./StudyUtilsBootstrap.jsm");
+    const { studyUtils } = require("./studyUtils.js");
+    const studyUtilsBootstrap = require("./studyUtilsBootstrap.js");
     // const { PioneerUtils } = require("pioneer-utils/PioneerUtils.jsm");
-    // const pioneerUtilsBootstrap = require("./PioneerUtilsBootstrap.jsm");
+    // const pioneerUtilsBootstrap = require("./pioneerUtilsBootstrap.js");
 
     const { extension } = this;
 
