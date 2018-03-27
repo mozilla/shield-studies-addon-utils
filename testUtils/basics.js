@@ -19,22 +19,22 @@ const Context = firefox.Context;
  */
 const extensionPagePath = "/extension-page-for-tests/index.html";
 
-module.exports.executeAsyncScriptInExtensionPageForTests = async(driver,
-                                                                 callable,) => {
-
+module.exports.executeAsyncScriptInExtensionPageForTests = async (
+  driver,
+  callable,
+) => {
   driver.setContext(Context.CONTENT);
 
-  const checkIfCurrentlyInExtensionPageWindow = async() => {
+  const checkIfCurrentlyInExtensionPageWindow = async () => {
     let currentUrl = await driver.getCurrentUrl();
     return currentUrl.indexOf(extensionPagePath) > 0;
   };
 
   const isCurrentlyInExtensionPageWindow = await checkIfCurrentlyInExtensionPageWindow();
 
-  // We may still be loading firefox / the add-on
-  // wait for the extension page window to be available
+  // Wait for the extension page window to be available
+  // (we may still be loading firefox/the add-on)
   if (!isCurrentlyInExtensionPageWindow) {
-
     await driver.wait(
       async function() {
         const handles = await driver.getAllWindowHandles();
@@ -66,7 +66,6 @@ module.exports.executeAsyncScriptInExtensionPageForTests = async(driver,
       10000,
       "Should have loaded the extension page for tests",
     );
-
   }
 
   return await driver.executeAsyncScript(callable);
