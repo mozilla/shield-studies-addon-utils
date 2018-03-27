@@ -60,4 +60,15 @@ browser.runtime.onInstalled.addListener(handleInstalled);
 // Run shutdown-related non-priviliged code
 
 // actually start
-runOnce();
+//runOnce();
+
+// run things here via tests instead
+// required for right context to be available to selenium
+
+const createData = {
+  type: "detached_panel",
+  url: "extension-page-for-tests/index.html",
+  width: 500,
+  height: 500,
+};
+const creating = browser.windows.create(createData);

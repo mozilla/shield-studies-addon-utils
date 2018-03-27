@@ -15,6 +15,11 @@ const path = require("path");
 const Context = firefox.Context;
 // const until = webdriver.until;
 
+// Re-usable shield-related test methods
+const {
+  executeAsyncScriptInExtensionPageForTests,
+} = require("../../../testUtils/basics");
+
 // Note: Geckodriver already has quite a good set of default preferences
 // for disabling various items.
 // https://github.com/mozilla/geckodriver/blob/master/src/marionette.rs
@@ -122,3 +127,5 @@ module.exports.uninstallAddon = async (driver, id) => {
   uninstallCmd.setParameters({ sessionId: session.getId(), id });
   await executor.execute(uninstallCmd);
 };
+
+module.exports.executeAsyncScriptInExtensionPageForTests = executeAsyncScriptInExtensionPageForTests;

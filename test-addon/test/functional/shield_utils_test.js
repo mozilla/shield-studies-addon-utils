@@ -8,8 +8,7 @@ const Context = firefox.Context;
 // TODO create new profile per test?
 // then we can test with a clean profile every time
 
-/*
-describe("Shield Study Utils Functional Tests", function() {
+describe("Shield Study Add-on Utils Functional Tests", function() {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
   this.timeout(15000);
 
@@ -23,6 +22,27 @@ describe("Shield Study Utils Functional Tests", function() {
 
   after(() => driver.quit());
 
+  it("should be able to access window.browser from the extension page for tests", async () => {
+    const hasAccessToWebExtensionApi = await utils.executeAsyncScriptInExtensionPageForTests(
+      driver,
+      async callback => {
+        callback(typeof browser === "object");
+      },
+    );
+    assert(hasAccessToWebExtensionApi);
+  });
+
+  it("should be able to access shieldUtils WebExtensions API from the extension page for tests", async () => {
+    const hasAccessToShieldUtilsWebExtensionApi = await utils.executeAsyncScriptInExtensionPageForTests(
+      driver,
+      async callback => {
+        callback(browser && typeof browser.shieldUtils === "object");
+      },
+    );
+    assert(hasAccessToShieldUtilsWebExtensionApi);
+  });
+
+  /*
   it("should return the correct variation", async () => {
     const variation = await driver.executeAsyncScript(async callback => {
       const { studyUtils } = Components.utils.import(
@@ -251,5 +271,5 @@ describe("Shield Study Utils Functional Tests", function() {
       assert(pings.payload.data.study_state === "exit");
     });
   });
+  */
 });
-*/
