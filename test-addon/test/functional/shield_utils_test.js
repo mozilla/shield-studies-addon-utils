@@ -14,16 +14,16 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
 
   let driver;
 
-  before(async () => {
-    driver = await utils.promiseSetupDriver();
+  before(async() => {
+    driver = await utils.setup.promiseSetupDriver(utils.FIREFOX_PREFERENCES);
     // install the addon (note: returns addon id)
-    await utils.installAddon(driver);
+    await utils.setup.installAddon(driver);
   });
 
   after(() => driver.quit());
 
-  it("should be able to access window.browser from the extension page for tests", async () => {
-    const hasAccessToWebExtensionApi = await utils.executeAsyncScriptInExtensionPageForTests(
+  it("should be able to access window.browser from the extension page for tests", async() => {
+    const hasAccessToWebExtensionApi = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
       driver,
       async callback => {
         callback(typeof browser === "object");
@@ -32,8 +32,8 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     assert(hasAccessToWebExtensionApi);
   });
 
-  it("should be able to access shieldUtils WebExtensions API from the extension page for tests", async () => {
-    const hasAccessToShieldUtilsWebExtensionApi = await utils.executeAsyncScriptInExtensionPageForTests(
+  it("should be able to access shieldUtils WebExtensions API from the extension page for tests", async() => {
+    const hasAccessToShieldUtilsWebExtensionApi = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
       driver,
       async callback => {
         callback(browser && typeof browser.shieldUtils === "object");

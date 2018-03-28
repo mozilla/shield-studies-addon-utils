@@ -59,7 +59,7 @@
     "prepack": "fixpack && npm run build",
     "pretest": "npm run build && npm run test-addon:bundle-utils && npm run test-addon:build",
     "pretest-addon:run": "npm run pretest",
-    "test": "FIREFOX_BINARY=${FIREFOX_BINARY:-firefox} XPI_NAME=test-addon/dist/shield_utils_test_add-on-1.0.0.zip mocha test-addon/test/functional/ --bail",
+    "test": "FIREFOX_BINARY=${FIREFOX_BINARY:-firefox} ADDON_ZIP=test-addon/dist/shield_utils_test_add-on-1.0.0.zip mocha test-addon/test/functional/ --bail",
     "test-addon:build": "cd test-addon && web-ext build",
     "test-addon:bundle-utils": "test-addon/bin/bundle-shield-studies-addon-utils.sh",
     "test-addon:run": "cd test-addon && web-ext run --no-reload"
