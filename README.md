@@ -20,7 +20,7 @@ Check out [mozilla/shield-studies-addon-template/](https://github.com/mozilla/sh
 ## Installing the utils in your add-on
 
 ```
-npm install --save-dev shield-studies-addon-utils
+npm install --save shield-studies-addon-utils
 ```
 
 ## Engineering and Process
