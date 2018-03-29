@@ -14,7 +14,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
 
   let driver;
 
-  before(async() => {
+  before(async () => {
     driver = await utils.setup.promiseSetupDriver(utils.FIREFOX_PREFERENCES);
     // install the addon (note: returns addon id)
     await utils.setup.installAddon(driver);
@@ -22,7 +22,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
 
   after(() => driver.quit());
 
-  it("should be able to access window.browser from the extension page for tests", async() => {
+  it("should be able to access window.browser from the extension page for tests", async () => {
     const hasAccessToWebExtensionApi = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
       driver,
       async callback => {
@@ -32,7 +32,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     assert(hasAccessToWebExtensionApi);
   });
 
-  it("should be able to access shieldUtils WebExtensions API from the extension page for tests", async() => {
+  it("should be able to access shieldUtils WebExtensions API from the extension page for tests", async () => {
     const hasAccessToShieldUtilsWebExtensionApi = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
       driver,
       async callback => {
@@ -216,7 +216,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
       assert(!activeExperiments.hasOwnProperty("shield-utils-test"));
     });
 
-    describe("test the opening of a URL at the end of the study", function() {
+    describe("test the opening of an URL at the end of the study", function() {
       it("should open a new tab", async () => {
         const newTabOpened = await driver.wait(async () => {
           const handles = await driver.getAllWindowHandles();

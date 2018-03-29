@@ -7,7 +7,6 @@ const until = webdriver.until;
 
 /* Firefox UI testing helper functions */
 module.exports.ui = {
-
   promiseManifest: async () => {
     const manifestJson = await Fs.readFile(
       path.resolve("src/manifest.json"),
