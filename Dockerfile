@@ -8,4 +8,4 @@ RUN apt-get update -y && \
     apt-get install -y zip firefox xvfb nodejs xsel git ssh openbox && \
     npm install -g npm@5.3.0
 
-ENV PATH="/shield-study-utils/node_modules/.bin:$PATH"
+ENV PATH="/shield-study-addon-utils/node_modules/.bin:$PATH"

@@ -2,10 +2,10 @@
 
 ChromeUtils.import("resource://gre/modules/Services.jsm");
 
-const BASE_PREF = "extensions.original-bootstrap-addon-id.";
+const PREFERENCES_PREFIX = "";
 
 function get(key, type = "char") {
-  key = BASE_PREF + key;
+  key = PREFERENCES_PREFIX + key;
 
   switch (type) {
     case "char":
@@ -20,7 +20,7 @@ function get(key, type = "char") {
 }
 
 function set(key, type, value) {
-  key = BASE_PREF + key;
+  key = PREFERENCES_PREFIX + key;
 
   switch (type) {
     case "char":

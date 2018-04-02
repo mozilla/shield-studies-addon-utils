@@ -64,7 +64,7 @@ To use, copy `webExtensionApis/study/api.js` and `webExtensionApis/study/schema.
 
 Depending on which data processing pipeline the study add-on is configured to use, the pings end up in different destinations:
 
-* `parquet` - The pings end up in the `shield-study` and `shield-study-addon` Telemetry buckets for faster analysis.
+* `shield-parquet` - The pings end up in the `shield-study` and `shield-study-addon` Telemetry buckets for faster analysis.
 * `pioneer` - The pings are encrypted and end up in the Pioneer processing pipeline
 * `custom-telemetry-events` - The pings end up in the ordinary destination for custom telemetry events
 
