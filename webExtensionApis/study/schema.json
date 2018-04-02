@@ -1,7 +1,7 @@
 [
   {
-    "namespace": "shieldUtils",
-    "description": "shieldUtils",
+    "namespace": "study",
+    "description": "study",
     "functions": [
       {
         "name": "bootstrapStudy",

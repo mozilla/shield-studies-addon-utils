@@ -18,12 +18,12 @@
         "paths": [["prefs"]]
       }
     },
-    "shieldUtils": {
-      "schema": "./privileged/shieldUtils/schema.json",
+    "study": {
+      "schema": "./privileged/study/schema.json",
       "parent": {
         "scopes": ["addon_parent"],
-        "script": "./privileged/shieldUtils/api.js",
-        "paths": [["shieldUtils"]]
+        "script": "./privileged/study/api.js",
+        "paths": [["study"]]
       }
     }
   },

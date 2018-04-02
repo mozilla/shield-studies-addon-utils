@@ -52,10 +52,10 @@ async function initiateStudy() {
   // Set dynamic study configuration flags
   studySetup.eligible = await Study.isEligible();
   studySetup.expired = await Study.hasExpired();
-  // Ensure we have configured shieldUtils and are supposed to run our feature
-  await browser.shieldUtils.bootstrapStudy(studySetup);
+  // Ensure we have configured study and are supposed to run our feature
+  await browser.study.bootstrapStudy(studySetup);
   // Get study variation
-  const { variation } = await browser.shieldUtils.info();
+  const { variation } = await browser.study.info();
   // Initiate the study
   new Study(variation);
 }

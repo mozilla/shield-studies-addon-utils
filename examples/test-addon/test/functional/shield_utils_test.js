@@ -32,11 +32,11 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     assert(hasAccessToWebExtensionApi);
   });
 
-  it("should be able to access shieldUtils WebExtensions API from the extension page for tests", async () => {
+  it("should be able to access study WebExtensions API from the extension page for tests", async () => {
     const hasAccessToShieldUtilsWebExtensionApi = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
       driver,
       async callback => {
-        callback(browser && typeof browser.shieldUtils === "object");
+        callback(browser && typeof browser.study === "object");
       },
     );
     assert(hasAccessToShieldUtilsWebExtensionApi);

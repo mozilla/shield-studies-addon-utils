@@ -2,7 +2,7 @@
 
 /* global ExtensionAPI */
 
-this.shieldUtils = class extends ExtensionAPI {
+this.study = class extends ExtensionAPI {
   /**
    * We don't need to override the constructor for other
    * reasons than to clarify the class member "extension"
@@ -39,9 +39,9 @@ this.shieldUtils = class extends ExtensionAPI {
     const { extension } = this;
 
     return {
-      shieldUtils: {
+      study: {
         /**
-         * ensure we have configured shieldUtils
+         * ensure we have configured study
          * and are supposed to run our feature
          * @returns {Promise<void>}
          */

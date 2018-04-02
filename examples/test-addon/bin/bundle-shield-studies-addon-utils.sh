@@ -7,10 +7,10 @@ set -o errexit
 script_path=`dirname $0`
 cd "$script_path/../../"
 
-# bundle the shieldUtils web extension experiment
-mkdir -p test-addon/src/privileged/shieldUtils
-cp webExtensionApis/shieldUtils/api.js test-addon/src/privileged/shieldUtils/api.js
-cp webExtensionApis/shieldUtils/schema.json test-addon/src/privileged/shieldUtils/schema.json
+# bundle the study web extension experiment
+mkdir -p test-addon/src/privileged/study
+cp webExtensionApis/study/api.js test-addon/src/privileged/study/api.js
+cp webExtensionApis/study/schema.json test-addon/src/privileged/study/schema.json
 
 # bundle the prefs web extension experiment
 mkdir -p test-addon/src/privileged/prefs
