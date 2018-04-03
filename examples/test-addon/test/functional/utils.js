@@ -32,11 +32,11 @@ const FIREFOX_PREFERENCES = {
 };
 
 // Re-usable test methods from shield-studies-addon-utils
-const { executeJs } = require("../../../testUtils/executeJs");
-const { nav } = require("../../../testUtils/nav");
-const { pings } = require("../../../testUtils/pings");
-const { setup } = require("../../../testUtils/setup");
-const { ui } = require("../../../testUtils/ui");
+const { executeJs } = require("../../../../testUtils/executeJs");
+const { nav } = require("../../../../testUtils/nav");
+const { pings } = require("../../../../testUtils/pings");
+const { setup } = require("../../../../testUtils/setup");
+const { ui } = require("../../../../testUtils/ui");
 
 // What we expose to our add-on-specific tests
 module.exports = {
