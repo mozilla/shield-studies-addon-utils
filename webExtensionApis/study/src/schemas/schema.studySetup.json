@@ -34,6 +34,16 @@
           "type": "string"
         }
       }
+    },
+    "variation": {
+      "name": {
+        "type": "string"
+      },
+      "weight": {
+        "type": "number",
+        "minimum": 0
+      },
+      "required": ["name", "weight"]
     }
   },
   "properties": {
@@ -69,6 +79,12 @@
       },
       "required": ["studyName", "endings", "telemetry"]
     },
+    "weightedVariations": {
+      "items": {
+        "$ref": "#/definitions/variation"
+      },
+      "type": "array"
+    },
     "addon": {
       "type": "object",
       "properties": {
@@ -84,5 +100,5 @@
       "required": ["id", "version"]
     }
   },
-  "required": ["study", "addon"]
+  "required": ["study", "weightedVariations", "addon"]
 }

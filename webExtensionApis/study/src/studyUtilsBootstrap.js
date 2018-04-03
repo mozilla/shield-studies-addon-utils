@@ -18,10 +18,8 @@ this.Bootstrap = function(studySetup, studyUtils) {
      * @param reason
      * @returns {Promise<void>}
      */
-    async startup(extension) {
-      const { manifest, startupReason } = extension;
-
-      this.log.debug("startup", startupReason);
+    async configure(extension) {
+      const { manifest } = extension;
 
       const addonId = manifest.applications.gecko.id;
       const addonVersion = manifest.version;
@@ -29,6 +27,12 @@ this.Bootstrap = function(studySetup, studyUtils) {
 
       // choose and set variation
       await this.selectVariation();
+    },
+
+    async startup(extension) {
+      const { startupReason } = extension;
+
+      this.log.debug("startup", startupReason);
 
       // Check if the user is eligible to run this study using the |isEligible|
       // function when the study is initialized
@@ -68,7 +72,7 @@ this.Bootstrap = function(studySetup, studyUtils) {
       studySetup.addon = { id, version };
       studyUtils.setup(studySetup);
       // TODO bdanforth: patch studyUtils to setLoggingLevel as part of setup method
-      studyUtils.setLoggingLevel(studySetup.log.studyUtils.level);
+      //studyUtils.setLoggingLevel(...);
     },
 
     // choose the variation for this particular user, then set it.

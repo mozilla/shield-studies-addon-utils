@@ -16,6 +16,30 @@
         ]
       },
       {
+        "name": "deterministicVariation",
+        "type": "function",
+        "description": "TODO",
+        "async": true,
+        "parameters": [
+          {
+            "name": "weightedVariations",
+            "type": "any"
+          },
+          {
+            "optional": true,
+            "name": "fraction",
+            "type": "any"
+          }
+        ]
+      },
+      {
+        "name": "startup",
+        "type": "function",
+        "description": "TODO",
+        "async": true,
+        "parameters": []
+      },
+      {
         "name": "info",
         "type": "function",
         "description": "TODO",

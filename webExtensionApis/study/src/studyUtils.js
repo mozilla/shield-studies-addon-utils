@@ -30,6 +30,7 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
 
 let log;
+const studyUtilsLoggingLevel = "Trace"; // Fatal: 70, Error: 60, Warn: 50, Info: 40, Config: 30, Debug: 20, Trace: 10, All: -1,
 
 // telemetry utils
 const CID = Cu.import("resource://gre/modules/ClientID.jsm", null);
@@ -272,11 +273,9 @@ class StudyUtils {
    * @returns {StudyUtils} - the StudyUtils class instance
    */
   setup(studySetup) {
-    log = createLog("shield-study-utils", studySetup.log.studyUtils.level);
-
+    log = createLog("shield-study-utils", studyUtilsLoggingLevel);
     log.debug("setting up!");
     jsonschema.validateOrThrow(studySetup, schemas.studySetup);
-
     this.studySetup = studySetup;
     this._isSetup = true;
     return this;
@@ -355,16 +354,15 @@ class StudyUtils {
    * @async
    * Deterministically selects and returns the study variation for the user.
    * @param {Object[]} weightedVariations - see schema.weightedVariations.json
-   * @param {Number} rng - randomly generated number (0 <= rng < 1) of the form
-   * returned by Math.random; can be set explicitly for testing
+   * @param {Number} fraction - a number (0 <= fraction < 1); can be set explicitly for testing
    * @returns {Object} - the study variation for this user
    */
-  async deterministicVariation(weightedVariations, rng = null) {
-    // hash the studyName and telemetryId to get the same branch every time.
-    this.throwIfNotSetup("deterministicVariation needs studyName");
+  async deterministicVariation(weightedVariations, fraction = null) {
+    console.log("deterministicVariation", arguments);
     // this is the standard arm choosing method
-    let fraction = rng;
     if (fraction === null) {
+      // hash the studyName and telemetryId to get the same branch every time.
+      this.throwIfNotSetup("deterministicVariation needs studyName");
       const clientId = await this.getTelemetryId();
       const studyName = this.studySetup.study.studyName;
       fraction = await this.sampling.hashFraction(studyName + clientId, 12);

@@ -36,6 +36,8 @@ this.study = class extends ExtensionAPI {
     // const { PioneerUtils } = require("pioneer-utils/PioneerUtils.jsm");
     // const pioneerUtilsBootstrap = require("./pioneerUtilsBootstrap.js");
 
+    let bootstrap;
+
     const { extension } = this;
 
     return {
@@ -46,11 +48,22 @@ this.study = class extends ExtensionAPI {
          * @returns {Promise<void>}
          */
         async configure(studySetup) {
-          const bootstrap = studyUtilsBootstrap.Bootstrap(
-            studySetup,
-            studyUtils,
-          );
+          bootstrap = studyUtilsBootstrap.Bootstrap(studySetup, studyUtils);
+          await bootstrap.configure(extension);
+        },
+
+        async startup() {
           await bootstrap.startup(extension);
+        },
+
+        async deterministicVariation(weightedVariations, fraction) {
+          if (typeof fraction === "string") {
+            fraction = parseFloat(fraction);
+          }
+          return await studyUtils.deterministicVariation(
+            weightedVariations,
+            fraction,
+          );
         },
 
         /**

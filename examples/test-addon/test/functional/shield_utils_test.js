@@ -20,6 +20,8 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     await utils.setup.installAddon(driver);
   });
 
+  // hint: skipping driver.quit() may be useful when debugging failed tests,
+  // leaving the browser open allowing inspection of the ui and browser logs
   after(() => driver.quit());
 
   it("should be able to access window.browser from the extension page for tests", async () => {
@@ -42,17 +44,11 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     assert(hasAccessToShieldUtilsWebExtensionApi);
   });
 
-  /*
-  it("should return the correct variation", async () => {
-    const variation = await driver.executeAsyncScript(async callback => {
-      const { studyUtils } = Components.utils.import(
-        "resource://test-addon/StudyUtils.jsm",
-        {},
-      );
-      // TODO move this to a Config.jsm file
-      const studyConfig = {
-        studyName: "shieldStudyUtilsTest",
-        weightedVariations: [
+  it("should return the correct variation based on specific weightedVariations", async () => {
+    const chosenVariation = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+      driver,
+      async callback => {
+        const weightedVariations = [
           {
             name: "control",
             weight: 1,
@@ -64,19 +60,19 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
           {
             name: "puppers",
             weight: 2,
-          }, // we want more puppers in our sample
-        ],
-      };
+          },
+        ];
 
-      const sample = studyUtils.sample;
-      const hashFraction = await sample.hashFraction("test");
-      const chosenVariation = await sample.chooseWeighted(
-        studyConfig.weightedVariations,
-        hashFraction,
-      );
-      callback(chosenVariation);
-    });
-    assert(variation.name === "puppers");
+        const fraction = 0.3;
+        const variation = await browser.study.deterministicVariation(
+          weightedVariations,
+          fraction,
+        );
+
+        callback(variation);
+      },
+    );
+    assert(chosenVariation.name === "kittens");
   });
 
   it("telemetry should be working", async () => {
@@ -271,5 +267,4 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
       assert(pings.payload.data.study_state === "exit");
     });
   });
-  */
 });

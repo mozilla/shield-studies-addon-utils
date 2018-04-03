@@ -54,18 +54,6 @@ const studySetup = {
     },
   },
 
-  // required LOG key
-  log: {
-    // Fatal: 70, Error: 60, Warn: 50, Info: 40, Config: 30, Debug: 20, Trace: 10, All: -1,
-    bootstrap: {
-      // Console.jsm uses "debug", whereas Log.jsm uses "Debug", *sigh*
-      level: "debug",
-    },
-    studyUtils: {
-      level: "Trace",
-    },
-  },
-
   /* Button study branches and sample weights
      - test kittens vs. puppies if we can only have one.
        - downweight lizards.  Lizards is a 'poison' branch, meant to

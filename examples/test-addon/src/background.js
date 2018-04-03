@@ -54,9 +54,11 @@ async function initiateStudy() {
   studySetup.expired = await Study.hasExpired();
   // Ensure we have configured study and are supposed to run our feature
   await browser.study.configure(studySetup);
-  // Get study variation
+  // Run the startup study checks
+  await browser.study.startup();
+  // Read the active study variation
   const { variation } = await browser.study.info();
-  // Initiate the study
+  // Initiate our study-specific background logic
   new Study(variation);
 }
 
