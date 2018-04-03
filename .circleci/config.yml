@@ -20,7 +20,7 @@ jobs:
 
       - run:
           name: webpack and eslint
-          command: npm run dist
+          command: npm run build
 
       - run:
           name: Build .XPI

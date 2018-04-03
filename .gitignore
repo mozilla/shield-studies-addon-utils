@@ -2,4 +2,3 @@ node_modules
 *.xpi
 *.tgz
 *.*.swp
-dist/
