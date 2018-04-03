@@ -45,9 +45,9 @@ this.study = class extends ExtensionAPI {
          * and are supposed to run our feature
          * @returns {Promise<void>}
          */
-        async bootstrapStudy(studyConfig) {
+        async configure(studySetup) {
           const bootstrap = studyUtilsBootstrap.Bootstrap(
-            studyConfig,
+            studySetup,
             studyUtils,
           );
           await bootstrap.startup(extension);

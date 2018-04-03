@@ -4,13 +4,13 @@
     "description": "study",
     "functions": [
       {
-        "name": "bootstrapStudy",
+        "name": "configure",
         "type": "function",
         "description": "TODO",
         "async": true,
         "parameters": [
           {
-            "name": "studyConfig",
+            "name": "studySetup",
             "type": "any"
           }
         ]

@@ -53,7 +53,7 @@ async function initiateStudy() {
   studySetup.eligible = await Study.isEligible();
   studySetup.expired = await Study.hasExpired();
   // Ensure we have configured study and are supposed to run our feature
-  await browser.study.bootstrapStudy(studySetup);
+  await browser.study.configure(studySetup);
   // Get study variation
   const { variation } = await browser.study.info();
   // Initiate the study
