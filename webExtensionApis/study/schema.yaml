@@ -1,0 +1,162 @@
+# Interface schema
+# https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/schema.html
+# possible types are here
+# - https://searchfox.org/mozilla-central/source/toolkit/components/extensions/Schemas.jsm#2418-2426
+#
+# - properties
+# - functions
+# - events
+# - types
+#
+# - type property:
+#   boolean, integer, number, string, array, object, or any.
+#
+
+# TODO
+# - add json schema types
+# - do we want to expose any of the sampling / hashing stuff?
+# - mention / decide how to handle all
+---
+- namespace: study
+  description: Interface for shield studies, for use by `background.js` scripts.
+  apiVersion: 5  # for dev use
+  types:
+  - name: studySetup
+  - name: weightedVariations
+  - name: anEnding
+  - name: telemetrySelectionOptions
+  - name: prefTypes
+
+  functions:
+  - name: configure
+    type: function
+    description: Configure the study.  Most things can't work without this
+    async: true
+    parameters:
+    - name: studySetup
+      type: object
+      # with a variation included.
+      # expiration?
+
+
+  - name: simpleDeterministicVariation
+    returns: Name of a variation from weightedVariations
+    async: true
+    parameters:
+    - name: weightedVariations
+      type: object
+    - name: fraction
+      optional: true
+      type: Number
+
+  - name: endStudy
+    parameters:
+    - name: anEnding
+    - type: object
+    # should be anEnding Object
+    returns: none
+
+  ## informational things
+  - name: permissions
+    async: true
+    # I don't like this name!
+    # TODO: should there be an arg to just ask for pioneer?  shield?
+    returns: object of permissions with keys shield, pioneer, telemetry, 'ok'
+  - name: userInfo
+    returns: object with branch, etc.
+
+  # telemetry related things
+  # - should this be a 2nd namespace?  does it need configure?
+  - name: sendTelemetry
+    async: true
+    parameters:
+    - name: payload
+      type: object  # TODO copy existing?
+
+    - name: type
+    returns:  Nothing
+
+  - name: getTelemetry
+    async: true
+    returns:  Array of Telemetry pings
+    parameters:
+    - name: telemetrySelectionOptions
+      description: `{ type, n, minTimestamp, headersOnly }`
+
+  - name: setActiveExperiment
+    async: true
+    returns: Nothing
+    parameters: []
+  - name: unsetActiveExperiment
+    async: true
+    returns: Nothing
+    parameters: []
+
+  ## prefs
+  # TODO:  userBranch, default branch complications
+  - name: getPref
+    parameters: []
+
+  - name: setPref
+    returns:  Value.  Unclear for edge cases
+    parameters:
+    - name: prefName
+      type: string
+    - name: prefType
+      type: string  # from prefTypes
+
+  # utilities
+  - name: surveyUrl
+    parameters:
+    - name: baseUrl
+      type: string
+    returns: a url with queryArgs appended / mixed
+
+  - name: validateJSON
+    returns: a validation
+    parameters:
+    - name: anObject
+      type: object
+    - name: schema
+      type: object  # a jsonschema
+
+
+
+
+# shield-utils  (`browser.study.`)
+# - chooseBranch (weights, optional rng?)
+# - configure   // alternative is to `new` an object
+#   - shield or pioneer
+#   - name
+#   - weights?
+#   - variation?
+#   - ...
+#   - rules:  pioneer, or isPioneer: true, or something!
+# - permissions // STUDY IMPLEMENTER DON'T HAVE TO REMEMBER ALL THE PREFS
+#   - OK? "some boolean is summary for basic isEligble"
+#   - details
+#     + auto pb mode?
+#     + I can shield (my shield pref is true)
+#     + I can telemetry
+# - telemetry (must handle pioneer as well)
+#   - send
+#   - configure?
+#   - setActive
+#   - unsetActive
+# - userInfo??  // alternative is to get it from normandy modules
+#   - (needed? for survey urls, pings)
+#   - get
+#     - fx version
+#     - addons
+#     - ...
+# - endStudy(...anEnding)
+# - utils
+#     - surveyQueryArgs. => (get the args for survey?) openUrl?  construct url?
+# - sampling
+#     - hashing
+#     - unbalanced weighted selection
+# - (proposed)
+#     - expiration
+# - prefs
+#     - get
+#     - set
