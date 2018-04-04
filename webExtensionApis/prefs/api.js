@@ -1,7 +1,10 @@
 "use strict";
 
+/* global ExtensionAPI:false */
+
 ChromeUtils.import("resource://gre/modules/Services.jsm");
 
+/*
 const PREFERENCES_PREFIX = "";
 
 function get(key, type = "char") {
@@ -32,6 +35,7 @@ function set(key, type, value) {
   }
   throw new Error(`Unknown type: ${type}`);
 }
+*/
 
 /* https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/functions.html */
 this.prefs = class extends ExtensionAPI {

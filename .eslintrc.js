@@ -16,7 +16,7 @@ module.exports = {
   ],
   overrides: [
     {
-      files: "src/**",
+      files: "webExtensionApis/**",
       env: {
         browser: true,
         webextensions: true,
@@ -40,14 +40,22 @@ module.exports = {
     "comma-dangle": ["error", "always-multiline"],
     eqeqeq: "error",
     indent: ["warn", 2, { SwitchCase: 1 }],
+    "max-len": [
+      "warn",
+      {
+        code: 80,
+        ignoreComments: true,
+        ignoreTrailingComments: true,
+        ignoreUrls: true,
+      },
+    ],
     "no-console": "warn",
-    "no-var": "error",
     "no-shadow": "error",
     "no-unused-vars": "error",
+    "no-var": "error",
     "prefer-const": "warn",
     "prefer-spread": "error",
     semi: ["error", "always"],
     "valid-jsdoc": "warn",
-    "max-len": ["warn", 80],
   },
 };

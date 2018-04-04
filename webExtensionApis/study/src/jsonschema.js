@@ -1,3 +1,5 @@
+/* eslint-env commonjs */
+
 const Ajv = require("ajv/dist/ajv.min.js");
 const ajv = new Ajv();
 
