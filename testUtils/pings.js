@@ -39,7 +39,7 @@ module.exports.pings = {
   },
 
   getShieldPingsAfterTimestamp: async (driver, ts) => {
-    return getTelemetryPings(driver, {
+    return module.exports.pings.getTelemetryPings(driver, {
       type: ["shield-study", "shield-study-addon"],
       timestamp: ts,
     });
@@ -82,7 +82,7 @@ ${JSON.stringify(p.payload.data, null, 2)}
     for (const condition of conditionArray) {
       const index = telemetryArray.findIndex(ping => condition(ping));
       if (index === -1) {
-        throw new this.SearchError(condition);
+        throw new module.exports.pings.SearchError(condition);
       }
       resultingPings.push(telemetryArray[index]);
     }
