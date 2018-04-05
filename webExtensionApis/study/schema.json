@@ -1,73 +1,154 @@
 [
   {
     "namespace": "study",
-    "description": "study",
+    "description":
+      "Interface for shield studies, for use by `background.js` scripts.",
+    "apiVersion": 5,
+    "types": [
+      {
+        "name": "studySetup"
+      },
+      {
+        "name": "weightedVariations"
+      },
+      {
+        "name": "anEnding"
+      },
+      {
+        "name": "telemetrySelectionOptions"
+      },
+      {
+        "name": "prefTypes"
+      }
+    ],
     "functions": [
       {
         "name": "configure",
         "type": "function",
-        "description": "TODO",
+        "description":
+          "Configure the study.  Most things can't work without this",
         "async": true,
         "parameters": [
           {
             "name": "studySetup",
-            "type": "any"
+            "type": "object"
           }
         ]
       },
       {
-        "name": "deterministicVariation",
-        "type": "function",
-        "description": "TODO",
+        "name": "simpleDeterministicVariation",
+        "returns": "Name of a variation from weightedVariations",
         "async": true,
         "parameters": [
           {
             "name": "weightedVariations",
-            "type": "any"
+            "type": "object"
           },
           {
-            "optional": true,
             "name": "fraction",
-            "type": "any"
-          }
-        ]
-      },
-      {
-        "name": "startup",
-        "type": "function",
-        "description": "TODO",
-        "async": true,
-        "parameters": []
-      },
-      {
-        "name": "info",
-        "type": "function",
-        "description": "TODO",
-        "async": true,
-        "parameters": []
-      },
-      {
-        "name": "telemetry",
-        "type": "function",
-        "description": "TODO",
-        "async": true,
-        "parameters": [
-          {
-            "name": "data",
-            "type": "any"
+            "optional": true,
+            "type": "Number"
           }
         ]
       },
       {
         "name": "endStudy",
-        "type": "function",
-        "description": "TODO",
+        "parameters": [
+          {
+            "name": "anEnding"
+          },
+          {
+            "type": "object"
+          }
+        ],
+        "returns": "none"
+      },
+      {
+        "name": "permissions",
+        "async": true,
+        "returns":
+          "object of permissions with keys shield, pioneer, telemetry, 'ok'"
+      },
+      {
+        "name": "userInfo",
+        "returns": "object with branch, etc."
+      },
+      {
+        "name": "sendTelemetry",
         "async": true,
         "parameters": [
           {
-            "optional": true,
-            "name": "data",
-            "type": "any"
+            "name": "payload",
+            "type": "object"
+          },
+          {
+            "name": "type"
+          }
+        ],
+        "returns": "Nothing"
+      },
+      {
+        "name": "getTelemetry",
+        "async": true,
+        "returns": "Array of Telemetry pings",
+        "parameters": [
+          {
+            "name": "telemetrySelectionOptions",
+            "description": "`{ type, n, minTimestamp, headersOnly }`"
+          }
+        ]
+      },
+      {
+        "name": "setActiveExperiment",
+        "async": true,
+        "returns": "Nothing",
+        "parameters": []
+      },
+      {
+        "name": "unsetActiveExperiment",
+        "async": true,
+        "returns": "Nothing",
+        "parameters": []
+      },
+      {
+        "name": "getPref",
+        "parameters": []
+      },
+      {
+        "name": "setPref",
+        "returns": "Value.  Unclear for edge cases",
+        "parameters": [
+          {
+            "name": "prefName",
+            "type": "string"
+          },
+          {
+            "name": "prefType",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "surveyUrl",
+        "parameters": [
+          {
+            "name": "baseUrl",
+            "type": "string"
+          }
+        ],
+        "returns": "a url with queryArgs appended / mixed"
+      },
+      {
+        "name": "validateJSON",
+        "returns": "a validation",
+        "parameters": [
+          {
+            "name": "anObject",
+            "type": "object"
+          },
+          {
+            "name": "schema",
+            "type": "object"
           }
         ]
       },
