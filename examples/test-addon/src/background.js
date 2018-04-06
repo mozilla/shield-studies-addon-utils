@@ -1,5 +1,5 @@
 /* eslint no-console:off */
-/* global studySetup */
+/* global browser, studySetup */
 
 "use strict";
 
@@ -81,4 +81,4 @@ const createData = {
   width: 500,
   height: 500,
 };
-const creating = browser.windows.create(createData);
+browser.windows.create(createData);

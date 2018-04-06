@@ -1,4 +1,5 @@
 /* eslint-env node, mocha */
+/* global browser */
 
 const assert = require("assert");
 const utils = require("./utils");

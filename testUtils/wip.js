@@ -1,9 +1,12 @@
 /* eslint-env node */
 /* eslint no-console:off */
 
+/*
+const webdriver = require("selenium-webdriver");
 const firefox = require("selenium-webdriver/firefox");
 const Context = firefox.Context;
 const until = webdriver.until;
+*/
 
 // TODO glind general wrapper for 'async with callback'?
 

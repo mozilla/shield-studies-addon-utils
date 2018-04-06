@@ -8,19 +8,7 @@
  * reloading, as the .xpi file has not been recreated.
  */
 
-console.log("Starting up firefox");
-
 require("geckodriver");
-const firefox = require("selenium-webdriver/firefox");
-const cmd = require("selenium-webdriver/lib/command");
-const Fs = require("fs-extra");
-const FxRunnerUtils = require("fx-runner/lib/utils");
-const path = require("path");
-const webdriver = require("selenium-webdriver");
-
-const By = webdriver.By;
-const Context = firefox.Context;
-const until = webdriver.until;
 
 // Note: Geckodriver already has quite a good set of default preferences
 // for disabling various items.
@@ -45,83 +33,26 @@ const FIREFOX_PREFERENCES = {
   // ("toolkit.telemetry.server", Pref::new("https://%(server)s/dummy/telemetry/")),
 };
 
-// useful if we need to test on a specific version of Firefox
-async function promiseActualBinary(binary) {
-  try {
-    const normalizedBinary = await FxRunnerUtils.normalizeBinary(binary);
-    await Fs.stat(normalizedBinary);
-    return normalizedBinary;
-  } catch (ex) {
-    if (ex.code === "ENOENT") {
-      throw new Error(`Could not find ${binary}`);
-    }
-    throw ex;
-  }
-}
+// Re-usable test methods from shield-studies-addon-utils
+const { nav } = require("../../testUtils/nav");
+const { setup } = require("../../testUtils/setup");
 
-promiseSetupDriver = async() => {
-  const profile = new firefox.Profile();
-
-  // TODO, allow 'actually send telemetry' here.
-  Object.keys(FIREFOX_PREFERENCES).forEach(key => {
-    profile.setPreference(key, FIREFOX_PREFERENCES[key]);
-  });
-
-  // TODO glind, allow config to re-use profile
-  const options = new firefox.Options();
-  options.setProfile(profile);
-
-  const builder = new webdriver.Builder()
-    .forBrowser("firefox")
-    .setFirefoxOptions(options);
-
-  const binaryLocation = await promiseActualBinary(
-    process.env.FIREFOX_BINARY || "nightly",
-  );
-  await options.setBinary(new firefox.Binary(binaryLocation));
-  const driver = await builder.build();
-  // Firefox will be started up by now
-  driver.setContext(Context.CHROME);
-
-  return driver;
-};
-
-installAddon = async(driver, fileLocation) => {
-  // references:
-  //    https://bugzilla.mozilla.org/show_bug.cgi?id=1298025
-  //    https://github.com/mozilla/geckodriver/releases/tag/v0.17.0
-  const executor = driver.getExecutor();
-  executor.defineCommand(
-    "installAddon",
-    "POST",
-    "/session/:sessionId/moz/addon/install",
-  );
-  const installCmd = new cmd.Command("installAddon");
-
-  const session = await driver.getSession();
-  installCmd.setParameters({
-    sessionId: session.getId(),
-    path: fileLocation,
-    temporary: true,
-  });
-  return executor.execute(installCmd);
+const utils = {
+  FIREFOX_PREFERENCES,
+  nav,
+  setup,
 };
 
 (async() => {
   try {
-    const driver = await promiseSetupDriver();
-
     console.log("Starting up firefox");
-
-    // install the addon
-    const fileLocation = path.join(process.cwd(), process.env.XPI);
-
-    await installAddon(driver, fileLocation);
+    const driver = await utils.setup.promiseSetupDriver(
+      utils.FIREFOX_PREFERENCES,
+    );
     console.log("Load temporary addon.");
-
+    await utils.setup.installAddon(driver);
     // navigate to a regular page
-    driver.setContext(Context.CONTENT);
-    driver.get("about:debugging");
+    utils.nav.gotoURL(driver, "about:debugging");
   } catch (e) {
     console.error(e); // eslint-disable-line no-console
   }

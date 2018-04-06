@@ -5,7 +5,8 @@
 
 async function getTelemetryPings(options) {
   // type is String or Array
-  const { type, n, timestamp, headersOnly } = options;
+  const { n, timestamp, headersOnly } = options;
+  let { type } = options;
   Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
   // {type, id, timestampCreated}
   let pings = await TelemetryArchive.promiseArchivedPingList();
@@ -28,11 +29,11 @@ async function getTelemetryPings(options) {
 async function pingsReport() {
   async function getPings() {
     const ar = ["shield-study", "shield-study-addon"];
-    return getTelemetryPings({ type: ["shield-study", "shield-study-addon"] });
+    return getTelemetryPings({ type: ar });
   }
 
   const pings = (await getPings()).reverse();
-  if (pings.length == 0) {
+  if (pings.length === 0) {
     return { report: "No pings found" };
   }
   const p0 = pings[0].payload;
@@ -82,7 +83,7 @@ async function listenFromWebExtension(msg, sender, sendResponse) {
   return false;
 }
 
-async function startup(addonData, reason) {
+async function startup(addonData) {
   console.log("starting up debugger");
   const webExtension = addonData.webExtension;
   webExtension.startup().then(api => {

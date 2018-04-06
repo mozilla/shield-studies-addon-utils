@@ -2,6 +2,9 @@
 
 const webdriver = require("selenium-webdriver");
 const firefox = require("selenium-webdriver/firefox");
+const Fs = require("fs-extra");
+const path = require("path");
+const By = webdriver.By;
 const Context = firefox.Context;
 const until = webdriver.until;
 
@@ -32,7 +35,7 @@ module.exports.ui = {
       return id.replace(/[^a-z0-9_-]/g, "_");
     }
 
-    const manifest = await promiseManifest();
+    const manifest = await module.exports.ui.promiseManifest();
     return makeWidgetId(manifest.applications.gecko.id);
   },
 
