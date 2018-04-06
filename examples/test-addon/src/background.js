@@ -10,7 +10,7 @@ class Study {
   // Use web extension experiments to get whatever prefs, add-ons,
   // telemetry, anything necessary for the check
   static async isEligible() {
-    //browser.prefs.get('my.favorite.pref');
+    // browser.prefs.get('my.favorite.pref');
     return true;
   }
 

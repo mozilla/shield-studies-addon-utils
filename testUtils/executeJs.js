@@ -40,11 +40,11 @@ module.exports.executeJs = {
    * @param callable
    * @returns {Promise<*>}
    */
-  executeAsyncScriptInExtensionPageForTests: async (driver, callable) => {
+  executeAsyncScriptInExtensionPageForTests: async(driver, callable) => {
     driver.setContext(Context.CONTENT);
 
-    const checkIfCurrentlyInExtensionPageWindow = async () => {
-      let currentUrl = await driver.getCurrentUrl();
+    const checkIfCurrentlyInExtensionPageWindow = async() => {
+      const currentUrl = await driver.getCurrentUrl();
       return currentUrl.indexOf(extensionPagePath) > 0;
     };
 

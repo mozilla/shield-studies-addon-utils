@@ -59,7 +59,7 @@ async function promiseActualBinary(binary) {
   }
 }
 
-promiseSetupDriver = async () => {
+promiseSetupDriver = async() => {
   const profile = new firefox.Profile();
 
   // TODO, allow 'actually send telemetry' here.
@@ -86,7 +86,7 @@ promiseSetupDriver = async () => {
   return driver;
 };
 
-installAddon = async (driver, fileLocation) => {
+installAddon = async(driver, fileLocation) => {
   // references:
   //    https://bugzilla.mozilla.org/show_bug.cgi?id=1298025
   //    https://github.com/mozilla/geckodriver/releases/tag/v0.17.0
@@ -107,7 +107,7 @@ installAddon = async (driver, fileLocation) => {
   return executor.execute(installCmd);
 };
 
-(async () => {
+(async() => {
   try {
     const driver = await promiseSetupDriver();
 

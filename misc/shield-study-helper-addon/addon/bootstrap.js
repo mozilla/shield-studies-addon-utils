@@ -56,29 +56,29 @@ ${JSON.stringify(p.payload.data, null, 2)}
       )
       .join("\n");
 
-  return { report: report };
-  //pings.forEach(p=>{
+  return { report };
+  // pings.forEach(p=>{
   //  console.log(p.creationDate, p.payload.type);
   //  console.log(JSON.stringify(p.payload.data,null,2))
-  //})
+  // })
 }
 
 async function listenFromWebExtension(msg, sender, sendResponse) {
-  //await pingsReport();
+  // await pingsReport();
   console.log(`got ${msg}`);
-  //pingsReport().then(
+  // pingsReport().then(
   //  r=>{
   //    console.log(`sendResponse! ${JSON.stringify({report: r})}`);
   //    sendResponse({report: r})
-  //}
-  //);
+  // }
+  // );
 
   // NOT FINE.
-  //const a = await Promise.resolve({"report": "A report"})
-  //sendResponse(a);
-  //sendResponse(Promise.resolve({"report": "A report"}));
+  // const a = await Promise.resolve({"report": "A report"})
+  // sendResponse(a);
+  // sendResponse(Promise.resolve({"report": "A report"}));
   sendResponse(Promise.resolve(pingsReport()));
-  //sendResponse(pingsReport().then(r=>{"report": r}));
+  // sendResponse(pingsReport().then(r=>{"report": r}));
   return false;
 }
 

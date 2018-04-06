@@ -14,7 +14,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
 
   let driver;
 
-  before(async () => {
+  before(async() => {
     driver = await utils.setup.promiseSetupDriver(utils.FIREFOX_PREFERENCES);
     // install the addon (note: returns addon id)
     await utils.setup.installAddon(driver);
@@ -24,7 +24,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
   // leaving the browser open allowing inspection of the ui and browser logs
   after(() => driver.quit());
 
-  it("should be able to access window.browser from the extension page for tests", async () => {
+  it("should be able to access window.browser from the extension page for tests", async() => {
     const hasAccessToWebExtensionApi = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
       driver,
       async callback => {
@@ -34,7 +34,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     assert(hasAccessToWebExtensionApi);
   });
 
-  it("should be able to access study WebExtensions API from the extension page for tests", async () => {
+  it("should be able to access study WebExtensions API from the extension page for tests", async() => {
     const hasAccessToShieldUtilsWebExtensionApi = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
       driver,
       async callback => {
@@ -44,7 +44,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     assert(hasAccessToShieldUtilsWebExtensionApi);
   });
 
-  it("should return the correct variation based on specific weightedVariations", async () => {
+  it("should return the correct variation based on specific weightedVariations", async() => {
     const chosenVariation = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
       driver,
       async callback => {
@@ -76,7 +76,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
   });
 
   /*
-  it("telemetry should be working", async () => {
+  it("telemetry should be working", async() => {
     const shieldTelemetryPing = await driver.executeAsyncScript(
       async callback => {
         const { fakeSetup, getMostRecentPingsByType } = Components.utils.import(
@@ -108,7 +108,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
   });
 
   describe('test the library\'s "startup" process', function() {
-    it("should send the correct ping on first seen", async () => {
+    it("should send the correct ping on first seen", async() => {
       const firstSeenPing = await driver.executeAsyncScript(async callback => {
         const { fakeSetup, getMostRecentPingsByType } = Components.utils.import(
           "resource://test-addon/utils.jsm",
@@ -130,7 +130,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
       assert(firstSeenPing.payload.data.study_state === "enter");
     });
 
-    it("should set the experiment to active in Telemetry", async () => {
+    it("should set the experiment to active in Telemetry", async() => {
       const activeExperiments = await driver.executeAsyncScript(
         async callback => {
           const { fakeSetup } = Components.utils.import(
@@ -155,7 +155,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
       assert(activeExperiments.hasOwnProperty("shield-utils-test"));
     });
 
-    it("should send the correct telemetry ping on first install", async () => {
+    it("should send the correct telemetry ping on first install", async() => {
       const installedPing = await driver.executeAsyncScript(async callback => {
         const { fakeSetup, getMostRecentPingsByType } = Components.utils.import(
           "resource://test-addon/utils.jsm",
@@ -179,7 +179,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
   });
 
   describe("test the library's endStudy() function", function() {
-    before(async () => {
+    before(async() => {
       await driver.executeAsyncScript(async callback => {
         const { fakeSetup } = Components.utils.import(
           "resource://test-addon/utils.jsm",
@@ -201,7 +201,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
       });
     });
 
-    it("should set the experiment as inactive", async () => {
+    it("should set the experiment as inactive", async() => {
       const activeExperiments = await driver.executeAsyncScript(
         async callback => {
           Components.utils.import(
@@ -214,15 +214,15 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     });
 
     describe("test the opening of an URL at the end of the study", function() {
-      it("should open a new tab", async () => {
-        const newTabOpened = await driver.wait(async () => {
+      it("should open a new tab", async() => {
+        const newTabOpened = await driver.wait(async() => {
           const handles = await driver.getAllWindowHandles();
           return handles.length === 2; // opened a new tab
         }, 3000);
         assert(newTabOpened);
       });
 
-      it("should open a new tab to the correct URL", async () => {
+      it("should open a new tab to the correct URL", async() => {
         const currentHandle = await driver.getWindowHandle();
         driver.setContext(Context.CONTENT);
         // Find the new window handle.
@@ -233,7 +233,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
             newWindowHandle = handle;
           }
         }
-        const correctURLOpened = await driver.wait(async () => {
+        const correctURLOpened = await driver.wait(async() => {
           await driver.switchTo().window(newWindowHandle);
           const currentURL = await driver.getCurrentUrl();
           return currentURL.startsWith(
@@ -244,7 +244,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
       });
     });
 
-    it("should send the correct reason telemetry", async () => {
+    it("should send the correct reason telemetry", async() => {
       const pings = await driver.executeAsyncScript(async callback => {
         const { getMostRecentPingsByType } = Components.utils.import(
           "resource://test-addon/utils.jsm",
@@ -256,7 +256,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
       assert(pings.payload.data.study_state === "expired");
     });
 
-    it("should send the uninstall telemetry", async () => {
+    it("should send the uninstall telemetry", async() => {
       const pings = await driver.executeAsyncScript(async callback => {
         const { getMostRecentPingsByType } = Components.utils.import(
           "resource://test-addon/utils.jsm",
