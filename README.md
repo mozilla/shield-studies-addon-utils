@@ -69,11 +69,11 @@ Depending on which data processing pipeline the study add-on is configured to us
 * `pioneer` - The pings are encrypted and end up in the Pioneer processing pipeline
 * `custom-telemetry-events` - The pings end up in the ordinary destination for custom telemetry events
 
-To use, copy and adjust the files as per the `study` API above.
-
 ### `browser.prefs.*`
 
 Allows your web extension add-on to set and read preferences.
+
+To use, copy and adjust the files as per the `study` API above.
 
 ## What You are Building
 
