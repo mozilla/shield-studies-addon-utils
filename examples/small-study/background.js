@@ -14,13 +14,13 @@ const STUDYCONFIG = {
 
 // This is a Shield Study template.
 class BaseStudy {
-  constructor(variation) {
+  async constructor(variation) {
     // also sets activeExperiment key
     // makes telmemetry possible
-    browser.study.configure(variation, ...STUDYCONFIG);
+    await browser.study.configure(variation, ...STUDYCONFIG);
   }
 
-  isEligible() {
+  async isEligible() {
     let permissions = await browser.study.permissions();
     // could have other reasons to be eligible, such as addons or whatever
     return permissions.shield
@@ -28,7 +28,7 @@ class BaseStudy {
 
   // TODO gets reasons
   // https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/runtime/onInstalled
-  installOrDie () {
+  async installOrDie () {
     let eligible = await this.isEligible();
     if (!eligible) {
       // a full ineligible ending TODO
@@ -36,12 +36,12 @@ class BaseStudy {
     }
   }
 
-  watchExpire () {
+  async watchExpire () {
     // TODO, use the firstRun prefs, timers module etc.
     let becameExpired = false;
     if (becameExpired) {
       // full ending
-      browser.study.endStudy('expired', ...);
+      await browser.study.endStudy('expired', ...);
     }
   }
 
@@ -54,6 +54,7 @@ class BaseStudy {
   }
 }
 
+(async () => {
 
 // 1. variation, it all needs the variation
 const userVariation = await browser.study.getPref(variationPref,'string') ||
@@ -74,3 +75,5 @@ await browser.shield.telemetry(aPing);
 // 6. force quit the study
 await browser.shield.endStudy(...anEnding, uninstall)
 // endSTudy, ps has scary side effects, describe them.
+
+})()
