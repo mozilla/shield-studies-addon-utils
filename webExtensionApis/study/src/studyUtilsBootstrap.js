@@ -72,7 +72,7 @@ this.Bootstrap = function(studySetup, studyUtils) {
       studySetup.addon = { id, version };
       studyUtils.setup(studySetup);
       // TODO bdanforth: patch studyUtils to setLoggingLevel as part of setup method
-      //studyUtils.setLoggingLevel(...);
+      // studyUtils.setLoggingLevel(...);
     },
 
     // choose the variation for this particular user, then set it.
