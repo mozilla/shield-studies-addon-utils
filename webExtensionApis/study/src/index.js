@@ -128,6 +128,13 @@ this.study = class extends ExtensionAPI {
           } = require("./testRelatedInstrumentation.js");
           return studySetupForTests();
         },
+
+        async getActiveExperiments() {
+          const {
+            getActiveExperiments,
+          } = require("./testRelatedInstrumentation.js");
+          return getActiveExperiments();
+        },
       },
     };
   }

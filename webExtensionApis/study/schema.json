@@ -90,6 +90,13 @@
         "description": "TODO",
         "async": true,
         "parameters": []
+      },
+      {
+        "name": "getActiveExperiments",
+        "type": "function",
+        "description": "TODO",
+        "async": true,
+        "parameters": []
       }
     ]
   }
