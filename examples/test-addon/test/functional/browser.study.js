@@ -76,7 +76,6 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     assert(chosenVariation.name === "kittens");
   });
 
-  /*
   it("telemetry should be working", async() => {
     const shieldTelemetryPing = await driver.executeAsyncScript(
       async callback => {
@@ -269,5 +268,4 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
       assert(pings.payload.data.study_state === "exit");
     });
   });
-  */
 });
