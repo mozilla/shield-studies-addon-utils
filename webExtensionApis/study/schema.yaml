@@ -32,14 +32,16 @@
     type: function
     description: Configure the study.  Most things can't work without this
     async: true
+    fakereturn:
     parameters:
     - name: studySetup
       type: object
       # with a variation included.
-      # expiration?
-
+      # expiration?  -- TODO No, this should be with usual webExt timers.
+      #
 
   - name: simpleDeterministicVariation
+    defaultReturn: "styleA"
     returns: Name of a variation from weightedVariations
     async: true
     parameters:
@@ -50,14 +52,16 @@
       type: Number
 
   - name: endStudy
+    defaultReturn: "endingName"
     parameters:
     - name: anEnding
-    - type: object
+      type: object
     # should be anEnding Object
     returns: none
 
   ## informational things
   - name: permissions
+    defaultReturn: {shield: true, pioneer: false}
     async: true
     # I don't like this name!
     # TODO: should there be an arg to just ask for pioneer?  shield?
@@ -74,15 +78,18 @@
       type: object  # TODO copy existing?
 
     - name: type
+    defaultReturn: undefined
     returns:  Nothing
 
   - name: getTelemetry
     async: true
+    defaultReturn: [{pingType: 'main'}]
     returns:  Array of Telemetry pings
     parameters:
     - name: telemetrySelectionOptions
       description: `{ type, n, minTimestamp, headersOnly }`
 
+  # btw, these might not need to be public
   - name: setActiveExperiment
     async: true
     returns: Nothing
@@ -95,9 +102,13 @@
   ## prefs
   # TODO:  userBranch, default branch complications
   - name: getPref
-    parameters: []
+    defaultReturn: 'someValue'
+    parameters:
+    - name: prefName
+      type: string
 
   - name: setPref
+    defaultReturn: 'someValue'
     returns:  Value.  Unclear for edge cases
     parameters:
     - name: prefName
@@ -105,14 +116,25 @@
     - name: prefType
       type: string  # from prefTypes
 
+  - name: watchPref
+    defaultReturn: '[A function]'
+    returns: a watcher for a pref
+    parameters:
+    - name: prefName
+      type: string
+    - name: prefType
+      type: function   # does this work?
+
   # utilities
   - name: surveyUrl
+    defaultReturn: 'https://example.com?version=59.0'
     parameters:
     - name: baseUrl
       type: string
     returns: a url with queryArgs appended / mixed
 
   - name: validateJSON
+    defaultReturn: {isValid: true}
     returns: a validation
     parameters:
     - name: anObject
