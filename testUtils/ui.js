@@ -2,12 +2,15 @@
 
 const webdriver = require("selenium-webdriver");
 const firefox = require("selenium-webdriver/firefox");
+const Fs = require("fs-extra");
+const path = require("path");
+const By = webdriver.By;
 const Context = firefox.Context;
 const until = webdriver.until;
 
 /* Firefox UI testing helper functions */
 module.exports.ui = {
-  promiseManifest: async () => {
+  promiseManifest: async() => {
     const manifestJson = await Fs.readFile(
       path.resolve("src/manifest.json"),
       "utf8",
@@ -22,7 +25,7 @@ module.exports.ui = {
    * Search for makeWidgetId(extension.id) in the Firefox source code for more examples.
    * @returns {Promise<*>}
    */
-  addonWidgetId: async () => {
+  addonWidgetId: async() => {
     /**
      * From firefox/browser/components/extensions/ExtensionPopups.jsm
      */
@@ -32,11 +35,11 @@ module.exports.ui = {
       return id.replace(/[^a-z0-9_-]/g, "_");
     }
 
-    const manifest = await promiseManifest();
+    const manifest = await module.exports.ui.promiseManifest();
     return makeWidgetId(manifest.applications.gecko.id);
   },
 
-  takeScreenshot: async (driver, filepath = "./screenshot.png") => {
+  takeScreenshot: async(driver, filepath = "./screenshot.png") => {
     try {
       const data = await driver.takeScreenshot();
       return await Fs.outputFile(filepath, data, "base64");
@@ -90,7 +93,7 @@ module.exports.ui = {
   },
 
   // such as:  "social-share-button"
-  addButtonFromCustomizePanel: async (driver, buttonId) =>
+  addButtonFromCustomizePanel: async(driver, buttonId) =>
     driver.executeAsyncScript(callback => {
       // see https://dxr.mozilla.org/mozilla-central/rev/211d4dd61025c0a40caea7a54c9066e051bdde8c/browser/base/content/browser-social.js#193
       Components.utils.import("resource:///modules/CustomizableUI.jsm");
@@ -98,7 +101,7 @@ module.exports.ui = {
       callback();
     }),
 
-  removeButtonFromNavbar: async (driver, buttonId) => {
+  removeButtonFromNavbar: async(driver, buttonId) => {
     driver.setContext(Context.CONTENT);
     try {
       await driver.executeAsyncScript(callback => {

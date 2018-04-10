@@ -11,9 +11,9 @@ module.exports.pings = {
    * - timestamp:  only pings after this timestamp.
    * - headersOnly: boolean, just the 'headers' for the pings, not the full bodies.
    */
-  getTelemetryPings: async (driver, passedOptions) => {
+  getTelemetryPings: async(driver, passedOptions) => {
     // callback is how you get the return back from the script
-    return driver.executeAsyncScript(async (options, callback) => {
+    return driver.executeAsyncScript(async(options, callback) => {
       let { type } = options;
       const { n, timestamp, headersOnly } = options;
       Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
@@ -38,8 +38,8 @@ module.exports.pings = {
     }, passedOptions);
   },
 
-  getShieldPingsAfterTimestamp: async (driver, ts) => {
-    return getTelemetryPings(driver, {
+  getShieldPingsAfterTimestamp: async(driver, ts) => {
+    return module.exports.pings.getTelemetryPings(driver, {
       type: ["shield-study", "shield-study-addon"],
       timestamp: ts,
     });
@@ -82,7 +82,7 @@ ${JSON.stringify(p.payload.data, null, 2)}
     for (const condition of conditionArray) {
       const index = telemetryArray.findIndex(ping => condition(ping));
       if (index === -1) {
-        throw new this.SearchError(condition);
+        throw new module.exports.pings.SearchError(condition);
       }
       resultingPings.push(telemetryArray[index]);
     }

@@ -358,7 +358,6 @@ class StudyUtils {
    * @returns {Object} - the study variation for this user
    */
   async deterministicVariation(weightedVariations, fraction = null) {
-    console.log("deterministicVariation", arguments);
     // this is the standard arm choosing method
     if (fraction === null) {
       // hash the studyName and telemetryId to get the same branch every time.

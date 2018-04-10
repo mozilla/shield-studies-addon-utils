@@ -53,7 +53,7 @@ module.exports.setup = {
     return driver;
   },
 
-  installAddon: async (driver, fileLocation) => {
+  installAddon: async(driver, fileLocation) => {
     // references:
     //    https://bugzilla.mozilla.org/show_bug.cgi?id=1298025
     //    https://github.com/mozilla/geckodriver/releases/tag/v0.17.0
@@ -78,7 +78,7 @@ module.exports.setup = {
     console.log(`Add-on at ${fileLocation} installed`);
   },
 
-  uninstallAddon: async (driver, id) => {
+  uninstallAddon: async(driver, id) => {
     const executor = driver.getExecutor();
     executor.defineCommand(
       "uninstallAddon",

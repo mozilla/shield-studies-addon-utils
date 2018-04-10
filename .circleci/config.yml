@@ -19,16 +19,16 @@ jobs:
       - run: npm install
 
       - run:
-          name: webpack and eslint
+          name: build study apis (webpack) and lint
           command: npm run build
 
       - run:
-          name: Build .XPI
-          command: npm run build-test-addon-xpi
+          name: build study apis (webpack) and lint + build test add-on
+          command: npm run test-addon:build
 
       - run:
-          name: Functional tests
+          name: build study apis (webpack) and lint + build test add-on + functional tests
           command: npm run test
 
       - store_artifacts:
-          path: "test-addon/test-addon.xpi"
+          path: "examples/test-addon/dist/shield_utils_test_add-on-1.0.0.zip"

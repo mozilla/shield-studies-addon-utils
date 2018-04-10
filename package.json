@@ -48,7 +48,7 @@
   "scripts": {
     "build": "cd webExtensionApis/study && webpack",
     "docformat": "doctoc --title '**Contents**' docs/*.md && prettier '**/*.md' --write",
-    "eslint": "eslint webExtensionApis --ext jsm --ext js --ext json",
+    "eslint": "eslint . --ext jsm --ext js --ext json",
     "eslint-fix": "npm run eslint -- --fix",
     "format": "prettier '**/*.{css,js,jsm,json,md}' --trailing-comma=all --ignore-path=.eslintignore --write",
     "lint": "npm-run-all lint:*",

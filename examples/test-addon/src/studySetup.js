@@ -1,3 +1,5 @@
+/* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(studySetup)" }]*/
+
 const studySetup = {
   study: {
     /** Required for studyUtils.setup():

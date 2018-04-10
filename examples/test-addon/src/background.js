@@ -1,5 +1,5 @@
 /* eslint no-console:off */
-/* global studySetup */
+/* global browser, studySetup */
 
 "use strict";
 
@@ -10,7 +10,7 @@ class Study {
   // Use web extension experiments to get whatever prefs, add-ons,
   // telemetry, anything necessary for the check
   static async isEligible() {
-    //browser.prefs.get('my.favorite.pref');
+    // browser.prefs.get('my.favorite.pref');
     return true;
   }
 
@@ -81,4 +81,4 @@ const createData = {
   width: 500,
   height: 500,
 };
-const creating = browser.windows.create(createData);
+browser.windows.create(createData);
