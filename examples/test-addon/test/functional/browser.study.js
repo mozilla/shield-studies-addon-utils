@@ -113,11 +113,6 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
         // Send custom telemetry
         await browser.study.telemetry({ foo: "bar" });
 
-        // TODO Fix this hackiness; caused by addClientId option in submitExternalPing
-        // The ping seems to be sending (appears in about:telemetry) but does not appear
-        // in the pings array
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
         const shieldPings = await browser.study.getTelemetryPings({
           type: ["shield-study-addon"],
         });

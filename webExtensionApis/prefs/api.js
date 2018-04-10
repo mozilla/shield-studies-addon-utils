@@ -1,6 +1,6 @@
 "use strict";
 
-/* global ExtensionAPI:false */
+/* global ExtensionAPI */
 
 ChromeUtils.import("resource://gre/modules/Services.jsm");
 
