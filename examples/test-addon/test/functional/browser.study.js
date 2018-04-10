@@ -80,43 +80,17 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     const shieldTelemetryPing = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
       driver,
       async callback => {
-        // Minimal configuration to pass schema validation
-        const studySetup = {
-          study: {
-            studyName: "shield-utils-test",
-            endings: {
-              ineligible: {
-                baseUrl: "http://www.example.com/?reason=ineligible",
-              },
-            },
-            telemetry: {
-              send: true, // assumed false. Actually send pings?
-              removeTestingFlag: false, // Marks pings to be discarded, set true for to have the pings processed in the pipeline
-              // TODO "onInvalid": "throw"  // invalid packet for schema?  throw||log
-            },
-          },
-          weightedVariations: [
-            {
-              name: "control",
-              weight: 1,
-            },
-          ],
-        };
-
-        // Set dynamic study configuration flags
-        studySetup.eligible = true;
-        studySetup.expired = false;
-
         // Ensure we have configured study and are supposed to run our feature
+        const studySetup = await browser.study.studySetupForTests();
         await browser.study.configure(studySetup);
 
         // Send custom telemetry
         await browser.study.telemetry({ foo: "bar" });
 
-        const shieldPings = await browser.study.getTelemetryPings({
+        const studyPings = await browser.study.getTelemetryPings({
           type: ["shield-study-addon"],
         });
-        callback(shieldPings[0]);
+        callback(studyPings[0]);
       },
     );
     assert(shieldTelemetryPing.payload.data.attributes.foo === "bar");

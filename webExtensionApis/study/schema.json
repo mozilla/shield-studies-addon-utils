@@ -83,6 +83,13 @@
             "type": "any"
           }
         ]
+      },
+      {
+        "name": "studySetupForTests",
+        "type": "function",
+        "description": "TODO",
+        "async": true,
+        "parameters": []
       }
     ]
   }
