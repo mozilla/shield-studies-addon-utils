@@ -4,9 +4,13 @@ const webdriver = require("selenium-webdriver");
 const firefox = require("selenium-webdriver/firefox");
 const Fs = require("fs-extra");
 const path = require("path");
-const By = webdriver.By;
 const Context = firefox.Context;
+const By = webdriver.By;
 const until = webdriver.until;
+const Key = webdriver.Key;
+
+const modifierKey =
+  process.platform === "darwin" ? webdriver.Key.COMMAND : webdriver.Key.CONTROL;
 
 /* Firefox UI testing helper functions */
 module.exports.ui = {
@@ -39,6 +43,17 @@ module.exports.ui = {
     return makeWidgetId(manifest.applications.gecko.id);
   },
 
+  openBrowserConsole: async driver => {
+    driver.setContext(Context.CHROME);
+    const urlBar = await module.exports.ui.promiseUrlBar(driver);
+    const openBrowserConsoleKeys = Key.chord(
+      module.exports.ui.MODIFIER_KEY,
+      Key.SHIFT,
+      "j",
+    );
+    await urlBar.sendKeys(openBrowserConsoleKeys);
+  },
+
   takeScreenshot: async(driver, filepath = "./screenshot.png") => {
     try {
       const data = await driver.takeScreenshot();
@@ -48,13 +63,7 @@ module.exports.ui = {
     }
   },
 
-  MODIFIER_KEY: (function getModifierKey() {
-    const modifierKey =
-      process.platform === "darwin"
-        ? webdriver.Key.COMMAND
-        : webdriver.Key.CONTROL;
-    return modifierKey;
-  })(),
+  MODIFIER_KEY: modifierKey,
 
   // TODO glind, this interface feels janky
   // this feels like it wants to be $ like.

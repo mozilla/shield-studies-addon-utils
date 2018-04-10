@@ -17,8 +17,8 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
 
   before(async() => {
     driver = await utils.setup.promiseSetupDriver(utils.FIREFOX_PREFERENCES);
-    // install the addon (note: returns addon id)
     await utils.setup.installAddon(driver);
+    await utils.ui.openBrowserConsole(driver);
   });
 
   // hint: skipping driver.quit() may be useful when debugging failed tests,

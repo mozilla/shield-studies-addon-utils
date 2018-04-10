@@ -53,6 +53,12 @@ module.exports.setup = {
     return driver;
   },
 
+  /**
+   *
+   * @param driver
+   * @param fileLocation
+   * @returns {Promise<void>} returns addon id)
+   */
   installAddon: async(driver, fileLocation) => {
     // references:
     //    https://bugzilla.mozilla.org/show_bug.cgi?id=1298025
