@@ -90,6 +90,7 @@ Allows your web extension add-on to set and read preferences.
 
 * Open an issue
 * Hack and file a PR
+* [Development on the Utils](./docs/development-on-the-utils.md)
 
 ## History of major versions
 
