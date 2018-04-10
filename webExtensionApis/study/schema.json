@@ -70,6 +70,19 @@
             "type": "any"
           }
         ]
+      },
+      {
+        "name": "getTelemetryPings",
+        "type": "function",
+        "description": "TODO",
+        "async": true,
+        "parameters": [
+          {
+            "optional": true,
+            "name": "filter",
+            "type": "any"
+          }
+        ]
       }
     ]
   }

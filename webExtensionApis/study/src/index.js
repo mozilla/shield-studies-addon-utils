@@ -116,6 +116,11 @@ this.study = class extends ExtensionAPI {
         async endStudy(data) {
           studyUtils.endStudy(data);
         },
+
+        async getTelemetryPings(filter) {
+          const { getTelemetryPings } = require("./pings.js");
+          return getTelemetryPings(filter);
+        },
       },
     };
   }

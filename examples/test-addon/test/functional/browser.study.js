@@ -77,30 +77,50 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
   });
 
   it("telemetry should be working", async() => {
-    const shieldTelemetryPing = await driver.executeAsyncScript(
+    const shieldTelemetryPing = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+      driver,
       async callback => {
-        const { fakeSetup, getMostRecentPingsByType } = Components.utils.import(
-          "resource://test-addon/utils.jsm",
-          {},
-        );
-        const { studyUtils } = Components.utils.import(
-          "resource://test-addon/StudyUtils.jsm",
-          {},
-        );
-        Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
+        // Minimal configuration to pass schema validation
+        const studySetup = {
+          study: {
+            studyName: "shield-utils-test",
+            endings: {
+              ineligible: {
+                baseUrl: "http://www.example.com/?reason=ineligible",
+              },
+            },
+            telemetry: {
+              send: true, // assumed false. Actually send pings?
+              removeTestingFlag: false, // Marks pings to be discarded, set true for to have the pings processed in the pipeline
+              // TODO "onInvalid": "throw"  // invalid packet for schema?  throw||log
+            },
+          },
+          weightedVariations: [
+            {
+              name: "control",
+              weight: 1,
+            },
+          ],
+        };
 
-        fakeSetup();
+        // Set dynamic study configuration flags
+        studySetup.eligible = true;
+        studySetup.expired = false;
 
-        await studyUtils.telemetry({ foo: "bar" });
+        // Ensure we have configured study and are supposed to run our feature
+        await browser.study.configure(studySetup);
+
+        // Send custom telemetry
+        await browser.study.telemetry({ foo: "bar" });
 
         // TODO Fix this hackiness; caused by addClientId option in submitExternalPing
         // The ping seems to be sending (appears in about:telemetry) but does not appear
         // in the pings array
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        const shieldPings = await getMostRecentPingsByType(
-          "shield-study-addon",
-        );
+        const shieldPings = await browser.study.getTelemetryPings({
+          type: ["shield-study-addon"],
+        });
         callback(shieldPings[0]);
       },
     );
