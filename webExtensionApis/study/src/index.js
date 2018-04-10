@@ -135,6 +135,18 @@ this.study = class extends ExtensionAPI {
           } = require("./testRelatedInstrumentation.js");
           return getActiveExperiments();
         },
+
+        async test_studyUtils_firstSeen() {
+          return studyUtils.firstSeen();
+        },
+
+        async test_studyUtils_setActive() {
+          return studyUtils.setActive();
+        },
+
+        async test_studyUtils_startup({ reason }) {
+          return studyUtils.startup({ reason });
+        },
       },
     };
   }

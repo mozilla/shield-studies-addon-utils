@@ -105,7 +105,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
           const studySetup = await browser.study.studySetupForTests();
           await browser.study.configure(studySetup);
 
-          browser.study.firstSeen();
+          browser.study.test_studyUtils_firstSeen();
 
           const studyPings = await browser.study.getTelemetryPings({
             type: ["shield-study"],
@@ -124,7 +124,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
           const studySetup = await browser.study.studySetupForTests();
           await browser.study.configure(studySetup);
 
-          browser.study.setActive();
+          browser.study.test_studyUtils_setActive();
 
           callback(await browser.study.getActiveExperiments());
         },
@@ -140,7 +140,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
           const studySetup = await browser.study.studySetupForTests();
           await browser.study.configure(studySetup);
 
-          await browser.study.startup({ reason: 5 }); // ADDON_INSTALL = 5
+          await browser.study.test_studyUtils_startup({ reason: 5 }); // ADDON_INSTALL = 5
 
           const studyPings = await browser.study.getTelemetryPings({
             type: ["shield-study"],
