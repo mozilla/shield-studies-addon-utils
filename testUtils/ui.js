@@ -67,18 +67,37 @@ module.exports.ui = {
 
   switchToNextAvailableWindowHandle: async driver => {
     const handles = await driver.getAllWindowHandles();
-    const currentHandle = await driver.getWindowHandle();
 
-    // Find the new window handle.
-    let newWindowHandle = null;
-    for (const handle of handles) {
-      if (handle !== currentHandle) {
-        newWindowHandle = handle;
+    try {
+
+      const currentHandle = await driver.getWindowHandle();
+
+      // Find the new window handle.
+      let newWindowHandle = null;
+      for (const handle of handles) {
+        if (handle !== currentHandle) {
+          newWindowHandle = handle;
+        }
       }
+
+      // Switch to the next available window handle
+      await driver.switchTo().window(newWindowHandle);
+
+    } catch (e) {
+
+      // This happens when the current window is closed
+      // The driver will not automatically switch it's window handle to the
+      // next available, thus driver.getWindowHandle() will throw a NoSuchWindowError
+      if (e.name === "NoSuchWindowError") {
+        // Switch to first available
+        await driver.switchTo().window(handles[0]);
+
+      } else {
+        throw e;
+      }
+
     }
 
-    // Switch to the extension page popup
-    await driver.switchTo().window(newWindowHandle);
   },
 
   takeScreenshot: async(driver, filepath = "./screenshot.png") => {
