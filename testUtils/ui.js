@@ -54,6 +54,33 @@ module.exports.ui = {
     await urlBar.sendKeys(openBrowserConsoleKeys);
   },
 
+  waitForPopupToOpen: async driver => {
+    await driver.wait(
+      async function() {
+        const handles = await driver.getAllWindowHandles();
+        return handles.length === 2;
+      },
+      9000,
+      "Should have opened a popup",
+    );
+  },
+
+  switchToNextAvailableWindowHandle: async driver => {
+    const handles = await driver.getAllWindowHandles();
+    const currentHandle = await driver.getWindowHandle();
+
+    // Find the new window handle.
+    let newWindowHandle = null;
+    for (const handle of handles) {
+      if (handle !== currentHandle) {
+        newWindowHandle = handle;
+      }
+    }
+
+    // Switch to the extension page popup
+    await driver.switchTo().window(newWindowHandle);
+  },
+
   takeScreenshot: async(driver, filepath = "./screenshot.png") => {
     try {
       const data = await driver.takeScreenshot();
