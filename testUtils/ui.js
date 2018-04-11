@@ -69,7 +69,6 @@ module.exports.ui = {
     const handles = await driver.getAllWindowHandles();
 
     try {
-
       const currentHandle = await driver.getWindowHandle();
 
       // Find the new window handle.
@@ -82,22 +81,17 @@ module.exports.ui = {
 
       // Switch to the next available window handle
       await driver.switchTo().window(newWindowHandle);
-
     } catch (e) {
-
       // This happens when the current window is closed
       // The driver will not automatically switch it's window handle to the
       // next available, thus driver.getWindowHandle() will throw a NoSuchWindowError
       if (e.name === "NoSuchWindowError") {
         // Switch to first available
         await driver.switchTo().window(handles[0]);
-
       } else {
         throw e;
       }
-
     }
-
   },
 
   takeScreenshot: async(driver, filepath = "./screenshot.png") => {

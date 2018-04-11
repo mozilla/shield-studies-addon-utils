@@ -54,7 +54,6 @@ module.exports.executeJs = {
     const isCurrentlyInExtensionPageWindow = await checkIfCurrentlyInExtensionPageWindow();
 
     if (!isCurrentlyInExtensionPageWindow) {
-
       // Wait for the extension page window to be available
       // (we may still be loading firefox/the add-on)
       await utils.ui.waitForPopupToOpen(driver);
@@ -70,7 +69,6 @@ module.exports.executeJs = {
         10000,
         "Should have loaded the extension page for tests",
       );
-
     }
 
     // Execute the JavaScript in the context of the extension page
@@ -80,6 +78,5 @@ module.exports.executeJs = {
     await utils.ui.switchToNextAvailableWindowHandle(driver);
 
     return returnValue;
-
   },
 };

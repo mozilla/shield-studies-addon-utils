@@ -181,6 +181,26 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
       assert(!activeExperiments.hasOwnProperty("shield-utils-test"));
     });
 
+    it("should send the correct reason telemetry", async() => {
+      const studyPings = await utils.telemetry.getMostRecentPingsByType(
+        driver,
+        "shield-study",
+      );
+      const pingBeforeTheMostRecentPing = studyPings[1];
+      assert(
+        pingBeforeTheMostRecentPing.payload.data.study_state === "expired",
+      );
+    });
+
+    it("should send the uninstall telemetry", async() => {
+      const studyPings = await utils.telemetry.getMostRecentPingsByType(
+        driver,
+        "shield-study",
+      );
+      const theMostRecentPing = studyPings[0];
+      assert(theMostRecentPing.payload.data.study_state === "exit");
+    });
+
     describe("test the opening of an URL at the end of the study", function() {
       it("should open a new tab", async() => {
         const newTabOpened = await driver.wait(async() => {
@@ -210,26 +230,6 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
         });
         assert(correctURLOpened);
       });
-    });
-
-    it("should send the correct reason telemetry", async() => {
-      const studyPings = await utils.telemetry.getMostRecentPingsByType(
-        driver,
-        "shield-study",
-      );
-      const pingBeforeTheMostRecentPing = studyPings[1];
-      assert(
-        pingBeforeTheMostRecentPing.payload.data.study_state === "expired",
-      );
-    });
-
-    it("should send the uninstall telemetry", async() => {
-      const studyPings = await utils.telemetry.getMostRecentPingsByType(
-        driver,
-        "shield-study",
-      );
-      const theMostRecentPing = studyPings[0];
-      assert(theMostRecentPing.payload.data.study_state === "exit");
     });
   });
 });
