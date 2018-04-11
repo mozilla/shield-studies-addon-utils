@@ -92,13 +92,6 @@
         "parameters": []
       },
       {
-        "name": "getActiveExperiments",
-        "type": "function",
-        "description": "TODO",
-        "async": true,
-        "parameters": []
-      },
-      {
         "name": "test_studyUtils_firstSeen",
         "type": "function",
         "description": "TODO",

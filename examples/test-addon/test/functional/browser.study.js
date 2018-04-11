@@ -117,7 +117,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     });
 
     it("should set the experiment to active in Telemetry", async() => {
-      const activeExperiments = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+      await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
         driver,
         async callback => {
           // Ensure we have configured study and are supposed to run our feature
@@ -126,8 +126,11 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
 
           browser.study.test_studyUtils_setActive();
 
-          callback(await browser.study.getActiveExperiments());
+          callback();
         },
+      );
+      const activeExperiments = await utils.telemetryEnvironment.getActiveExperiments(
+        driver,
       );
       assert(activeExperiments.hasOwnProperty("shield-utils-test"));
     });
@@ -172,11 +175,8 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     });
 
     it("should set the experiment as inactive", async() => {
-      const activeExperiments = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+      const activeExperiments = await utils.telemetryEnvironment.getActiveExperiments(
         driver,
-        async callback => {
-          callback(await browser.study.getActiveExperiments());
-        },
       );
       assert(!activeExperiments.hasOwnProperty("shield-utils-test"));
     });

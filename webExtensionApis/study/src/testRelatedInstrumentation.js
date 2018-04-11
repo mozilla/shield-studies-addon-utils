@@ -1,6 +1,3 @@
-const { utils: Cu } = Components;
-Cu.import("resource://gre/modules/TelemetryEnvironment.jsm");
-
 export async function studySetupForTests() {
   // Minimal configuration to pass schema validation
   const studySetup = {
@@ -32,11 +29,6 @@ export async function studySetupForTests() {
   return studySetup;
 }
 
-export async function getActiveExperiments() {
-  return TelemetryEnvironment.getActiveExperiments();
-}
-
 export default {
   studySetupForTests,
-  getActiveExperiments,
 };
