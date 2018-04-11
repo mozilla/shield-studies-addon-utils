@@ -35,9 +35,7 @@ const FIREFOX_PREFERENCES = {
 const { executeJs } = require("../../../../testUtils/executeJs");
 const { nav } = require("../../../../testUtils/nav");
 const { setup } = require("../../../../testUtils/setup");
-const {
-  telemetryEnvironment,
-} = require("../../../../testUtils/telemetryEnvironment");
+const { telemetry } = require("../../../../testUtils/telemetry");
 const { ui } = require("../../../../testUtils/ui");
 
 // What we expose to our add-on-specific tests
@@ -46,6 +44,6 @@ module.exports = {
   executeJs,
   nav,
   setup,
-  telemetryEnvironment,
+  telemetry,
   ui,
 };

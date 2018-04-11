@@ -129,7 +129,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
           callback();
         },
       );
-      const activeExperiments = await utils.telemetryEnvironment.getActiveExperiments(
+      const activeExperiments = await utils.telemetry.getActiveExperiments(
         driver,
       );
       assert(activeExperiments.hasOwnProperty("shield-utils-test"));
@@ -175,7 +175,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     });
 
     it("should set the experiment as inactive", async() => {
-      const activeExperiments = await utils.telemetryEnvironment.getActiveExperiments(
+      const activeExperiments = await utils.telemetry.getActiveExperiments(
         driver,
       );
       assert(!activeExperiments.hasOwnProperty("shield-utils-test"));
@@ -213,23 +213,23 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     });
 
     it("should send the correct reason telemetry", async() => {
-      const pings = await driver.executeAsyncScript(async callback => {
-        const studyPings = await browser.study.getTelemetryPings({
-          type: ["shield-study"],
-        });
-        callback(studyPings[1]); // ping before the most recent ping
-      });
-      assert(pings.payload.data.study_state === "expired");
+      const studyPings = await utils.telemetry.getMostRecentPingsByType(
+        driver,
+        "shield-study",
+      );
+      const pingBeforeTheMostRecentPing = studyPings[1];
+      assert(
+        pingBeforeTheMostRecentPing.payload.data.study_state === "expired",
+      );
     });
 
     it("should send the uninstall telemetry", async() => {
-      const pings = await driver.executeAsyncScript(async callback => {
-        const studyPings = await browser.study.getTelemetryPings({
-          type: ["shield-study"],
-        });
-        callback(studyPings[0]);
-      });
-      assert(pings.payload.data.study_state === "exit");
+      const studyPings = await utils.telemetry.getMostRecentPingsByType(
+        driver,
+        "shield-study",
+      );
+      const theMostRecentPing = studyPings[0];
+      assert(theMostRecentPing.payload.data.study_state === "exit");
     });
   });
 });
