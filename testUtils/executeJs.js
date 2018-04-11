@@ -43,7 +43,11 @@ module.exports.executeJs = {
    * @param callable
    * @returns {Promise<*>}
    */
-  executeAsyncScriptInExtensionPageForTests: async(driver, callable) => {
+  executeAsyncScriptInExtensionPageForTests: async(
+    driver,
+    callable,
+    passedArgument,
+  ) => {
     driver.setContext(Context.CONTENT);
 
     const checkIfCurrentlyInExtensionPageWindow = async() => {
@@ -72,7 +76,10 @@ module.exports.executeJs = {
     }
 
     // Execute the JavaScript in the context of the extension page
-    const returnValue = await driver.executeAsyncScript(callable);
+    const returnValue =
+      typeof passedArgument !== "undefined"
+        ? await driver.executeAsyncScript(callable, passedArgument)
+        : await driver.executeAsyncScript(callable);
 
     // Switch back to the main window
     await utils.ui.switchToNextAvailableWindowHandle(driver);

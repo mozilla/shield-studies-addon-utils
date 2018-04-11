@@ -9,6 +9,37 @@ const Context = firefox.Context;
 // TODO create new profile per test?
 // then we can test with a clean profile every time
 
+function studySetupForTests() {
+  // Minimal configuration to pass schema validation
+  const studySetup = {
+    study: {
+      studyName: "shield-utils-test",
+      endings: {
+        ineligible: {
+          baseUrl: "http://www.example.com/?reason=ineligible",
+        },
+      },
+      telemetry: {
+        send: true, // assumed false. Actually send pings?
+        removeTestingFlag: false, // Marks pings to be discarded, set true for to have the pings processed in the pipeline
+        // TODO "onInvalid": "throw"  // invalid packet for schema?  throw||log
+      },
+    },
+    weightedVariations: [
+      {
+        name: "control",
+        weight: 1,
+      },
+    ],
+  };
+
+  // Set dynamic study configuration flags
+  studySetup.eligible = true;
+  studySetup.expired = false;
+
+  return studySetup;
+}
+
 describe("Shield Study Add-on Utils Functional Tests", function() {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
   this.timeout(15000);
@@ -79,10 +110,9 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
   it("telemetry should be working", async() => {
     const shieldTelemetryPing = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
       driver,
-      async callback => {
+      async(_studySetupForTests, callback) => {
         // Ensure we have configured study and are supposed to run our feature
-        const studySetup = await browser.study.studySetupForTests();
-        await browser.study.configure(studySetup);
+        await browser.study.configure(_studySetupForTests);
 
         // Send custom telemetry
         await browser.study.telemetry({ foo: "bar" });
@@ -92,6 +122,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
         });
         callback(studyPings[0]);
       },
+      studySetupForTests(),
     );
     assert(shieldTelemetryPing.payload.data.attributes.foo === "bar");
   });
@@ -100,10 +131,9 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     it("should send the correct ping on first seen", async() => {
       const firstSeenPing = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
         driver,
-        async callback => {
+        async(_studySetupForTests, callback) => {
           // Ensure we have configured study and are supposed to run our feature
-          const studySetup = await browser.study.studySetupForTests();
-          await browser.study.configure(studySetup);
+          await browser.study.configure(_studySetupForTests);
 
           browser.study.test_studyUtils_firstSeen();
 
@@ -112,6 +142,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
           });
           callback(studyPings[0]);
         },
+        studySetupForTests(),
       );
       assert(firstSeenPing.payload.data.study_state === "enter");
     });
@@ -119,15 +150,15 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     it("should set the experiment to active in Telemetry", async() => {
       await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
         driver,
-        async callback => {
+        async(_studySetupForTests, callback) => {
           // Ensure we have configured study and are supposed to run our feature
-          const studySetup = await browser.study.studySetupForTests();
-          await browser.study.configure(studySetup);
+          await browser.study.configure(_studySetupForTests);
 
           browser.study.test_studyUtils_setActive();
 
           callback();
         },
+        studySetupForTests(),
       );
       const activeExperiments = await utils.telemetry.getActiveExperiments(
         driver,
@@ -138,10 +169,9 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     it("should send the correct telemetry ping on first install", async() => {
       const installedPing = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
         driver,
-        async callback => {
+        async(_studySetupForTests, callback) => {
           // Ensure we have configured study and are supposed to run our feature
-          const studySetup = await browser.study.studySetupForTests();
-          await browser.study.configure(studySetup);
+          await browser.study.configure(_studySetupForTests);
 
           await browser.study.test_studyUtils_startup({ reason: 5 }); // ADDON_INSTALL = 5
 
@@ -150,6 +180,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
           });
           callback(studyPings[0]);
         },
+        studySetupForTests(),
       );
       assert(installedPing.payload.data.study_state === "installed");
     });
@@ -159,10 +190,9 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     before(async() => {
       await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
         driver,
-        async callback => {
+        async(_studySetupForTests, callback) => {
           // Ensure we have configured study and are supposed to run our feature
-          const studySetup = await browser.study.studySetupForTests();
-          await browser.study.configure(studySetup);
+          await browser.study.configure(_studySetupForTests);
 
           // TODO add tests for other reasons (?)
           await browser.study.endStudy({
@@ -171,6 +201,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
           });
           callback();
         },
+        studySetupForTests(),
       );
     });
 

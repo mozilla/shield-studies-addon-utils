@@ -122,20 +122,6 @@ this.study = class extends ExtensionAPI {
           return getTelemetryPings(filter);
         },
 
-        async studySetupForTests() {
-          const {
-            studySetupForTests,
-          } = require("./testRelatedInstrumentation.js");
-          return studySetupForTests();
-        },
-
-        async getActiveExperiments() {
-          const {
-            getActiveExperiments,
-          } = require("./testRelatedInstrumentation.js");
-          return getActiveExperiments();
-        },
-
         async test_studyUtils_firstSeen() {
           return studyUtils.firstSeen();
         },
