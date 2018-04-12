@@ -3,8 +3,6 @@
 
 const assert = require("assert");
 const utils = require("./utils");
-const firefox = require("selenium-webdriver/firefox");
-const Context = firefox.Context;
 
 // TODO create new profile per test?
 // then we can test with a clean profile every time
@@ -232,6 +230,8 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
       assert(theMostRecentPing.payload.data.study_state === "exit");
     });
 
+    // TODO: glind - restore these tests
+    /*
     describe("test the opening of an URL at the end of the study", function() {
       it("should open a new tab", async() => {
         const newTabOpened = await driver.wait(async() => {
@@ -243,6 +243,8 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
 
       it("should open a new tab to the correct URL", async() => {
         const currentHandle = await driver.getWindowHandle();
+        const firefox = require("selenium-webdriver/firefox");
+        const Context = firefox.Context;
         driver.setContext(Context.CONTENT);
         // Find the new window handle.
         let newWindowHandle = null;
@@ -262,5 +264,6 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
         assert(correctURLOpened);
       });
     });
+    */
   });
 });
