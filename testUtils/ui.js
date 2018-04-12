@@ -54,6 +54,46 @@ module.exports.ui = {
     await urlBar.sendKeys(openBrowserConsoleKeys);
   },
 
+  waitForPopupToOpen: async driver => {
+    await driver.wait(
+      async function() {
+        const handles = await driver.getAllWindowHandles();
+        return handles.length === 2;
+      },
+      9000,
+      "Should have opened a popup",
+    );
+  },
+
+  switchToNextAvailableWindowHandle: async driver => {
+    const handles = await driver.getAllWindowHandles();
+
+    try {
+      const currentHandle = await driver.getWindowHandle();
+
+      // Find the new window handle.
+      let newWindowHandle = null;
+      for (const handle of handles) {
+        if (handle !== currentHandle) {
+          newWindowHandle = handle;
+        }
+      }
+
+      // Switch to the next available window handle
+      await driver.switchTo().window(newWindowHandle);
+    } catch (e) {
+      // This happens when the current window is closed
+      // The driver will not automatically switch it's window handle to the
+      // next available, thus driver.getWindowHandle() will throw a NoSuchWindowError
+      if (e.name === "NoSuchWindowError") {
+        // Switch to first available
+        await driver.switchTo().window(handles[0]);
+      } else {
+        throw e;
+      }
+    }
+  },
+
   takeScreenshot: async(driver, filepath = "./screenshot.png") => {
     try {
       const data = await driver.takeScreenshot();

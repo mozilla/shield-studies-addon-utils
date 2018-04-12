@@ -70,6 +70,46 @@
             "type": "any"
           }
         ]
+      },
+      {
+        "name": "getTelemetryPings",
+        "type": "function",
+        "description": "TODO",
+        "async": true,
+        "parameters": [
+          {
+            "optional": true,
+            "name": "filter",
+            "type": "any"
+          }
+        ]
+      },
+      {
+        "name": "test_studyUtils_firstSeen",
+        "type": "function",
+        "description": "TODO",
+        "async": true,
+        "parameters": []
+      },
+      {
+        "name": "test_studyUtils_setActive",
+        "type": "function",
+        "description": "TODO",
+        "async": true,
+        "parameters": []
+      },
+      {
+        "name": "test_studyUtils_startup",
+        "type": "function",
+        "description": "TODO",
+        "async": true,
+        "parameters": [
+          {
+            "optional": true,
+            "name": "args",
+            "type": "any"
+          }
+        ]
       }
     ]
   }

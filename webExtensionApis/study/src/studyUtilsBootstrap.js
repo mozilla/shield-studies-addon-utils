@@ -61,7 +61,7 @@ this.Bootstrap = function(studySetup, studyUtils) {
       * Adds the study to the active list of telemetry experiments,
       * and sends the "installed" telemetry ping if applicable
       */
-      await studyUtils.startup({ startupReason });
+      await studyUtils.startup({ reason: startupReason });
 
       // log what the study variation and other info is.
       this.log.debug(`info ${JSON.stringify(studyUtils.info())}`);

@@ -3,11 +3,40 @@
 
 const assert = require("assert");
 const utils = require("./utils");
-const firefox = require("selenium-webdriver/firefox");
-const Context = firefox.Context;
 
 // TODO create new profile per test?
 // then we can test with a clean profile every time
+
+function studySetupForTests() {
+  // Minimal configuration to pass schema validation
+  const studySetup = {
+    study: {
+      studyName: "shield-utils-test",
+      endings: {
+        ineligible: {
+          baseUrl: "http://www.example.com/?reason=ineligible",
+        },
+      },
+      telemetry: {
+        send: true, // assumed false. Actually send pings?
+        removeTestingFlag: false, // Marks pings to be discarded, set true for to have the pings processed in the pipeline
+        // TODO "onInvalid": "throw"  // invalid packet for schema?  throw||log
+      },
+    },
+    weightedVariations: [
+      {
+        name: "control",
+        weight: 1,
+      },
+    ],
+  };
+
+  // Set dynamic study configuration flags
+  studySetup.eligible = true;
+  studySetup.expired = false;
+
+  return studySetup;
+}
 
 describe("Shield Study Add-on Utils Functional Tests", function() {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
@@ -76,144 +105,133 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
     assert(chosenVariation.name === "kittens");
   });
 
-  /*
   it("telemetry should be working", async() => {
-    const shieldTelemetryPing = await driver.executeAsyncScript(
-      async callback => {
-        const { fakeSetup, getMostRecentPingsByType } = Components.utils.import(
-          "resource://test-addon/utils.jsm",
-          {},
-        );
-        const { studyUtils } = Components.utils.import(
-          "resource://test-addon/StudyUtils.jsm",
-          {},
-        );
-        Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
+    const shieldTelemetryPing = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+      driver,
+      async(_studySetupForTests, callback) => {
+        // Ensure we have configured study and are supposed to run our feature
+        await browser.study.configure(_studySetupForTests);
 
-        fakeSetup();
+        // Send custom telemetry
+        await browser.study.telemetry({ foo: "bar" });
 
-        await studyUtils.telemetry({ foo: "bar" });
-
-        // TODO Fix this hackiness; caused by addClientId option in submitExternalPing
-        // The ping seems to be sending (appears in about:telemetry) but does not appear
-        // in the pings array
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        const shieldPings = await getMostRecentPingsByType(
-          "shield-study-addon",
-        );
-        callback(shieldPings[0]);
+        const studyPings = await browser.study.getTelemetryPings({
+          type: ["shield-study-addon"],
+        });
+        callback(studyPings[0]);
       },
+      studySetupForTests(),
     );
     assert(shieldTelemetryPing.payload.data.attributes.foo === "bar");
   });
 
   describe('test the library\'s "startup" process', function() {
     it("should send the correct ping on first seen", async() => {
-      const firstSeenPing = await driver.executeAsyncScript(async callback => {
-        const { fakeSetup, getMostRecentPingsByType } = Components.utils.import(
-          "resource://test-addon/utils.jsm",
-          {},
-        );
-        const { studyUtils } = Components.utils.import(
-          "resource://test-addon/StudyUtils.jsm",
-          {},
-        );
-        Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
+      const firstSeenPing = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+        driver,
+        async(_studySetupForTests, callback) => {
+          // Ensure we have configured study and are supposed to run our feature
+          await browser.study.configure(_studySetupForTests);
 
-        fakeSetup();
+          browser.study.test_studyUtils_firstSeen();
 
-        studyUtils.firstSeen();
-
-        const studyPings = await getMostRecentPingsByType("shield-study");
-        callback(studyPings[0]);
-      });
+          const studyPings = await browser.study.getTelemetryPings({
+            type: ["shield-study"],
+          });
+          callback(studyPings[0]);
+        },
+        studySetupForTests(),
+      );
       assert(firstSeenPing.payload.data.study_state === "enter");
     });
 
     it("should set the experiment to active in Telemetry", async() => {
-      const activeExperiments = await driver.executeAsyncScript(
-        async callback => {
-          const { fakeSetup } = Components.utils.import(
-            "resource://test-addon/utils.jsm",
-            {},
-          );
-          const { studyUtils } = Components.utils.import(
-            "resource://test-addon/StudyUtils.jsm",
-            {},
-          );
-          Components.utils.import(
-            "resource://gre/modules/TelemetryEnvironment.jsm",
-          );
+      await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+        driver,
+        async(_studySetupForTests, callback) => {
+          // Ensure we have configured study and are supposed to run our feature
+          await browser.study.configure(_studySetupForTests);
 
-          fakeSetup();
+          browser.study.test_studyUtils_setActive();
 
-          studyUtils.setActive();
-
-          callback(TelemetryEnvironment.getActiveExperiments());
+          callback();
         },
+        studySetupForTests(),
+      );
+      const activeExperiments = await utils.telemetry.getActiveExperiments(
+        driver,
       );
       assert(activeExperiments.hasOwnProperty("shield-utils-test"));
     });
 
     it("should send the correct telemetry ping on first install", async() => {
-      const installedPing = await driver.executeAsyncScript(async callback => {
-        const { fakeSetup, getMostRecentPingsByType } = Components.utils.import(
-          "resource://test-addon/utils.jsm",
-          {},
-        );
-        const { studyUtils } = Components.utils.import(
-          "resource://test-addon/StudyUtils.jsm",
-          {},
-        );
-        Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
+      const installedPing = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+        driver,
+        async(_studySetupForTests, callback) => {
+          // Ensure we have configured study and are supposed to run our feature
+          await browser.study.configure(_studySetupForTests);
 
-        fakeSetup();
+          await browser.study.test_studyUtils_startup({ reason: 5 }); // ADDON_INSTALL = 5
 
-        await studyUtils.startup({ reason: 5 }); // ADDON_INSTALL = 5
-
-        const studyPings = await getMostRecentPingsByType("shield-study");
-        callback(studyPings[0]);
-      });
+          const studyPings = await browser.study.getTelemetryPings({
+            type: ["shield-study"],
+          });
+          callback(studyPings[0]);
+        },
+        studySetupForTests(),
+      );
       assert(installedPing.payload.data.study_state === "installed");
     });
   });
 
   describe("test the library's endStudy() function", function() {
     before(async() => {
-      await driver.executeAsyncScript(async callback => {
-        const { fakeSetup } = Components.utils.import(
-          "resource://test-addon/utils.jsm",
-          {},
-        );
-        const { studyUtils } = Components.utils.import(
-          "resource://test-addon/StudyUtils.jsm",
-          {},
-        );
+      await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+        driver,
+        async(_studySetupForTests, callback) => {
+          // Ensure we have configured study and are supposed to run our feature
+          await browser.study.configure(_studySetupForTests);
 
-        fakeSetup();
-
-        // TODO add tests for other reasons (?)
-        await studyUtils.endStudy({
-          reason: "expired",
-          fullname: "TEST_FULLNAME",
-        });
-        callback();
-      });
+          // TODO add tests for other reasons (?)
+          await browser.study.endStudy({
+            reason: "expired",
+            fullname: "TEST_FULLNAME",
+          });
+          callback();
+        },
+        studySetupForTests(),
+      );
     });
 
     it("should set the experiment as inactive", async() => {
-      const activeExperiments = await driver.executeAsyncScript(
-        async callback => {
-          Components.utils.import(
-            "resource://gre/modules/TelemetryEnvironment.jsm",
-          );
-          callback(TelemetryEnvironment.getActiveExperiments());
-        },
+      const activeExperiments = await utils.telemetry.getActiveExperiments(
+        driver,
       );
       assert(!activeExperiments.hasOwnProperty("shield-utils-test"));
     });
 
+    it("should send the correct reason telemetry", async() => {
+      const studyPings = await utils.telemetry.getMostRecentPingsByType(
+        driver,
+        "shield-study",
+      );
+      const pingBeforeTheMostRecentPing = studyPings[1];
+      assert(
+        pingBeforeTheMostRecentPing.payload.data.study_state === "expired",
+      );
+    });
+
+    it("should send the uninstall telemetry", async() => {
+      const studyPings = await utils.telemetry.getMostRecentPingsByType(
+        driver,
+        "shield-study",
+      );
+      const theMostRecentPing = studyPings[0];
+      assert(theMostRecentPing.payload.data.study_state === "exit");
+    });
+
+    // TODO: glind - restore these tests
+    /*
     describe("test the opening of an URL at the end of the study", function() {
       it("should open a new tab", async() => {
         const newTabOpened = await driver.wait(async() => {
@@ -225,6 +243,8 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
 
       it("should open a new tab to the correct URL", async() => {
         const currentHandle = await driver.getWindowHandle();
+        const firefox = require("selenium-webdriver/firefox");
+        const Context = firefox.Context;
         driver.setContext(Context.CONTENT);
         // Find the new window handle.
         let newWindowHandle = null;
@@ -244,30 +264,6 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
         assert(correctURLOpened);
       });
     });
-
-    it("should send the correct reason telemetry", async() => {
-      const pings = await driver.executeAsyncScript(async callback => {
-        const { getMostRecentPingsByType } = Components.utils.import(
-          "resource://test-addon/utils.jsm",
-          {},
-        );
-        const studyPings = await getMostRecentPingsByType("shield-study");
-        callback(studyPings[1]); // ping before the most recent ping
-      });
-      assert(pings.payload.data.study_state === "expired");
-    });
-
-    it("should send the uninstall telemetry", async() => {
-      const pings = await driver.executeAsyncScript(async callback => {
-        const { getMostRecentPingsByType } = Components.utils.import(
-          "resource://test-addon/utils.jsm",
-          {},
-        );
-        const studyPings = await getMostRecentPingsByType("shield-study");
-        callback(studyPings[0]);
-      });
-      assert(pings.payload.data.study_state === "exit");
-    });
+    */
   });
-  */
 });
