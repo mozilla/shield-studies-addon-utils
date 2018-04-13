@@ -25,9 +25,10 @@
   - name: weightedVariations
   - name: anEnding
   - name: telemetrySelectionOptions
-  - name: prefTypes
 
   functions:
+
+  ## study lifecycle
   - name: configure
     type: function
     description: Configure the study.  Most things can't work without this
@@ -38,47 +39,49 @@
       type: object
       # with a variation included.
       # expiration?  -- TODO No, this should be with usual webExt timers.
-      #
 
-  - name: simpleDeterministicVariation
-    defaultReturn: "styleA"
-    returns: Name of a variation from weightedVariations
+  - name: install
     async: true
-    parameters:
-    - name: weightedVariations
-      type: object
-    - name: fraction
-      optional: true
-      type: Number
+    description: all for side effects (sending 'install', 'enter') pings
+    returns:  Nothing
+    parameters: []
+
+  - name: startup
+    async: true
+    description: all for side effects (setActiveExperiment)
+    returns:  Nothing
+    parameters: []
 
   - name: endStudy
+    async: true
     defaultReturn: "endingName"
+    description: Optionally opens url, then ends study with pings ending, exit.  Study can only have one ending.  Uninstalls addon?
     parameters:
     - name: anEnding
       type: object
     # should be anEnding Object
     returns: none
 
-  ## informational things
-  - name: permissions
-    defaultReturn: {shield: true, pioneer: false}
+
+  ## study information things
+  - name: info
     async: true
-    # I don't like this name!
-    # TODO: should there be an arg to just ask for pioneer?  shield?
+    defaultReturn: {variation: "styleA"}
+    returns: object with branch and other useful data from a configured study
+
+  - name: permissions
+    async: true
+    defaultReturn: {shield: true, pioneer: false}
     returns: object of permissions with keys shield, pioneer, telemetry, 'ok'
-  - name: userInfo
-    returns: object with branch, etc.
 
   # telemetry related things
-  # - should this be a 2nd namespace?  does it need configure?
   - name: sendTelemetry
     async: true
     parameters:
     - name: payload
       type: object  # TODO copy existing?
-
     - name: type
-    defaultReturn: undefined
+    defaultReturn: undefined  # exception if out of policy based on config
     returns:  Nothing
 
   - name: getTelemetry
@@ -89,96 +92,52 @@
     - name: telemetrySelectionOptions
       description: `{ type, n, minTimestamp, headersOnly }`
 
-  # btw, these might not need to be public
-  - name: setActiveExperiment
-    async: true
-    returns: Nothing
-    parameters: []
-  - name: unsetActiveExperiment
-    async: true
-    returns: Nothing
-    parameters: []
-
-  ## prefs
-  # TODO:  userBranch, default branch complications
-  - name: getPref
-    defaultReturn: 'someValue'
-    parameters:
-    - name: prefName
-      type: string
-
-  - name: setPref
-    defaultReturn: 'someValue'
-    returns:  Value.  Unclear for edge cases
-    parameters:
-    - name: prefName
-      type: string
-    - name: prefType
-      type: string  # from prefTypes
-
-  - name: watchPref
-    defaultReturn: '[A function]'
-    returns: a watcher for a pref
-    parameters:
-    - name: prefName
-      type: string
-    - name: prefType
-      type: function   # does this work?
-
   # utilities
+  - name: deterministicVariation
+    defaultReturn: "styleA"
+    returns: Name of a variation from weightedVariations
+    async: true
+    parameters:
+    - name: weightedVariations
+      type: object
+    - name: algorithm
+      type: string
+    - name: fraction
+      optional: true
+      type: Number
+
   - name: surveyUrl
-    defaultReturn: 'https://example.com?version=59.0'
+    async: true
+    defaultReturn: 'https://example.com?version=59.0&branch=studyA'
     parameters:
     - name: baseUrl
       type: string
-    returns: a url with queryArgs appended / mixed
+    returns: a url with queryArgs appended / mixed using our usual pattern
 
   - name: validateJSON
-    defaultReturn: {isValid: true}
-    returns: a validation
+    async: true
+    defaultReturn: {valid: true, errors: []}
+    returns: a validation object
     parameters:
     - name: anObject
       type: object
     - name: schema
       type: object  # a jsonschema
 
+  # things that would be 'listeners' are 'events' in webExtensions
+  # https://github.com/motin/shield-studies-addon-template/blob/convert-to-webextension-experiments/src/privileged/introductionNotificationBar/api.js#L107
+  # https://github.com/motin/shield-studies-addon-template/blob/convert-to-webextension-experiments/src/privileged/introductionNotificationBar/schema.json#L15
 
+  # https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/background.html#javascript-apis
+  # https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
+  # https://dxr.mozilla.org/mozilla-central/source/toolkit/components/extensions/parent/ext-runtime.js#41
+  # https://searchfox.org/mozilla-central/source/toolkit/components/extensions/ExtensionCommon.jsm#1671
+  events:
+  - name: onPermissionsChange
+    type: function
+    defaultReturn: {shield: true, pioneer: false}
+    description: Fires whenever any 'permission' changes, with the new permissions object
+    parameters:  # for the callback
+    - name: updatedPermissions
+      type: object
 
-
-# shield-utils  (`browser.study.`)
-# - chooseBranch (weights, optional rng?)
-# - configure   // alternative is to `new` an object
-#   - shield or pioneer
-#   - name
-#   - weights?
-#   - variation?
-#   - ...
-#   - rules:  pioneer, or isPioneer: true, or something!
-# - permissions // STUDY IMPLEMENTER DON'T HAVE TO REMEMBER ALL THE PREFS
-#   - OK? "some boolean is summary for basic isEligble"
-#   - details
-#     + auto pb mode?
-#     + I can shield (my shield pref is true)
-#     + I can telemetry
-# - telemetry (must handle pioneer as well)
-#   - send
-#   - configure?
-#   - setActive
-#   - unsetActive
-# - userInfo??  // alternative is to get it from normandy modules
-#   - (needed? for survey urls, pings)
-#   - get
-#     - fx version
-#     - addons
-#     - ...
-# - endStudy(...anEnding)
-# - utils
-#     - surveyQueryArgs. => (get the args for survey?) openUrl?  construct url?
-# - sampling
-#     - hashing
-#     - unbalanced weighted selection
-# - (proposed)
-#     - expiration
-# - prefs
-#     - get
-#     - set

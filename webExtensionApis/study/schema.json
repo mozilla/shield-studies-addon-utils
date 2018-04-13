@@ -1,8 +1,7 @@
 [
   {
     "namespace": "study",
-    "description":
-      "Interface for shield studies, for use by `background.js` scripts.",
+    "description": "Interface for shield studies, for use by `background.js` scripts.",
     "apiVersion": 5,
     "types": [
       {
@@ -16,18 +15,15 @@
       },
       {
         "name": "telemetrySelectionOptions"
-      },
-      {
-        "name": "prefTypes"
       }
     ],
     "functions": [
       {
         "name": "configure",
         "type": "function",
-        "description":
-          "Configure the study.  Most things can't work without this",
+        "description": "Configure the study.  Most things can't work without this",
         "async": true,
+        "fakereturn": null,
         "parameters": [
           {
             "name": "studySetup",
@@ -36,42 +32,48 @@
         ]
       },
       {
-        "name": "simpleDeterministicVariation",
-        "returns": "Name of a variation from weightedVariations",
+        "name": "install",
         "async": true,
-        "parameters": [
-          {
-            "name": "weightedVariations",
-            "type": "object"
-          },
-          {
-            "name": "fraction",
-            "optional": true,
-            "type": "Number"
-          }
-        ]
+        "description": "all for side effects (sending 'install', 'enter') pings",
+        "returns": "Nothing",
+        "parameters": []
+      },
+      {
+        "name": "startup",
+        "async": true,
+        "description": "all for side effects (setActiveExperiment)",
+        "returns": "Nothing",
+        "parameters": []
       },
       {
         "name": "endStudy",
+        "async": true,
+        "defaultReturn": "endingName",
+        "description": "Optionally opens url, then ends study with pings ending, exit.  Study can only have one ending.  Uninstalls addon?",
         "parameters": [
           {
-            "name": "anEnding"
-          },
-          {
+            "name": "anEnding",
             "type": "object"
           }
         ],
         "returns": "none"
       },
       {
-        "name": "permissions",
+        "name": "info",
         "async": true,
-        "returns":
-          "object of permissions with keys shield, pioneer, telemetry, 'ok'"
+        "defaultReturn": {
+          "variation": "styleA"
+        },
+        "returns": "object with branch and other useful data from a configured study"
       },
       {
-        "name": "userInfo",
-        "returns": "object with branch, etc."
+        "name": "permissions",
+        "async": true,
+        "defaultReturn": {
+          "shield": true,
+          "pioneer": false
+        },
+        "returns": "object of permissions with keys shield, pioneer, telemetry, 'ok'"
       },
       {
         "name": "sendTelemetry",
@@ -85,11 +87,17 @@
             "name": "type"
           }
         ],
+        "defaultReturn": "undefined",
         "returns": "Nothing"
       },
       {
         "name": "getTelemetry",
         "async": true,
+        "defaultReturn": [
+          {
+            "pingType": "main"
+          }
+        ],
         "returns": "Array of Telemetry pings",
         "parameters": [
           {
@@ -99,48 +107,46 @@
         ]
       },
       {
-        "name": "setActiveExperiment",
+        "name": "deterministicVariation",
+        "defaultReturn": "styleA",
+        "returns": "Name of a variation from weightedVariations",
         "async": true,
-        "returns": "Nothing",
-        "parameters": []
-      },
-      {
-        "name": "unsetActiveExperiment",
-        "async": true,
-        "returns": "Nothing",
-        "parameters": []
-      },
-      {
-        "name": "getPref",
-        "parameters": []
-      },
-      {
-        "name": "setPref",
-        "returns": "Value.  Unclear for edge cases",
         "parameters": [
           {
-            "name": "prefName",
+            "name": "weightedVariations",
+            "type": "object"
+          },
+          {
+            "name": "algorithm",
             "type": "string"
           },
           {
-            "name": "prefType",
-            "type": "string"
+            "name": "fraction",
+            "optional": true,
+            "type": "Number"
           }
         ]
       },
       {
         "name": "surveyUrl",
+        "async": true,
+        "defaultReturn": "https://example.com?version=59.0&branch=studyA",
         "parameters": [
           {
             "name": "baseUrl",
             "type": "string"
           }
         ],
-        "returns": "a url with queryArgs appended / mixed"
+        "returns": "a url with queryArgs appended / mixed using our usual pattern"
       },
       {
         "name": "validateJSON",
-        "returns": "a validation",
+        "async": true,
+        "defaultReturn": {
+          "valid": true,
+          "errors": []
+        },
+        "returns": "a validation object",
         "parameters": [
           {
             "name": "anObject",
@@ -151,44 +157,21 @@
             "type": "object"
           }
         ]
-      },
+      }
+    ],
+    "events": [
       {
-        "name": "getTelemetryPings",
+        "name": "onPermissionsChange",
         "type": "function",
-        "description": "TODO",
-        "async": true,
+        "defaultReturn": {
+          "shield": true,
+          "pioneer": false
+        },
+        "description": "Fires whenever any 'permission' changes, with the new permissions object",
         "parameters": [
           {
-            "optional": true,
-            "name": "filter",
-            "type": "any"
-          }
-        ]
-      },
-      {
-        "name": "test_studyUtils_firstSeen",
-        "type": "function",
-        "description": "TODO",
-        "async": true,
-        "parameters": []
-      },
-      {
-        "name": "test_studyUtils_setActive",
-        "type": "function",
-        "description": "TODO",
-        "async": true,
-        "parameters": []
-      },
-      {
-        "name": "test_studyUtils_startup",
-        "type": "function",
-        "description": "TODO",
-        "async": true,
-        "parameters": [
-          {
-            "optional": true,
-            "name": "args",
-            "type": "any"
+            "name": "updatedPermissions",
+            "type": "object"
           }
         ]
       }

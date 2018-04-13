@@ -1,63 +1,99 @@
+/* eslint-disable */
+
+ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
+ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
+
+// eslint-disable-next-line no-undef
+const { EventManager } = ExtensionCommon;
+// eslint-disable-next-line no-undef
+const { EventEmitter } = ExtensionUtils;
+
 
 this.study = class extends ExtensionAPI {
   getAPI(context) {
     return {
 
-        async configure ( studySetup ) {
-          return undefined;
-        }
+      /* Configure the study.  Most things can't work without this */
+      async configure ( studySetup ) {
+        console.log(called, "configure", studySetup);
+        return undefined;
+      }
 
-        async simpleDeterministicVariation ( weightedVariations, fraction ) {
-          return "styleA";
-        }
+      /* all for side effects (sending 'install', 'enter') pings */
+      async install (  ) {
+        console.log(called, "install", );
+        return undefined;
+      }
 
-        async endStudy ( anEnding ) {
-          return "endingName";
-        }
+      /* all for side effects (setActiveExperiment) */
+      async startup (  ) {
+        console.log(called, "startup", );
+        return undefined;
+      }
 
-        async permissions (  ) {
-          return {"shield":true,"pioneer":false};
-        }
+      /* Optionally opens url, then ends study with pings ending, exit.  Study can only have one ending.  Uninstalls addon? */
+      async endStudy ( anEnding ) {
+        console.log(called, "endStudy", anEnding);
+        return "endingName";
+      }
 
-        async userInfo (  ) {
-          return undefined;
-        }
+      /* @TODO no description given */
+      async info (  ) {
+        console.log(called, "info", );
+        return {"variation":"styleA"};
+      }
 
-        async sendTelemetry ( payload, type ) {
-          return "undefined";
-        }
+      /* @TODO no description given */
+      async permissions (  ) {
+        console.log(called, "permissions", );
+        return {"shield":true,"pioneer":false};
+      }
 
-        async getTelemetry ( telemetrySelectionOptions ) {
-          return [{"pingType":"main"}];
-        }
+      /* @TODO no description given */
+      async sendTelemetry ( payload, type ) {
+        console.log(called, "sendTelemetry", payload, type);
+        return "undefined";
+      }
 
-        async setActiveExperiment (  ) {
-          return undefined;
-        }
+      /* @TODO no description given */
+      async getTelemetry ( telemetrySelectionOptions ) {
+        console.log(called, "getTelemetry", telemetrySelectionOptions);
+        return [{"pingType":"main"}];
+      }
 
-        async unsetActiveExperiment (  ) {
-          return undefined;
-        }
+      /* @TODO no description given */
+      async deterministicVariation ( weightedVariations, algorithm, fraction ) {
+        console.log(called, "deterministicVariation", weightedVariations, algorithm, fraction);
+        return "styleA";
+      }
 
-        async getPref ( prefName ) {
-          return "someValue";
-        }
+      /* @TODO no description given */
+      async surveyUrl ( baseUrl ) {
+        console.log(called, "surveyUrl", baseUrl);
+        return "https://example.com?version=59.0&branch=studyA";
+      }
 
-        async setPref ( prefName, prefType ) {
-          return "someValue";
-        }
+      /* @TODO no description given */
+      async validateJSON ( anObject, schema ) {
+        console.log(called, "validateJSON", anObject, schema);
+        return {"valid":true,"errors":[]};
+      }
 
-        async watchPref ( prefName, prefType ) {
-          return "[A function]";
-        }
 
-        async surveyUrl ( baseUrl ) {
-          return "https://example.com?version=59.0";
-        }
+      // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
+      /* Fires whenever any 'permission' changes, with the new permissions object */
+      onPermissionsChange: new EventManager(
+        context,
+        "study.onPermissionsChange", fire => {
+        const callback = value => {
+          fire.async(value);
+        };
+        // RegisterSomeInternalCallback(callback);
+        return () => {
+          // UnregisterInternalCallback(callback);
+        };
+      }).api()
 
-        async validateJSON ( anObject, schema ) {
-          return {"isValid":true};
-        }
     }
   }
 }
