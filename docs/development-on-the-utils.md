@@ -83,3 +83,27 @@
         │   └── studyUtilsBootstrap.js # The logic that was previously addon/bootstrap.js in the template repo
         └── webpack.config.js # Webpack configuration for bundling/building the study API's api.js file
 ```
+
+# Circle CI
+
+Full docs available at https://circleci.com/docs/2.0/local-cli/
+
+## Install cli to test Circle CI locally
+
+```shell
+curl -o /usr/local/bin/circleci https://circle-downloads.s3.amazonaws.com/releases/build_agent_wrapper/circleci && chmod +x /usr/local/bin/circleci
+```
+
+## Validate Circle CI configuration
+
+```shell
+circleci config validate -c .circleci/config.yml
+```
+
+## Run Circle CI locally (requires Docker)
+
+```shell
+circleci build
+```
+
+Note: Steps related to caching and uploading/storing artifacts will report as failed locally. This is not necessarily a problem, they are designed to fail since the operations are not supported locally.
