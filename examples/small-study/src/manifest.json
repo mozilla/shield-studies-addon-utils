@@ -20,6 +20,6 @@
     }
   },
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["study.js", "background.js"]
   }
 }

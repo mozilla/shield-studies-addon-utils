@@ -43,18 +43,21 @@
       # expiration?  -- TODO No, this should be with usual webExt timers.
 
   - name: install
+    type: function
     async: true
     description: all for side effects (sending 'install', 'enter') pings
     returns:  Nothing
     parameters: []
 
   - name: startup
+    type: function
     async: true
     description: all for side effects (setActiveExperiment)
     returns:  Nothing
     parameters: []
 
   - name: endStudy
+    type: function
     async: true
     defaultReturn: "endingName"
     description: Optionally opens url, then ends study with pings ending, exit.  Study can only have one ending.  Uninstalls addon?
@@ -67,17 +70,20 @@
 
   ## study information things
   - name: info
+    type: function
     description: current study configuration, including set variation, activeExperimentName
     async: true
     defaultReturn: {variation: "styleA"}
 
   - name: dataPermissions
+    type: function
     description: object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'
     async: true
     defaultReturn: {shield: true, pioneer: false}
 
   # telemetry related things
   - name: sendTelemetry
+    type: function
     async: true
     parameters:
     - name: payload
@@ -87,6 +93,7 @@
     returns:  Nothing
 
   - name: getTelemetry
+    type: function
     async: true
     description:  for isEligible, testing, and other uses, get recent stored Telemetry pings
     defaultReturn: [{pingType: 'main'}]
@@ -97,6 +104,7 @@
 
   # utilities
   - name: deterministicVariation
+    type: function
     defaultReturn: "styleA"
     returns: Name of a variation from weightedVariations
     async: true
@@ -110,6 +118,7 @@
       type: Number
 
   - name: surveyUrl
+    type: function
     async: true
     description : |
       Format url with study covariate queryArgs appended / mixed in.
@@ -122,6 +131,7 @@
       type: string
 
   - name: validateJSON
+    type: function
     async: true
     defaultReturn: {valid: true, errors: []}
     description:  Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client.
