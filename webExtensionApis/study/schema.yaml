@@ -21,13 +21,16 @@
   description: Interface for shield studies, for use by `background.js` scripts.
   apiVersion: 5  # for dev use
   types:   # TODO @glind to actually get this back out of the schemas.json
-  - name: studySetup
-  - name: weightedVariations
-  - name: anEnding
-  - name: telemetrySelectionOptions
+  - id: studySetup
+    type: object
+    additionalProperties: {"type": "any" }
+  - id: weightedVariations
+    type: array
+  - id: anEnding
+    type: object
+    additionalProperties: {"type": "any" }
 
   functions:
-
   ## study lifecycle
   - name: setup
     type: function
@@ -38,7 +41,7 @@
     async: true
     parameters:
     - name: studySetup
-      type: object
+      $ref: studySetup
       # with a variation included.
       # expiration?  -- TODO No, this should be with usual webExt timers.
 
@@ -62,11 +65,12 @@
     defaultReturn: "endingName"
     description: Optionally opens url, then ends study with pings ending, exit.  Study can only have one ending.  Uninstalls addon?
     parameters:
-    - name: anEnding
+    - name: anEndingName
+      type: string
+    - name: anEndingObject
       type: object
     # should be anEnding Object
-    returns: none
-
+    returns: directions for what to do next by the addon
 
   ## study information things
   - name: info
