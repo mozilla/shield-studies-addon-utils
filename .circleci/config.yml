@@ -2,21 +2,41 @@ version: 2
 jobs:
   build:
     docker:
-      - image: marcrowo/shield-study-utils-base:3
+      - image: circleci/node:latest-browsers
         environment:
-          DISPLAY: :10
+          FIREFOX_BINARY: /home/circleci/checkout/firefox/firefox-bin
 
-    working_directory: /shield-study-addon-utils
+    working_directory: ~/checkout
 
     steps:
-      - run:
-          name: xvfb and openbox
-          command: Xvfb $DISPLAY -ac & sleep 3 & openbox
-          background: true
-
       - checkout
 
-      - run: npm install
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run:
+          name: cleanly install dependencies
+          command: if [ -d node_modules ]; then rm -rf node_modules; fi; npm install
+
+      - run:
+          name:  Get nightly
+          command: |
+            if [ -d ./firefox ]; then
+              echo "firefox dir exists, must be from cache"
+            else
+              ./node_modules/.bin/get-firefox -b nightly -p linux -e
+              ls ./firefox/firefox-bin
+            fi
+
+      - save_cache:
+          paths:
+            - node_modules
+            - firefox
+          key: v1-dependencies-{{ checksum "package.json" }}
 
       - run:
           name: build study apis (webpack) and lint
@@ -31,4 +51,4 @@ jobs:
           command: npm run test
 
       - store_artifacts:
-          path: "examples/test-addon/dist/shield_utils_test_add-on-1.0.0.zip"
+          path: "examples/test-addon/dist"
