@@ -23,6 +23,7 @@
     "get-firefox": "^2.1.0",
     "mocha": "^3.4.2",
     "npm-run-all": "^4.1.2",
+    "pre-commit": "^1.2.2",
     "prettier": "^1.11.0",
     "selenium-webdriver": "^3.6.0",
     "web-ext": "^2.5.0",
@@ -42,6 +43,9 @@
   ],
   "license": "MPL-2.0",
   "main": "src/index.js",
+  "pre-commit": [
+    "format"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/mozilla/shield-studies-addon-utils.git"
