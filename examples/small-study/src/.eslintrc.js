@@ -5,6 +5,6 @@
 module.exports = {
   env: {
     es6: true,
-    webextensions: true
+    webextensions: true,
   },
 };
