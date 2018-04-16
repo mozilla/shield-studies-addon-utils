@@ -47,6 +47,8 @@ module.exports = {
         ignoreComments: true,
         ignoreTrailingComments: true,
         ignoreUrls: true,
+        ignoreStrings: true,
+        ignoreTemplateLiterals: true,
       },
     ],
     "no-console": "warn",

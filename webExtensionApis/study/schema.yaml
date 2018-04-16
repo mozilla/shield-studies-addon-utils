@@ -20,7 +20,7 @@
 - namespace: study
   description: Interface for shield studies, for use by `background.js` scripts.
   apiVersion: 5  # for dev use
-  types:
+  types:   # TODO @glind to actually get this back out of the schemas.json
   - name: studySetup
   - name: weightedVariations
   - name: anEnding
@@ -29,11 +29,13 @@
   functions:
 
   ## study lifecycle
-  - name: configure
+  - name: setup
     type: function
-    description: Configure the study.  Most things can't work without this
+    description: |
+      Configure the study.
+
+      - Validate the study configuation, so that all fields needed for study lifecycle telemetry are present.
     async: true
-    fakereturn:
     parameters:
     - name: studySetup
       type: object
@@ -65,14 +67,14 @@
 
   ## study information things
   - name: info
+    description: current study configuration, including set variation, activeExperimentName
     async: true
     defaultReturn: {variation: "styleA"}
-    returns: object with branch and other useful data from a configured study
 
-  - name: permissions
+  - name: dataPermissions
+    description: object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'
     async: true
     defaultReturn: {shield: true, pioneer: false}
-    returns: object of permissions with keys shield, pioneer, telemetry, 'ok'
 
   # telemetry related things
   - name: sendTelemetry
@@ -86,6 +88,7 @@
 
   - name: getTelemetry
     async: true
+    description:  for isEligible, testing, and other uses, get recent stored Telemetry pings
     defaultReturn: [{pingType: 'main'}]
     returns:  Array of Telemetry pings
     parameters:
@@ -108,20 +111,26 @@
 
   - name: surveyUrl
     async: true
+    description : |
+      Format url with study covariate queryArgs appended / mixed in.
+
+      Use this for constructing midpoint surveys.
+
     defaultReturn: 'https://example.com?version=59.0&branch=studyA'
     parameters:
     - name: baseUrl
       type: string
-    returns: a url with queryArgs appended / mixed using our usual pattern
 
   - name: validateJSON
     async: true
     defaultReturn: {valid: true, errors: []}
-    returns: a validation object
+    description:  Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client.
+    returns: a validation object - { bool valid, array errors }
     parameters:
-    - name: anObject
+    - name: someJson
       type: object
-    - name: schema
+    - name: jsonschema
+      descripton: a valid jsonschema object
       type: object  # a jsonschema
 
   # things that would be 'listeners' are 'events' in webExtensions
@@ -133,10 +142,10 @@
   # https://dxr.mozilla.org/mozilla-central/source/toolkit/components/extensions/parent/ext-runtime.js#41
   # https://searchfox.org/mozilla-central/source/toolkit/components/extensions/ExtensionCommon.jsm#1671
   events:
-  - name: onPermissionsChange
+  - name: onDataPermissionsChange
     type: function
     defaultReturn: {shield: true, pioneer: false}
-    description: Fires whenever any 'permission' changes, with the new permissions object
+    description: Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation.
     parameters:  # for the callback
     - name: updatedPermissions
       type: object

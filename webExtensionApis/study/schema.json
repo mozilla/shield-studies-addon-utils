@@ -19,11 +19,10 @@
     ],
     "functions": [
       {
-        "name": "configure",
+        "name": "setup",
         "type": "function",
-        "description": "Configure the study.  Most things can't work without this",
+        "description": "Configure the study.\n\n- Validate the study configuation, so that all fields needed for study lifecycle telemetry are present.\n",
         "async": true,
-        "fakereturn": null,
         "parameters": [
           {
             "name": "studySetup",
@@ -60,20 +59,20 @@
       },
       {
         "name": "info",
+        "description": "current study configuration, including set variation, activeExperimentName",
         "async": true,
         "defaultReturn": {
           "variation": "styleA"
-        },
-        "returns": "object with branch and other useful data from a configured study"
+        }
       },
       {
-        "name": "permissions",
+        "name": "dataPermissions",
+        "description": "object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'",
         "async": true,
         "defaultReturn": {
           "shield": true,
           "pioneer": false
-        },
-        "returns": "object of permissions with keys shield, pioneer, telemetry, 'ok'"
+        }
       },
       {
         "name": "sendTelemetry",
@@ -93,6 +92,7 @@
       {
         "name": "getTelemetry",
         "async": true,
+        "description": "for isEligible, testing, and other uses, get recent stored Telemetry pings",
         "defaultReturn": [
           {
             "pingType": "main"
@@ -130,14 +130,14 @@
       {
         "name": "surveyUrl",
         "async": true,
+        "description": "Format url with study covariate queryArgs appended / mixed in.\n\nUse this for constructing midpoint surveys.\n",
         "defaultReturn": "https://example.com?version=59.0&branch=studyA",
         "parameters": [
           {
             "name": "baseUrl",
             "type": "string"
           }
-        ],
-        "returns": "a url with queryArgs appended / mixed using our usual pattern"
+        ]
       },
       {
         "name": "validateJSON",
@@ -146,14 +146,16 @@
           "valid": true,
           "errors": []
         },
-        "returns": "a validation object",
+        "description": "Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client.",
+        "returns": "a validation object - { bool valid, array errors }",
         "parameters": [
           {
-            "name": "anObject",
+            "name": "someJson",
             "type": "object"
           },
           {
-            "name": "schema",
+            "name": "jsonschema",
+            "descripton": "a valid jsonschema object",
             "type": "object"
           }
         ]
@@ -161,13 +163,13 @@
     ],
     "events": [
       {
-        "name": "onPermissionsChange",
+        "name": "onDataPermissionsChange",
         "type": "function",
         "defaultReturn": {
           "shield": true,
           "pioneer": false
         },
-        "description": "Fires whenever any 'permission' changes, with the new permissions object",
+        "description": "Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation.",
         "parameters": [
           {
             "name": "updatedPermissions",

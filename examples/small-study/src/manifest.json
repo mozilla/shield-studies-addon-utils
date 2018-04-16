@@ -14,20 +14,12 @@
       "schema": "./privileged/study/schema.json",
       "parent": {
         "scopes": ["addon_parent"],
-        "script": "./privileged/study/api.js",
+        "script": "./privileged/study/fakeApi.js",
         "paths": [["study"]]
       }
     }
   },
   "background": {
-    "scripts": ["studySetup.js", "background.js"]
-  },
-  "icons": {
-    "48": "icons/shield-icon.svg"
-  },
-  "browser_action": {
-    "browser_style": true,
-    "default_icon": "icons/shield-icon.svg",
-    "default_title": "Test"
+    "scripts": ["background.js"]
   }
 }
