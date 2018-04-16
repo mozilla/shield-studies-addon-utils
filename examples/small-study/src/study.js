@@ -1,5 +1,5 @@
 // put the config in the scope so that background can see it.
-const STUDYCONFIG = (this.STUDYCONFIG = {
+const STUDYCONFIG = this.STUDYCONFIG = {
   // activeExperimentsTag
   activeExperimentName: "demoStudy",
   // uses shield|pioneer pipeline, watches those permissions
@@ -47,72 +47,39 @@ const STUDYCONFIG = (this.STUDYCONFIG = {
     },
   ],
   variation: "feature-active", // optional, overrides
-});
+};
 
-// This is a study Study template.
+// This is a Study template.
 class BaseStudy {
-  async sendTelemetry(payload) {
-    const pingSchema = {
-      type: "object",
-      // all keys and values must be strings to be valid `shield-study-addon` pings
-      additionalProperties: {
-        type: "string",
-      },
-    };
-    const validation = browser.study.validateJSON(payload, pingSchema);
-    if (!validation.isValid) {
-      throw new Error("study packet is invalid", payload, validation.errors);
-    }
-    // sendTelemetry will also validate.
-    return browser.study.sendTelemetry(payload, "shield-study-addon");
-  }
-
-  async isEligibleToInstall() {
+  async isEligible() {
     const dataPermissions = await browser.study.dataPermissions();
     // could have other reasons to be eligible, such as addons or whatever
     return dataPermissions.shield;
   }
 
-  // TODO gets reasons
-  // https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/runtime/onInstalled
-  async startupSequence() {
-    // is first run?
-    const installed = await browser.storage.local.get("installed");
-    if (!installed) {
-      const eligible = await this.isEligibleToInstall();
+  async function activate() {
+    // 1. configure.  Now we can send telemetry, because we have a variation
+    await browser.study.setup(STUDYCONFIG);
+
+    // 2.  If first run, is eligible for install?  if not, die.
+    const firstRun = ! await browser.storage.local.get("installed");
+    if (firstRun) {
+      await browser.storage.local.set({ installed: true });
+      const eligible = await this.isEligible();
       if (!eligible) {
         return await browser.study.endStudy("ineligible");
       }
-      await browser.storage.local.set({ installed: true });
       return browser.study.install();
     }
-    // if you got here, startup
+    // 3. if you got here, startup
     return browser.study.startup();
   }
+
 }
 
-async function startup() {
-  // 1. configure.  Now we can send telemetry, because we have a variation
-  await browser.study.setup(STUDYCONFIG);
-  // check that it chose a variation
-  const { variation } = await browser.study.info();
-  console.log(variation);
 
-  // 2.  eligible for install?  if not, die.
-  const instance = new BaseStudy();
-  await instance.startupSequence();
-
-  // 3. send a ping and know that it went
-  const myPacket = { alive: "yes" };
-  await instance.sendTelemetry(myPacket);
-  const sentPackets = await browser.study.getTelemetry("shield-study-addon");
-  console.log(sentPackets.length);
-
-  // 4. force quit the study
-  // await browser.study.endStudy("some-study-defined-ending");
-}
-
-startup().then(() => browser.runtime.sendMessage({ name: "study:ready" }));
+const instance = BaseStudy();
+instance.activate().then(() => browser.runtime.sendMessage({ name: "study:ready" }));
 
 /*
 // handle uninstall
@@ -142,3 +109,5 @@ browser.ui.listenForMessagages((thePacket)=>{
 browser.prefs.get('shield.xname.expireAt',0);
 browser.study.expireAt()
 */
+
+
