@@ -17,8 +17,7 @@ this.prefs = class extends ExtensionAPI {
 }
 */
 
-const FILEHEADER =
-`/* eslint-disable */
+const FILEHEADER = `/* eslint-disable */
 
 ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
@@ -30,7 +29,6 @@ const { EventEmitter } = ExtensionUtils;
 `;
 
 function schema2shim(schemaApiJSON) {
-
   process.stdout.write(FILEHEADER);
 
   for (const i in schemaApiJSON) {
@@ -43,8 +41,10 @@ function schema2shim(schemaApiJSON) {
       const elem = part.functions[j];
       const args = (elem.parameters || []).map(x => x.name).join(", ");
       functionStrings.push(`
-      /* ${elem.description || "@TODO no description given" } */
-      ${elem.name}: ${["", "async "][Boolean(elem.async) * 1]}function ${elem.name}  ( ${args} ) {
+      /* ${elem.description || "@TODO no description given"} */
+      ${elem.name}: ${["", "async "][Boolean(elem.async) * 1]}function ${
+  elem.name
+}  ( ${args} ) {
         console.log(called, "${elem.name}", ${args});
         return ${JSON.stringify(elem.defaultReturn)};
       },`);
@@ -55,7 +55,7 @@ function schema2shim(schemaApiJSON) {
       // TODO const args = (elem.parameters || []).map(x => x.name).join(", ");
       eventStrings.push(`
       // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
-      /* ${elem.description } */
+      /* ${elem.description} */
       ${elem.name}: new EventManager(
         context,
         "${ns}.${elem.name}", fire => {

@@ -1,7 +1,8 @@
 [
   {
     "namespace": "study",
-    "description": "Interface for shield studies, for use by `background.js` scripts.",
+    "description":
+      "Interface for shield studies, for use by `background.js` scripts.",
     "apiVersion": 5,
     "types": [
       {
@@ -21,7 +22,8 @@
       {
         "name": "setup",
         "type": "function",
-        "description": "Configure the study.\n\n- Validate the study configuation, so that all fields needed for study lifecycle telemetry are present.\n",
+        "description":
+          "Configure the study.\n\n- Validate the study configuation, so that all fields needed for study lifecycle telemetry are present.\n",
         "async": true,
         "parameters": [
           {
@@ -33,7 +35,8 @@
       {
         "name": "install",
         "async": true,
-        "description": "all for side effects (sending 'install', 'enter') pings",
+        "description":
+          "all for side effects (sending 'install', 'enter') pings",
         "returns": "Nothing",
         "parameters": []
       },
@@ -48,7 +51,8 @@
         "name": "endStudy",
         "async": true,
         "defaultReturn": "endingName",
-        "description": "Optionally opens url, then ends study with pings ending, exit.  Study can only have one ending.  Uninstalls addon?",
+        "description":
+          "Optionally opens url, then ends study with pings ending, exit.  Study can only have one ending.  Uninstalls addon?",
         "parameters": [
           {
             "name": "anEnding",
@@ -59,7 +63,8 @@
       },
       {
         "name": "info",
-        "description": "current study configuration, including set variation, activeExperimentName",
+        "description":
+          "current study configuration, including set variation, activeExperimentName",
         "async": true,
         "defaultReturn": {
           "variation": "styleA"
@@ -67,7 +72,8 @@
       },
       {
         "name": "dataPermissions",
-        "description": "object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'",
+        "description":
+          "object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'",
         "async": true,
         "defaultReturn": {
           "shield": true,
@@ -92,7 +98,8 @@
       {
         "name": "getTelemetry",
         "async": true,
-        "description": "for isEligible, testing, and other uses, get recent stored Telemetry pings",
+        "description":
+          "for isEligible, testing, and other uses, get recent stored Telemetry pings",
         "defaultReturn": [
           {
             "pingType": "main"
@@ -130,7 +137,8 @@
       {
         "name": "surveyUrl",
         "async": true,
-        "description": "Format url with study covariate queryArgs appended / mixed in.\n\nUse this for constructing midpoint surveys.\n",
+        "description":
+          "Format url with study covariate queryArgs appended / mixed in.\n\nUse this for constructing midpoint surveys.\n",
         "defaultReturn": "https://example.com?version=59.0&branch=studyA",
         "parameters": [
           {
@@ -146,7 +154,8 @@
           "valid": true,
           "errors": []
         },
-        "description": "Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client.",
+        "description":
+          "Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client.",
         "returns": "a validation object - { bool valid, array errors }",
         "parameters": [
           {
@@ -169,7 +178,8 @@
           "shield": true,
           "pioneer": false
         },
-        "description": "Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation.",
+        "description":
+          "Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation.",
         "parameters": [
           {
             "name": "updatedPermissions",

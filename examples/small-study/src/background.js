@@ -1,81 +1,83 @@
-
 const STUDYCONFIG = {
   // required STUDY key
-  "study": {
+  study: {
     /** Required for browser.study.configure():
-      *
-      * - studyName
-      * - endings:
-      *   - map of endingName: configuration
-      * - telemetry
-      *   - boolean send
-      *   - boolean removeTestingFlag
-      *
-      * All other keys are optional.
-      */
+     *
+     * - studyName
+     * - endings:
+     *   - map of endingName: configuration
+     * - telemetry
+     *   - boolean send
+     *   - boolean removeTestingFlag
+     *
+     * All other keys are optional.
+     */
 
     // required keys: studyName, endings, telemetry
 
     // will be used activeExperiments tagging
-    "activeExperimentName": "buttonFeatureExperiment",
+    activeExperimentName: "buttonFeatureExperiment",
 
     /** **endings**
-      * - keys indicate the 'endStudy' even that opens these.
-      * - urls should be static (data) or external, because they have to
-      *   survive uninstall
-      * - If there is no key for an endStudy reason, no url will open.
-      * - usually surveys, orientations, explanations
-      */
-    "endings": {
+     * - keys indicate the 'endStudy' even that opens these.
+     * - urls should be static (data) or external, because they have to
+     *   survive uninstall
+     * - If there is no key for an endStudy reason, no url will open.
+     * - usually surveys, orientations, explanations
+     */
+    endings: {
       /** standard endings */
-      "dataPermissionsRevoked": {
-        "baseUrl": null,
-        "study_state": "ended-neutral",
+      dataPermissionsRevoked: {
+        baseUrl: null,
+        study_state: "ended-neutral",
       },
       "user-disable": {
-        "baseUrl": "http://www.example.com/?reason=user-disable",
+        baseUrl: "http://www.example.com/?reason=user-disable",
       },
-      "ineligible": {
-        "baseUrl": "http://www.example.com/?reason=ineligible",
+      ineligible: {
+        baseUrl: "http://www.example.com/?reason=ineligible",
       },
-      "expired": {
-        "baseUrl": "http://www.example.com/?reason=expired",
+      expired: {
+        baseUrl: "http://www.example.com/?reason=expired",
       },
-
 
       /** User defined endings */
       "some-study-defined-ending": {
-        "study_state": "ended-neutral",
-        "baseUrl":  null,
+        study_state: "ended-neutral",
+        baseUrl: null,
       },
     },
-    "telemetry": {
-      "send": true, // assumed false. Actually send pings?
-      "removeTestingFlag": false,  // Marks pings as testing, set true for actual release
+    telemetry: {
+      send: true, // assumed false. Actually send pings?
+      removeTestingFlag: false, // Marks pings as testing, set true for actual release
     },
   },
 
-
   /* Study branches and sample weights, overweighing feature branches */
-  "weightedVariations": [
-    {"name": "feature-active",
-      "weight": 1.5},
-    {"name": "feature-passive",
-      "weight": 1.5},
-    {"name": "control",
-      "weight": 1},
+  weightedVariations: [
+    {
+      name: "feature-active",
+      weight: 1.5,
+    },
+    {
+      name: "feature-passive",
+      weight: 1.5,
+    },
+    {
+      name: "control",
+      weight: 1,
+    },
   ],
 };
-
 
 // This is a study Study template.
 class BaseStudy {
   async sendTelemetry(payload) {
     const pingSchema = {
-      "type": "object",
+      type: "object",
       // all keys and values must be strings to be valid `shield-study-addon` pings
-      "additionalProperties": {
-        "type": "string",
+      additionalProperties: {
+        type: "string",
       },
     };
     const validation = browser.study.validateJSON(payload, pingSchema);
@@ -100,11 +102,10 @@ class BaseStudy {
     if (!installed) {
       const eligible = await this.isEligibleToInstall();
       if (!eligible) {
-        return await browser.study.endStudy(...STUDYCONFIG.endings.ineligible) ;
+        return await browser.study.endStudy(...STUDYCONFIG.endings.ineligible);
       }
-      await browser.storage.local.set({"installed": true});
+      await browser.storage.local.set({ installed: true });
       return browser.study.install();
-
     }
     // if you got here, startup
     return browser.study.startup();
@@ -115,8 +116,9 @@ async function startupOnceSendTelemetryThenDie() {
   const instance = new BaseStudy();
 
   // 1. variation, it all needs the variation
-  const userVariation = await browser.study
-    .deterministicVariation(STUDYCONFIG.weightedVariations);
+  const userVariation = await browser.study.deterministicVariation(
+    STUDYCONFIG.weightedVariations,
+  );
 
   // 2. configure.  Now we can send telemetry, because we have a variation
   await browser.study.configure(variation, ...STUDYCONFIG.study);
@@ -127,7 +129,7 @@ async function startupOnceSendTelemetryThenDie() {
   await instance.startupSequence(userVariation);
 
   // 4. send a ping and know that it went
-  const myPacket = {alive: "yes"};
+  const myPacket = { alive: "yes" };
   await instance.sendTelemetry(myPacket);
   const sentPackets = await browser.study.getTelemetry("shield-study-addon");
   console.log(sentPackets.length);
@@ -166,6 +168,3 @@ browser.ui.listenForMessagages((thePacket)=>{
 browser.prefs.get('shield.xname.expireAt',0);
 browser.study.expireAt()
 */
-
-
-
