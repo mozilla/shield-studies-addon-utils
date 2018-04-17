@@ -45,11 +45,11 @@
 #      # with a variation included.
 #      # expiration?  -- TODO No, this should be with usual webExt timers.
 
-  - name: enroll
+  - name: setup
     type: function
     async: true
     description: |
-      Attempt an enrollment, with these effects
+      Attempt an setup/enrollment, with these effects
       - IFF firstRun
         - send 'enter' ping
         - if eligible, send 'install' ping
@@ -67,9 +67,8 @@
       - study:endStudy
 
     returns:  Nothing
+    # TODO, settle this
     parameters:
-    - name: isEligible
-      type: boolean
     - name: studyConfig
       type: any
 
@@ -83,21 +82,24 @@
       type: string
     - name: anEndingObject
       type: object
+      optional: true
     # should be anEnding Object
     returns: directions for what to do next by the addon
 
   ## study information things
   - name: info
     type: function
-    description: current study configuration, including set variation, activeExperimentName
     async: true
+    description: current study configuration, including set variation, activeExperimentName
     defaultReturn: {variation: "styleA"}
+    parameters: []
 
   - name: dataPermissions
     type: function
-    description: object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'
     async: true
+    description: object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'
     defaultReturn: {shield: true, pioneer: false}
+    parameters: []
 
   # telemetry related things
   - name: sendTelemetry
@@ -106,7 +108,8 @@
     parameters:
     - name: payload
       type: object  # TODO copy existing?
-    - name: type
+    - name: pingType
+      type: string
     defaultReturn: undefined  # exception if out of policy based on config
     returns:  Nothing
 
@@ -118,22 +121,23 @@
     returns:  Array of Telemetry pings
     parameters:
     - name: telemetrySelectionOptions
+      type: any
       description: `{ type, n, minTimestamp, headersOnly }`
 
   # utilities
   - name: deterministicVariation
     type: function
+    async: true
     defaultReturn: "styleA"
     returns: Name of a variation from weightedVariations
-    async: true
     parameters:
     - name: weightedVariations
       type: object
     - name: algorithm
       type: string
     - name: fraction
-      optional: true
       type: Number
+      optional: true
 
   - name: surveyUrl
     type: function
@@ -158,8 +162,8 @@
     - name: someJson
       type: object
     - name: jsonschema
-      descripton: a valid jsonschema object
       type: object  # a jsonschema
+      descripton: a valid jsonschema object
 
   # things that would be 'listeners' are 'events' in webExtensions
   # https://github.com/motin/shield-studies-addon-template/blob/convert-to-webextension-experiments/src/privileged/introductionNotificationBar/api.js#L107
@@ -178,7 +182,7 @@
     - name: updatedPermissions
       type: object
 
-  - name: onEnroll
+  - name: onReady
     type: function
     defaultReturn: {variation: 'styleA', install_timestamp: 1523968204184}
     description: Fires when the study is 'ready' for the feature to startup.

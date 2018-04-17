@@ -26,17 +26,13 @@
     ],
     "functions": [
       {
-        "name": "enroll",
+        "name": "setup",
         "type": "function",
         "async": true,
         "description":
-          "Attempt an enrollment, with these effects\n- IFF firstRun\n  - send 'enter' ping\n  - if eligible, send 'install' ping\n  - else endStudy(\"ineligible\")\n- setActiveExperiment(studyConfig)\n\nNote:\n1. first run is tracked in a pref\n2. eligible is ONLY used during first run (install)\n\nall for side effects (setActiveExperiment)\n\nWill fire\n- study:ready\n- study:endStudy\n",
+          "Attempt an setup/enrollment, with these effects\n- IFF firstRun\n  - send 'enter' ping\n  - if eligible, send 'install' ping\n  - else endStudy(\"ineligible\")\n- setActiveExperiment(studyConfig)\n\nNote:\n1. first run is tracked in a pref\n2. eligible is ONLY used during first run (install)\n\nall for side effects (setActiveExperiment)\n\nWill fire\n- study:ready\n- study:endStudy\n",
         "returns": "Nothing",
         "parameters": [
-          {
-            "name": "isEligible",
-            "type": "boolean"
-          },
           {
             "name": "studyConfig",
             "type": "any"
@@ -57,7 +53,8 @@
           },
           {
             "name": "anEndingObject",
-            "type": "object"
+            "type": "object",
+            "optional": true
           }
         ],
         "returns": "directions for what to do next by the addon"
@@ -65,23 +62,25 @@
       {
         "name": "info",
         "type": "function",
+        "async": true,
         "description":
           "current study configuration, including set variation, activeExperimentName",
-        "async": true,
         "defaultReturn": {
           "variation": "styleA"
-        }
+        },
+        "parameters": []
       },
       {
         "name": "dataPermissions",
         "type": "function",
+        "async": true,
         "description":
           "object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'",
-        "async": true,
         "defaultReturn": {
           "shield": true,
           "pioneer": false
-        }
+        },
+        "parameters": []
       },
       {
         "name": "sendTelemetry",
@@ -93,7 +92,8 @@
             "type": "object"
           },
           {
-            "name": "type"
+            "name": "pingType",
+            "type": "string"
           }
         ],
         "defaultReturn": "undefined",
@@ -114,6 +114,7 @@
         "parameters": [
           {
             "name": "telemetrySelectionOptions",
+            "type": "any",
             "description": "`{ type, n, minTimestamp, headersOnly }`"
           }
         ]
@@ -121,9 +122,9 @@
       {
         "name": "deterministicVariation",
         "type": "function",
+        "async": true,
         "defaultReturn": "styleA",
         "returns": "Name of a variation from weightedVariations",
-        "async": true,
         "parameters": [
           {
             "name": "weightedVariations",
@@ -135,8 +136,8 @@
           },
           {
             "name": "fraction",
-            "optional": true,
-            "type": "Number"
+            "type": "Number",
+            "optional": true
           }
         ]
       },
@@ -172,8 +173,8 @@
           },
           {
             "name": "jsonschema",
-            "descripton": "a valid jsonschema object",
-            "type": "object"
+            "type": "object",
+            "descripton": "a valid jsonschema object"
           }
         ]
       }
@@ -196,7 +197,7 @@
         ]
       },
       {
-        "name": "onEnroll",
+        "name": "onReady",
         "type": "function",
         "defaultReturn": {
           "variation": "styleA",

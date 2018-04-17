@@ -45,7 +45,7 @@ function schema2shim(schemaApiJSON) {
       ${elem.name}: ${["", "async "][Boolean(elem.async) * 1]}function ${
   elem.name
 }  ( ${args} ) {
-        console.log(called, "${elem.name}", ${args});
+        console.log("called ${elem.name} ${args}");
         return ${JSON.stringify(elem.defaultReturn)};
       },`);
     }

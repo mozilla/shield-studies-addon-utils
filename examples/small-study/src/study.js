@@ -1,7 +1,7 @@
-/* eslint no-unused-vars: ["error", { "varsIgnorePattern": "STUDYSETUP|isEligible" }]*/
+/* eslint no-unused-vars: ["error", { "varsIgnorePattern": "studyConfig|allowEnroll" }]*/
 
 // put the config in the scope so that background can see it.
-const STUDYSETUP = (this.STUDYSETUP = {
+const studyConfig = {
   // activeExperimentsTag
   activeExperimentName: "demoStudy",
 
@@ -57,13 +57,31 @@ const STUDYSETUP = (this.STUDYSETUP = {
     },
   ],
 
-  // Optional: variation override.
-  // variationOverride: "feature-active",
-  // firstrunTimestampOverride:  // from a pref, for testing sidecases
-});
+  expire: {
+    days: 14,
+  },
 
-async function isEligible() {
+  // // Optional: testing overrides.
+  // testing: {
+  //  variation: "feature-active",
+  //  firstrunTimestamp: 500,
+  // }
+};
+
+async function allowEnroll() {
+  // cached answer for 2nd run
+  let allowed = await browser.storage.local.get("allowedToEnroll");
+  if (allowed) return true;
+
+  /* First run, we must calculate the answer.
+     If false, the study will endStudy with 'ineligible' during `setup`
+  */
+
+  // could have other reasons to be eligible, such addons, prefs
   const dataPermissions = await browser.study.dataPermissions();
-  // could have other reasons to be eligible, such as addons or whatever
-  return dataPermissions.shield;
+  allowed = dataPermissions.shield;
+
+  // cache the answer
+  await browser.storage.local.set({ allowedToEnroll: allowed });
+  return allowed;
 }
