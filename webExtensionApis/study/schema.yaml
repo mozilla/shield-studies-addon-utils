@@ -21,7 +21,7 @@
   description: Interface for Shield and Pioneer studies.
   apiVersion: 5  # for dev use
   types:   # TODO @glind to actually get this back out of the schemas.json
-  - name: studySetup
+  - id: studySetup
     type: object
     properties:
       activeExperimentName:
@@ -32,6 +32,7 @@
         type: 'object'
         properties:
           days:
+            type: 'integer'
       endings:
         type: "array"
       weightedVariations:
@@ -79,13 +80,13 @@
           for the studyType using `weightedVariations`
 
       - During firstRun[1] only:
-        - set firstrunTimestamp pref value
+        - set firstRunTimestamp pref value
         - send 'enter' ping
         - if `allowEnroll`, send 'install' ping
         - else endStudy("ineligible") and return
 
       - Every Run
-        - setActiveExperiment(studyConfig)
+        - setActiveExperiment(studySetup)
         - monitor shield | pioneer permission endings
         - suggests alarming if `expire` is set.
 
@@ -104,13 +105,13 @@
       - first run
 
       Note:
-      1. first run is evaluated based on a pref
+      1. first run is evaluated based on a pref  `shield.${id}.firstRunTimestamp`
       2. allowEnroll is ONLY used during first run (install)
 
     returns:  info
     parameters:
-    - name: studyConfig
-      $ref: studyConfig # TODO, for now, making progress up above
+    - name: studySetup
+      $ref: studySetup # TODO, for now, making progress up above
 
   - name: endStudy
     type: function
@@ -135,7 +136,7 @@
       - variation
       - activeExperimentName
       - timeUntilExpire
-      - firstrunTimestamp
+      - firstRunTimestamp
 
       But not:
       - telemetry clientId
@@ -164,7 +165,7 @@
     defaultReturn: undefined  # exception if out of policy based on config
     returns:  Nothing
 
-  - name: getTelemetry
+  - name: getSentTelemetry
     type: function
     async: true
     description:  for isEligible, testing, and other uses, get recent stored Telemetry pings
@@ -238,7 +239,7 @@
 
   - name: onReady
     type: function
-    defaultReturn: {variation: 'styleA', install_timestamp: 1523968204184}
+    defaultReturn: {variation: 'styleA', firstRunTimestamp: 1523968204184}
     description: Fires when the study is 'ready' for the feature to startup.
     parameters:  # for the callback
     - name: studyInfo

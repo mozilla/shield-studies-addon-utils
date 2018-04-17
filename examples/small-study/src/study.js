@@ -70,7 +70,7 @@ const studySetup = {
   // Set from prefs in getstudySetup
   testing: {
     variation: null,
-    firstrunTimestamp: null,
+    firstRunTimestamp: null,
   },
 };
 
@@ -110,13 +110,13 @@ async function getStudySetup() {
   const id = browser.runtime.id;
   const prefs = {
     variation: `shield.${id}.variation`,
-    firstrunTimestamp: `shield.${id}.firstrun`,
+    firstRunTimestamp: `shield.${id}.firstRunTimestamp`,
   };
   prefs;
   studySetup.allowEnroll = await shouldAllowEnroll();
   studySetup.testing = {
     // variation: await browser.prefs.getStringPref(prefs.variation);
-    // firstrunTimestamp: await browser.prefs.getStringPref(prefs.firstrunTimestamp);
+    // firstRunTimestamp: await browser.prefs.getStringPref(prefs.firstRunTimestamp);
   };
   return studySetup;
 }
