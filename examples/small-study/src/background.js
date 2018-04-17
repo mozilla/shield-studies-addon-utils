@@ -1,12 +1,19 @@
-function makeFeature(variationName) {
-  console.log(`making the feature, style: ${variationName}`);
+/* global studyConfig, isEligible */
+
+async function enableFeature({ variation }) {
+  console.log(`making the feature, style: ${variation}`);
 }
 
-async function studyReady(message) {
-  if (message.name === "study:ready") {
-    const variationName = browser.study.info();
-    makeFeature(variationName);
-  }
+async function handleStudyEnding(ending) {
+  console.log(`study wants to end:`, ending);
+  // open the urls.
+  // uninstall the addon
+  // do some work for cleaning up.
 }
 
-browser.runtime.onMessage.addListener(studyReady);
+async function startup() {
+  browser.study.onEndStudy.addListener(handleStudyEnding);
+  browser.study.onEnroll.addListener(enableFeature);
+  browser.study.enroll(await isEligible(), studyConfig);
+}
+startup();

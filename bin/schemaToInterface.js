@@ -66,7 +66,7 @@ function schema2shim(schemaApiJSON) {
         return () => {
           // UnregisterInternalCallback(callback);
         };
-      }).api()
+      }).api(),
       `);
     }
 

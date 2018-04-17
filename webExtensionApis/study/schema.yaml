@@ -31,33 +31,47 @@
     additionalProperties: {"type": "any" }
 
   functions:
-  ## study lifecycle
-  - name: setup
+#  ## study lifecycle
+#  - name: setup
+#    type: function
+#    description: |
+#      Configure the study.
+#
+#      - Validate the study configuation, so that all fields needed for study lifecycle telemetry are present.
+#    async: true
+#    parameters:
+#    - name: studySetup
+#      $ref: studySetup
+#      # with a variation included.
+#      # expiration?  -- TODO No, this should be with usual webExt timers.
+
+  - name: enroll
     type: function
+    async: true
     description: |
-      Configure the study.
+      Attempt an enrollment, with these effects
+      - IFF firstRun
+        - send 'enter' ping
+        - if eligible, send 'install' ping
+        - else endStudy("ineligible")
+      - setActiveExperiment(studyConfig)
 
-      - Validate the study configuation, so that all fields needed for study lifecycle telemetry are present.
-    async: true
+      Note:
+      1. first run is tracked in a pref
+      2. eligible is ONLY used during first run (install)
+
+      all for side effects (setActiveExperiment)
+
+      Will fire
+      - study:ready
+      - study:endStudy
+
+    returns:  Nothing
     parameters:
-    - name: studySetup
-      $ref: studySetup
-      # with a variation included.
-      # expiration?  -- TODO No, this should be with usual webExt timers.
-
-  - name: install
-    type: function
-    async: true
-    description: all for side effects (sending 'install', 'enter') pings
-    returns:  Nothing
-    parameters: []
-
-  - name: startup
-    type: function
-    async: true
-    description: all for side effects (setActiveExperiment)
-    returns:  Nothing
-    parameters: []
+    - name: isEligible
+      type: boolean
+    - name: studyConfig
+      type: any
 
   - name: endStudy
     type: function
@@ -164,3 +178,18 @@
     - name: updatedPermissions
       type: object
 
+  - name: onEnroll
+    type: function
+    defaultReturn: {variation: 'styleA', install_timestamp: 1523968204184}
+    description: Fires when the study is 'ready' for the feature to startup.
+    parameters:  # for the callback
+    - name: studyInfo
+      type: object
+
+  - name: onEndStudy
+    type: function
+    defaultReturn: {urls: []}
+    description: Listen for when the study wants to end
+    parameters:  # for the callback
+    - name: endingSteps
+      type: object

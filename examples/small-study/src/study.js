@@ -1,13 +1,20 @@
+/* eslint no-unused-vars: ["error", { "varsIgnorePattern": "STUDYSETUP|isEligible" }]*/
+
 // put the config in the scope so that background can see it.
-const STUDYCONFIG = this.STUDYCONFIG = {
+const STUDYSETUP = (this.STUDYSETUP = {
   // activeExperimentsTag
   activeExperimentName: "demoStudy",
+
   // uses shield|pioneer pipeline, watches those permissions
   pattern: "shield",
+
+  // telemetry
   telemetry: {
     send: true, // assumed false. Actually send pings?
     removeTestingFlag: false, // Marks pings as testing, set true for actual release
   },
+
+  // endings with urls
   endings: {
     /** standard endings */
     "user-disable": {
@@ -30,7 +37,10 @@ const STUDYCONFIG = this.STUDYCONFIG = {
       baseUrl: null,
     },
   },
+
+  // logging
   logLevel: 10,
+
   /* Study branches and sample weights, overweighing feature branches */
   weightedVariations: [
     {
@@ -46,68 +56,14 @@ const STUDYCONFIG = this.STUDYCONFIG = {
       weight: 1,
     },
   ],
-  variation: "feature-active", // optional, overrides
-};
 
-// This is a Study template.
-class BaseStudy {
-  async isEligible() {
-    const dataPermissions = await browser.study.dataPermissions();
-    // could have other reasons to be eligible, such as addons or whatever
-    return dataPermissions.shield;
-  }
+  // Optional: variation override.
+  // variationOverride: "feature-active",
+  // firstrunTimestampOverride:  // from a pref, for testing sidecases
+});
 
-  async function activate() {
-    // 1. configure.  Now we can send telemetry, because we have a variation
-    await browser.study.setup(STUDYCONFIG);
-
-    // 2.  If first run, is eligible for install?  if not, die.
-    const firstRun = ! await browser.storage.local.get("installed");
-    if (firstRun) {
-      await browser.storage.local.set({ installed: true });
-      const eligible = await this.isEligible();
-      if (!eligible) {
-        return await browser.study.endStudy("ineligible");
-      }
-      return browser.study.install();
-    }
-    // 3. if you got here, startup
-    return browser.study.startup();
-  }
-
+async function isEligible() {
+  const dataPermissions = await browser.study.dataPermissions();
+  // could have other reasons to be eligible, such as addons or whatever
+  return dataPermissions.shield;
 }
-
-
-const instance = BaseStudy();
-instance.activate().then(() => browser.runtime.sendMessage({ name: "study:ready" }));
-
-/*
-// handle uninstall
-browser.runtime.onUninstall(work);
-browser.runtime.onUninstall(moreWork);
-browser.runtime.onUninstall(evenMoreWork);
-
-
-pretend:  "userUnsetCloudStoragePref"
-your.api.watchForUserUnsetCloudStoragePref(()=>{
-  browser.study.endStudy('user-unset-pref');
-}
-
-browser.ui.listenForMessagages((thePacket)=>{
-  which = thePacket.name;
-  switch (which) {
-    case userUnsetCloudStoragePref:
-      browser.study.endStudy('user-unset-pref');
-      break;
-    case telemetry:
-      browser.study.sendTelemetry(thePacket.data);
-      break;
-  }
-}
-
-
-browser.prefs.get('shield.xname.expireAt',0);
-browser.study.expireAt()
-*/
-
-
