@@ -2,7 +2,7 @@
   {
     "namespace": "study",
     "description":
-      "Interface for shield studies, for use by `background.js` scripts.",
+      "Interface for Shield and Pioneer studies, for use by `background.js` scripts.",
     "apiVersion": 5,
     "types": [
       {
@@ -30,8 +30,8 @@
         "type": "function",
         "async": true,
         "description":
-          "Attempt an setup/enrollment, with these effects\n- IFF firstRun\n  - send 'enter' ping\n  - if eligible, send 'install' ping\n  - else endStudy(\"ineligible\")\n- setActiveExperiment(studyConfig)\n\nNote:\n1. first run is tracked in a pref\n2. eligible is ONLY used during first run (install)\n\nall for side effects (setActiveExperiment)\n\nWill fire\n- study:ready\n- study:endStudy\n",
-        "returns": "Nothing",
+          "Attempt an setup/enrollment, with these effects:\n\n- sets 'studyType' as Shield or Pioneer\n- Choose variation\n  - using testing.variation OR deterministicVariation\n    for the studyType from `weightedVariations`\n\nNow Telemetry is sendable.\n\n- IFF firstRun[1]\n  - set firstrunTimestamp pref value\n  - send 'enter' ping\n  - if `allowEnroll`, send 'install' ping\n  - else endStudy(\"ineligible\") and return\n\n- Every Run\n  - setActiveExperiment(studyConfig)\n  - monitor shield | pioneer permission endings\n  - suggests alarming if `expire` is set.\n\nReturns:\n- info:\n  - state\n  - variation\n  - firstrunTimestamp\n  - endings\n  - weightedVariations\n  - timeUntilExpireAtStartup\n  - activeExperimentName\n\nFires:\n- study:ready\n- study:endStudy\n\nNote:\n1. first run is evaluated based on a pref\n2. allowEnroll is ONLY used during first run (install)\n",
+        "returns": "info",
         "parameters": [
           {
             "name": "studyConfig",
@@ -43,13 +43,16 @@
         "name": "endStudy",
         "type": "function",
         "async": true,
-        "defaultReturn": "endingName",
+        "defaultReturn": {
+          "urls": ["url1", "url2"],
+          "endingName": "some-reason"
+        },
         "description":
           "Optionally opens url, then ends study with pings ending, exit.  Study can only have one ending.  Uninstalls addon?",
         "parameters": [
           {
             "name": "anEndingName",
-            "type": "string"
+            "type": ["string", "null"]
           },
           {
             "name": "anEndingObject",

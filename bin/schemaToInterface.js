@@ -75,9 +75,11 @@ function schema2shim(schemaApiJSON) {
 this.${ns} = class extends ExtensionAPI {
   getAPI(context) {
     return {
-      ${functionStrings.join("\n")}
+      ${ns}: {
+        ${functionStrings.join("\n")}
 
-      ${eventStrings.join("\n")}
+        ${eventStrings.join("\n")}
+      }
     }
   }
 }`);

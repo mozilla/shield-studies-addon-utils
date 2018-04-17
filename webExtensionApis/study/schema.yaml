@@ -18,7 +18,7 @@
 # - mention / decide how to handle all
 ---
 - namespace: study
-  description: Interface for shield studies, for use by `background.js` scripts.
+  description: Interface for Shield and Pioneer studies, for use by `background.js` scripts.
   apiVersion: 5  # for dev use
   types:   # TODO @glind to actually get this back out of the schemas.json
   - id: studySetup
@@ -49,25 +49,45 @@
     type: function
     async: true
     description: |
-      Attempt an setup/enrollment, with these effects
-      - IFF firstRun
+      Attempt an setup/enrollment, with these effects:
+
+      - sets 'studyType' as Shield or Pioneer
+      - Choose variation
+        - using testing.variation OR deterministicVariation
+          for the studyType from `weightedVariations`
+
+      Now Telemetry is sendable.
+
+      - IFF firstRun[1]
+        - set firstrunTimestamp pref value
         - send 'enter' ping
-        - if eligible, send 'install' ping
-        - else endStudy("ineligible")
-      - setActiveExperiment(studyConfig)
+        - if `allowEnroll`, send 'install' ping
+        - else endStudy("ineligible") and return
 
-      Note:
-      1. first run is tracked in a pref
-      2. eligible is ONLY used during first run (install)
+      - Every Run
+        - setActiveExperiment(studyConfig)
+        - monitor shield | pioneer permission endings
+        - suggests alarming if `expire` is set.
 
-      all for side effects (setActiveExperiment)
+      Returns:
+      - info:
+        - state
+        - variation
+        - firstrunTimestamp
+        - endings
+        - weightedVariations
+        - timeUntilExpireAtStartup
+        - activeExperimentName
 
-      Will fire
+      Fires:
       - study:ready
       - study:endStudy
 
-    returns:  Nothing
-    # TODO, settle this
+      Note:
+      1. first run is evaluated based on a pref
+      2. allowEnroll is ONLY used during first run (install)
+
+    returns:  info
     parameters:
     - name: studyConfig
       type: any
@@ -75,11 +95,11 @@
   - name: endStudy
     type: function
     async: true
-    defaultReturn: "endingName"
+    defaultReturn: {urls: ['url1','url2'], endingName:'some-reason'}
     description: Optionally opens url, then ends study with pings ending, exit.  Study can only have one ending.  Uninstalls addon?
     parameters:
     - name: anEndingName
-      type: string
+      type: ['string', 'null']
     - name: anEndingObject
       type: object
       optional: true

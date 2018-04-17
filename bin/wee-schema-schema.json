@@ -28,9 +28,7 @@
           "name": {
             "type": "string"
           },
-          "type": {
-            "type": "string"
-          }
+          "type": {}
         },
         "required": ["name", "type"]
       }

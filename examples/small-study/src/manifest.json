@@ -19,9 +19,7 @@
       }
     }
   },
-  "permissions": [
-    "storage"
-  ],
+  "permissions": ["storage"],
   "background": {
     "scripts": ["study.js", "background.js"]
   },
