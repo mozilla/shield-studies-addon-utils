@@ -1,13 +1,60 @@
 [
   {
     "namespace": "study",
-    "description":
-      "Interface for Shield and Pioneer studies, for use by `background.js` scripts.",
+    "description": "Interface for Shield and Pioneer studies.",
     "apiVersion": 5,
     "types": [
       {
-        "id": "studySetup",
+        "name": "studySetup",
         "type": "object",
+        "properties": {
+          "activeExperimentName": {
+            "type": "string"
+          },
+          "studyType": {
+            "type": {
+              "enum": [
+                "shield",
+                "pioneer"
+              ]
+            }
+          },
+          "expire": {
+            "type": "object",
+            "properties": {
+              "days": null
+            }
+          },
+          "endings": {
+            "type": "array"
+          },
+          "weightedVariations": {
+            "type": "array"
+          },
+          "logLevel": {
+            "type": "integer"
+          },
+          "telemetry": {
+            "type": "object",
+            "properties": {
+              "send": {
+                "type": "boolean"
+              },
+              "removeTestingFlag": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "required": [
+          "activeExperimentName",
+          "studyType",
+          "expire",
+          "endings",
+          "weightedVariations",
+          "logLevel",
+          "telemetry"
+        ],
         "additionalProperties": {
           "type": "any"
         }
@@ -29,13 +76,12 @@
         "name": "setup",
         "type": "function",
         "async": true,
-        "description":
-          "Attempt an setup/enrollment, with these effects:\n\n- sets 'studyType' as Shield or Pioneer\n- Choose variation\n  - using testing.variation OR deterministicVariation\n    for the studyType from `weightedVariations`\n\nNow Telemetry is sendable.\n\n- IFF firstRun[1]\n  - set firstrunTimestamp pref value\n  - send 'enter' ping\n  - if `allowEnroll`, send 'install' ping\n  - else endStudy(\"ineligible\") and return\n\n- Every Run\n  - setActiveExperiment(studyConfig)\n  - monitor shield | pioneer permission endings\n  - suggests alarming if `expire` is set.\n\nReturns:\n- info:\n  - state\n  - variation\n  - firstrunTimestamp\n  - endings\n  - weightedVariations\n  - timeUntilExpireAtStartup\n  - activeExperimentName\n\nFires:\n- study:ready\n- study:endStudy\n\nNote:\n1. first run is evaluated based on a pref\n2. allowEnroll is ONLY used during first run (install)\n",
+        "description": "Attempt an setup/enrollment, with these effects:\n\n- sets 'studyType' as Shield or Pioneer\n  - affects telemetry\n  - watches for dataPermission changes that should *always*\n    stop that kind of study\n\n- Use or choose variation\n  - `testing.variation` if present\n  - OR deterministicVariation\n    for the studyType using `weightedVariations`\n\n- During firstRun[1] only:\n  - set firstrunTimestamp pref value\n  - send 'enter' ping\n  - if `allowEnroll`, send 'install' ping\n  - else endStudy(\"ineligible\") and return\n\n- Every Run\n  - setActiveExperiment(studyConfig)\n  - monitor shield | pioneer permission endings\n  - suggests alarming if `expire` is set.\n\nReturns:\n- info object (see `info`)\n\nTelemetry Sent\n\nFires Events\n\n(At most one of)\n- study:ready  OR\n- study:endStudy\n\nPrefs set\n- first run\n\nNote:\n1. first run is evaluated based on a pref\n2. allowEnroll is ONLY used during first run (install)\n",
         "returns": "info",
         "parameters": [
           {
             "name": "studyConfig",
-            "type": "any"
+            "$ref": "studyConfig"
           }
         ]
       },
@@ -44,15 +90,20 @@
         "type": "function",
         "async": true,
         "defaultReturn": {
-          "urls": ["url1", "url2"],
+          "urls": [
+            "url1",
+            "url2"
+          ],
           "endingName": "some-reason"
         },
-        "description":
-          "Optionally opens url, then ends study with pings ending, exit.  Study can only have one ending.  Uninstalls addon?",
+        "description": "Optionally opens url, then ends study with pings ending, exit.  Study can only have one ending.  Uninstalls addon?",
         "parameters": [
           {
             "name": "anEndingName",
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           {
             "name": "anEndingObject",
@@ -66,22 +117,21 @@
         "name": "info",
         "type": "function",
         "async": true,
-        "description":
-          "current study configuration, including set variation, activeExperimentName",
+        "description": "current study configuration, including\n- variation\n- activeExperimentName\n- timeUntilExpire\n- firstrunTimestamp\n\nBut not:\n- telemetry clientId\n\nThrows Error if called before `browser.study.setup`\n",
         "defaultReturn": {
           "variation": "styleA"
         },
         "parameters": []
       },
       {
-        "name": "dataPermissions",
+        "name": "getDataPermissions",
         "type": "function",
         "async": true,
-        "description":
-          "object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'",
+        "description": "object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'",
         "defaultReturn": {
           "shield": true,
-          "pioneer": false
+          "pioneer": false,
+          "telemetry": true
         },
         "parameters": []
       },
@@ -106,8 +156,7 @@
         "name": "getTelemetry",
         "type": "function",
         "async": true,
-        "description":
-          "for isEligible, testing, and other uses, get recent stored Telemetry pings",
+        "description": "for isEligible, testing, and other uses, get recent stored Telemetry pings",
         "defaultReturn": [
           {
             "pingType": "main"
@@ -148,13 +197,17 @@
         "name": "surveyUrl",
         "type": "function",
         "async": true,
-        "description":
-          "Format url with study covariate queryArgs appended / mixed in.\n\nUse this for constructing midpoint surveys.\n",
+        "description": "Format url with study covariate queryArgs appended / mixed in.\n\nUse this for constructing midpoint surveys.\n",
         "defaultReturn": "https://example.com?version=59.0&branch=studyA",
         "parameters": [
           {
             "name": "baseUrl",
             "type": "string"
+          },
+          {
+            "name": "additionalFields",
+            "type": "object",
+            "optional": true
           }
         ]
       },
@@ -166,8 +219,7 @@
           "valid": true,
           "errors": []
         },
-        "description":
-          "Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client.",
+        "description": "Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client.",
         "returns": "a validation object - { bool valid, array errors }",
         "parameters": [
           {
@@ -190,8 +242,7 @@
           "shield": true,
           "pioneer": false
         },
-        "description":
-          "Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation.",
+        "description": "Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation.",
         "parameters": [
           {
             "name": "updatedPermissions",
@@ -206,8 +257,7 @@
           "variation": "styleA",
           "install_timestamp": 1523968204184
         },
-        "description":
-          "Fires when the study is 'ready' for the feature to startup.",
+        "description": "Fires when the study is 'ready' for the feature to startup.",
         "parameters": [
           {
             "name": "studyInfo",
@@ -219,7 +269,8 @@
         "name": "onEndStudy",
         "type": "function",
         "defaultReturn": {
-          "urls": []
+          "urls": [],
+          "reason": "some-reason"
         },
         "description": "Listen for when the study wants to end",
         "parameters": [

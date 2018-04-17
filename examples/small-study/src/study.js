@@ -1,12 +1,16 @@
-/* eslint no-unused-vars: ["error", { "varsIgnorePattern": "studyConfig|allowEnroll" }]*/
+/* global addonWidgetId */
+/* eslint no-unused-vars: ["error", { "varsIgnorePattern": "getStudySetup|studySetup|shouldAllowEnroll" }]*/
 
-// put the config in the scope so that background can see it.
-const studyConfig = {
+/** Base for studySetup, as used by `browser.study.setup`.
+ *
+ * Will be augmented by 'getstudySetup'
+ */
+const studySetup = {
   // activeExperimentsTag
   activeExperimentName: "demoStudy",
 
   // uses shield|pioneer pipeline, watches those permissions
-  pattern: "shield",
+  studyType: "shield",
 
   // telemetry
   telemetry: {
@@ -57,26 +61,39 @@ const studyConfig = {
     },
   ],
 
+  //
   expire: {
     days: 14,
   },
 
-  // // Optional: testing overrides.
-  // testing: {
-  //  variation: "feature-active",
-  //  firstrunTimestamp: 500,
-  // }
+  // Optional: testing overrides.
+  // Set from prefs in getstudySetup
+  testing: {
+    variation: null,
+    firstrunTimestamp: null,
+  },
 };
 
-async function allowEnroll() {
-  // cached answer for 2nd run
+/** Determine, based on common and study-specific criteria, if enroll (first run)
+ * should proceed.
+ *
+ * False values imply that during first run, we should endStudy(`ineligible`)
+ *
+ * Add your own enrollment criteria as you see fit.
+ *
+ * (Guards against Normandy or other deployment mistakes or inadequacies)
+ *
+ * This implementation caches in localstore to speed up second run.
+ *
+ */
+async function shouldAllowEnroll() {
+  // Cached answer.  Used on 2nd run
   let allowed = await browser.storage.local.get("allowedToEnroll");
   if (allowed) return true;
 
   /* First run, we must calculate the answer.
      If false, the study will endStudy with 'ineligible' during `setup`
   */
-
   // could have other reasons to be eligible, such addons, prefs
   const dataPermissions = await browser.study.dataPermissions();
   allowed = dataPermissions.shield;
@@ -84,4 +101,22 @@ async function allowEnroll() {
   // cache the answer
   await browser.storage.local.set({ allowedToEnroll: allowed });
   return allowed;
+}
+
+/** Augment studySetup with a few async values
+ *
+ */
+async function getStudySetup() {
+  const id = browser.runtime.id;
+  const prefs = {
+    variation: `shield.${id}.variation`,
+    firstrunTimestamp: `shield.${id}.firstrun`,
+  };
+  prefs;
+  studySetup.allowEnroll = await shouldAllowEnroll();
+  studySetup.testing = {
+    // variation: await browser.prefs.getStringPref(prefs.variation);
+    // firstrunTimestamp: await browser.prefs.getStringPref(prefs.firstrunTimestamp);
+  };
+  return studySetup;
 }

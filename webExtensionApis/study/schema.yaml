@@ -18,11 +18,42 @@
 # - mention / decide how to handle all
 ---
 - namespace: study
-  description: Interface for Shield and Pioneer studies, for use by `background.js` scripts.
+  description: Interface for Shield and Pioneer studies.
   apiVersion: 5  # for dev use
   types:   # TODO @glind to actually get this back out of the schemas.json
-  - id: studySetup
+  - name: studySetup
     type: object
+    properties:
+      activeExperimentName:
+        type: string
+      studyType:
+        type: { "enum": ["shield", "pioneer"] }
+      expire:
+        type: 'object'
+        properties:
+          days:
+      endings:
+        type: "array"
+      weightedVariations:
+        type: "array"
+      logLevel:
+        type: "integer"
+      telemetry:
+        type: object
+        properties:
+          send:
+            type: boolean
+          removeTestingFlag:
+            type: boolean
+
+    required:
+    - activeExperimentName
+    - studyType
+    - expire
+    - endings
+    - weightedVariations
+    - logLevel
+    - telemetry
     additionalProperties: {"type": "any" }
   - id: weightedVariations
     type: array
@@ -31,20 +62,6 @@
     additionalProperties: {"type": "any" }
 
   functions:
-#  ## study lifecycle
-#  - name: setup
-#    type: function
-#    description: |
-#      Configure the study.
-#
-#      - Validate the study configuation, so that all fields needed for study lifecycle telemetry are present.
-#    async: true
-#    parameters:
-#    - name: studySetup
-#      $ref: studySetup
-#      # with a variation included.
-#      # expiration?  -- TODO No, this should be with usual webExt timers.
-
   - name: setup
     type: function
     async: true
@@ -52,13 +69,16 @@
       Attempt an setup/enrollment, with these effects:
 
       - sets 'studyType' as Shield or Pioneer
-      - Choose variation
-        - using testing.variation OR deterministicVariation
-          for the studyType from `weightedVariations`
+        - affects telemetry
+        - watches for dataPermission changes that should *always*
+          stop that kind of study
 
-      Now Telemetry is sendable.
+      - Use or choose variation
+        - `testing.variation` if present
+        - OR deterministicVariation
+          for the studyType using `weightedVariations`
 
-      - IFF firstRun[1]
+      - During firstRun[1] only:
         - set firstrunTimestamp pref value
         - send 'enter' ping
         - if `allowEnroll`, send 'install' ping
@@ -70,18 +90,18 @@
         - suggests alarming if `expire` is set.
 
       Returns:
-      - info:
-        - state
-        - variation
-        - firstrunTimestamp
-        - endings
-        - weightedVariations
-        - timeUntilExpireAtStartup
-        - activeExperimentName
+      - info object (see `info`)
 
-      Fires:
-      - study:ready
+      Telemetry Sent
+
+      Fires Events
+
+      (At most one of)
+      - study:ready  OR
       - study:endStudy
+
+      Prefs set
+      - first run
 
       Note:
       1. first run is evaluated based on a pref
@@ -90,7 +110,7 @@
     returns:  info
     parameters:
     - name: studyConfig
-      type: any
+      $ref: studyConfig # TODO, for now, making progress up above
 
   - name: endStudy
     type: function
@@ -106,19 +126,30 @@
     # should be anEnding Object
     returns: directions for what to do next by the addon
 
-  ## study information things
+  ## study / client information things
   - name: info
     type: function
     async: true
-    description: current study configuration, including set variation, activeExperimentName
-    defaultReturn: {variation: "styleA"}
+    description: |
+      current study configuration, including
+      - variation
+      - activeExperimentName
+      - timeUntilExpire
+      - firstrunTimestamp
+
+      But not:
+      - telemetry clientId
+
+      Throws Error if called before `browser.study.setup`
+
+    defaultReturn: {variation: "styleA"}  # TODO add rest
     parameters: []
 
-  - name: dataPermissions
+  - name: getDataPermissions
     type: function
     async: true
     description: object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'
-    defaultReturn: {shield: true, pioneer: false}
+    defaultReturn: {shield: true, pioneer: false, telemetry: true}
     parameters: []
 
   # telemetry related things
@@ -171,6 +202,9 @@
     parameters:
     - name: baseUrl
       type: string
+    - name: additionalFields
+      type: object
+      optional: true
 
   - name: validateJSON
     type: function
@@ -212,7 +246,7 @@
 
   - name: onEndStudy
     type: function
-    defaultReturn: {urls: []}
+    defaultReturn: {urls: [], reason: 'some-reason'}
     description: Listen for when the study wants to end
     parameters:  # for the callback
     - name: endingSteps
