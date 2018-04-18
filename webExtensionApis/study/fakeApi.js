@@ -38,7 +38,10 @@ this.study = class extends ExtensionAPI {
 Returns:
 - info object (see `info`)
 
-Telemetry Sent
+Telemetry Sent (First run only)
+
+  - enter
+  - install
 
 Fires Events
 
@@ -46,21 +49,58 @@ Fires Events
 - study:ready  OR
 - study:endStudy
 
-Prefs set
-- first run
+Preferences set
+- `shield.${runtime.id}.firstRunTimestamp`
 
 Note:
-1. first run is evaluated based on a pref  `shield.${id}.firstRunTimestamp`
-2. allowEnroll is ONLY used during first run (install)
+1. allowEnroll is ONLY used during first run (install)
  */
         setup: async function setup(studySetup) {
           console.log("called setup studySetup");
           return undefined;
         },
 
-        /* Optionally opens url, then ends study with pings ending, exit.  Study can only have one ending.  Uninstalls addon? */
-        endStudy: async function endStudy(anEndingName, anEndingObject) {
-          console.log("called endStudy anEndingName, anEndingObject");
+        /* Signal to browser.study that it should end.
+
+Usage scenarios:
+- addons defined
+  - postive endings (tried feature)
+  - negative endings (client clicked 'no thanks')
+  - expiration / timeout (feature should last for 14 days then uninstall)
+
+Logic:
+- If study has already ended, do nothing.
+- Else: END
+
+END:
+- record internally that study is ended.
+- disable all methods that rely on configuration / setup.
+- clear all prefs stored by `browser.study`
+- fire telemetry pings for:
+  - 'exit'
+  - the ending, one of:
+
+    "ineligible",
+    "expired",
+    "user-disable",
+    "ended-positive",
+    "ended-neutral",
+    "ended-negative",
+
+- augment all ending urls with query urls
+- fire 'study:end' event to `browser.study.onEndStudy` handlers.
+
+Addon should then do
+- open returned urls
+- feature specific cleanup
+- uninstall the addon
+
+Note:
+1.  calling this function multiple time is safe.
+`browser.study` will choose the
+ */
+        endStudy: async function endStudy(anEndingAlias, anEndingObject) {
+          console.log("called endStudy anEndingAlias, anEndingObject");
           return { urls: ["url1", "url2"], endingName: "some-reason" };
         },
 
@@ -77,37 +117,81 @@ Throws Error if called before `browser.study.setup`
  */
         info: async function info() {
           console.log("called info ");
-          return { variation: "styleA" };
+          return {
+            variation: "styleA",
+            firstRunTimestamp: 1523968204184,
+            activeExperimentName: "some experiment",
+            timeUntilExpire: null,
+          };
         },
 
         /* object of current dataPermissions with keys shield, pioneer, telemetry, 'ok' */
         getDataPermissions: async function getDataPermissions() {
           console.log("called getDataPermissions ");
-          return { shield: true, pioneer: false, telemetry: true };
+          return {
+            shield: true,
+            pioneer: false,
+            telemetry: true,
+            alwaysPrivateBrowsing: false,
+          };
         },
 
-        /* @TODO no description given */
-        sendTelemetry: async function sendTelemetry(payload, pingType) {
-          console.log("called sendTelemetry payload, pingType");
+        /* Send Telemetry using appropriate shield or pioneer methods.
+
+shield:
+- `shield-study-addon` ping, requires object string keys and string values
+
+pioneer:
+- TBD
+
+Note:
+- no conversions / coercion of data happens.
+
+Note:
+- undefined what happens if validation fails
+- undefined what happens when you try to send 'shield' from 'pioneer'
+
+TBD fix the parameters here.
+ */
+        sendTelemetry: async function sendTelemetry(payload) {
+          console.log("called sendTelemetry payload");
           return "undefined";
         },
 
-        /* for isEligible, testing, and other uses, get recent stored Telemetry pings */
-        getSentTelemetry: async function getSentTelemetry(
-          telemetrySelectionOptions,
-        ) {
-          console.log("called getSentTelemetry telemetrySelectionOptions");
+        /* Filter locally stored telemetry pings using these fields (if set)
+
+n:
+  if set, no more than `n` pings.
+type:
+  Array of 'ping types' (e.g., main, crash, shield-study-addon) to filter
+mininumTimestamp:
+  only pings after this timestamp.
+headersOnly:
+  boolean.  If true, only the 'headers' will be returned.
+
+Pings will be returned sorted by timestamp with most recent first.
+
+Usage scenarios:
+- enrollment / eligiblity using recent Telemetry behaviours or client environment
+- addon testing scenarios
+ */
+        filterTelemetry: async function filterTelemetry(filterTelemetryQuery) {
+          console.log("called filterTelemetry filterTelemetryQuery");
           return [{ pingType: "main" }];
         },
 
-        /* @TODO no description given */
+        /* Choose a element from `weightedVariations` array
+based on various hashes of clientId
+
+- shield:  TBD
+- pioneer: TBD
+ */
         deterministicVariation: async function deterministicVariation(
           weightedVariations,
           algorithm,
-          fraction,
         ) {
           console.log(
-            "called deterministicVariation weightedVariations, algorithm, fraction",
+            "called deterministicVariation weightedVariations, algorithm",
           );
           return "styleA";
         },

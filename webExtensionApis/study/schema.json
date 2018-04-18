@@ -12,9 +12,8 @@
             "type": "string"
           },
           "studyType": {
-            "type": {
-              "enum": ["shield", "pioneer"]
-            }
+            "type": "string",
+            "enum": ["shield", "pioneer"]
           },
           "expire": {
             "type": "object",
@@ -48,25 +47,56 @@
         "required": [
           "activeExperimentName",
           "studyType",
-          "expire",
           "endings",
           "weightedVariations",
           "logLevel",
           "telemetry"
         ],
-        "additionalProperties": {
-          "type": "any"
-        }
+        "additionalProperties": {}
       },
       {
         "id": "weightedVariations",
-        "type": "array"
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "weight": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "required": ["name", "weight"]
+        }
       },
       {
         "id": "anEnding",
         "type": "object",
         "additionalProperties": {
           "type": "any"
+        }
+      },
+      {
+        "id": "filterTelemetryQuery",
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": ["array"],
+            "items": {
+              "type": "string"
+            }
+          },
+          "n": {
+            "type": "integer"
+          },
+          "mininumTimestamp": {
+            "type": "number"
+          },
+          "headersOnly": {
+            "type": "boolean"
+          }
         }
       }
     ],
@@ -76,7 +106,7 @@
         "type": "function",
         "async": true,
         "description":
-          "Attempt an setup/enrollment, with these effects:\n\n- sets 'studyType' as Shield or Pioneer\n  - affects telemetry\n  - watches for dataPermission changes that should *always*\n    stop that kind of study\n\n- Use or choose variation\n  - `testing.variation` if present\n  - OR deterministicVariation\n    for the studyType using `weightedVariations`\n\n- During firstRun[1] only:\n  - set firstRunTimestamp pref value\n  - send 'enter' ping\n  - if `allowEnroll`, send 'install' ping\n  - else endStudy(\"ineligible\") and return\n\n- Every Run\n  - setActiveExperiment(studySetup)\n  - monitor shield | pioneer permission endings\n  - suggests alarming if `expire` is set.\n\nReturns:\n- info object (see `info`)\n\nTelemetry Sent\n\nFires Events\n\n(At most one of)\n- study:ready  OR\n- study:endStudy\n\nPrefs set\n- first run\n\nNote:\n1. first run is evaluated based on a pref  `shield.${id}.firstRunTimestamp`\n2. allowEnroll is ONLY used during first run (install)\n",
+          "Attempt an setup/enrollment, with these effects:\n\n- sets 'studyType' as Shield or Pioneer\n  - affects telemetry\n  - watches for dataPermission changes that should *always*\n    stop that kind of study\n\n- Use or choose variation\n  - `testing.variation` if present\n  - OR deterministicVariation\n    for the studyType using `weightedVariations`\n\n- During firstRun[1] only:\n  - set firstRunTimestamp pref value\n  - send 'enter' ping\n  - if `allowEnroll`, send 'install' ping\n  - else endStudy(\"ineligible\") and return\n\n- Every Run\n  - setActiveExperiment(studySetup)\n  - monitor shield | pioneer permission endings\n  - suggests alarming if `expire` is set.\n\nReturns:\n- info object (see `info`)\n\nTelemetry Sent (First run only)\n\n  - enter\n  - install\n\nFires Events\n\n(At most one of)\n- study:ready  OR\n- study:endStudy\n\nPreferences set\n- `shield.${runtime.id}.firstRunTimestamp`\n\nNote:\n1. allowEnroll is ONLY used during first run (install)\n",
         "returns": "info",
         "parameters": [
           {
@@ -94,10 +124,10 @@
           "endingName": "some-reason"
         },
         "description":
-          "Optionally opens url, then ends study with pings ending, exit.  Study can only have one ending.  Uninstalls addon?",
+          "Signal to browser.study that it should end.\n\nUsage scenarios:\n- addons defined\n  - postive endings (tried feature)\n  - negative endings (client clicked 'no thanks')\n  - expiration / timeout (feature should last for 14 days then uninstall)\n\nLogic:\n- If study has already ended, do nothing.\n- Else: END\n\nEND:\n- record internally that study is ended.\n- disable all methods that rely on configuration / setup.\n- clear all prefs stored by `browser.study`\n- fire telemetry pings for:\n  - 'exit'\n  - the ending, one of:\n\n    \"ineligible\",\n    \"expired\",\n    \"user-disable\",\n    \"ended-positive\",\n    \"ended-neutral\",\n    \"ended-negative\",\n\n- augment all ending urls with query urls\n- fire 'study:end' event to `browser.study.onEndStudy` handlers.\n\nAddon should then do\n- open returned urls\n- feature specific cleanup\n- uninstall the addon\n\nNote:\n1.  calling this function multiple time is safe.\n`browser.study` will choose the\n",
         "parameters": [
           {
-            "name": "anEndingName",
+            "name": "anEndingAlias",
             "type": ["string", "null"]
           },
           {
@@ -106,7 +136,7 @@
             "optional": true
           }
         ],
-        "returns": "directions for what to do next by the addon"
+        "returns": "Object directions for what to do next by the addon"
       },
       {
         "name": "info",
@@ -115,7 +145,10 @@
         "description":
           "current study configuration, including\n- variation\n- activeExperimentName\n- timeUntilExpire\n- firstRunTimestamp\n\nBut not:\n- telemetry clientId\n\nThrows Error if called before `browser.study.setup`\n",
         "defaultReturn": {
-          "variation": "styleA"
+          "variation": "styleA",
+          "firstRunTimestamp": 1523968204184,
+          "activeExperimentName": "some experiment",
+          "timeUntilExpire": null
         },
         "parameters": []
       },
@@ -128,66 +161,62 @@
         "defaultReturn": {
           "shield": true,
           "pioneer": false,
-          "telemetry": true
+          "telemetry": true,
+          "alwaysPrivateBrowsing": false
         },
         "parameters": []
       },
       {
         "name": "sendTelemetry",
         "type": "function",
+        "description":
+          "Send Telemetry using appropriate shield or pioneer methods.\n\nshield:\n- `shield-study-addon` ping, requires object string keys and string values\n\npioneer:\n- TBD\n\nNote:\n- no conversions / coercion of data happens.\n\nNote:\n- undefined what happens if validation fails\n- undefined what happens when you try to send 'shield' from 'pioneer'\n\nTBD fix the parameters here.\n",
         "async": true,
         "parameters": [
           {
             "name": "payload",
             "type": "object"
-          },
-          {
-            "name": "pingType",
-            "type": "string"
           }
         ],
         "defaultReturn": "undefined",
         "returns": "Nothing"
       },
       {
-        "name": "getSentTelemetry",
+        "name": "filterTelemetry",
         "type": "function",
         "async": true,
         "description":
-          "for isEligible, testing, and other uses, get recent stored Telemetry pings",
+          "Filter locally stored telemetry pings using these fields (if set)\n\nn:\n  if set, no more than `n` pings.\ntype:\n  Array of 'ping types' (e.g., main, crash, shield-study-addon) to filter\nmininumTimestamp:\n  only pings after this timestamp.\nheadersOnly:\n  boolean.  If true, only the 'headers' will be returned.\n\nPings will be returned sorted by timestamp with most recent first.\n\nUsage scenarios:\n- enrollment / eligiblity using recent Telemetry behaviours or client environment\n- addon testing scenarios\n",
         "defaultReturn": [
           {
             "pingType": "main"
           }
         ],
-        "returns": "Array of Telemetry pings",
+        "returns":
+          "Array of locally stored sent Telemetry pings matching the filter",
         "parameters": [
           {
-            "name": "telemetrySelectionOptions",
-            "type": "any",
-            "description": "`{ type, n, minTimestamp, headersOnly }`"
+            "name": "filterTelemetryQuery",
+            "$ref": "filterTelemetryQuery"
           }
         ]
       },
       {
         "name": "deterministicVariation",
+        "description":
+          "Choose a element from `weightedVariations` array\nbased on various hashes of clientId\n\n- shield:  TBD\n- pioneer: TBD\n",
         "type": "function",
         "async": true,
         "defaultReturn": "styleA",
-        "returns": "Name of a variation from weightedVariations",
         "parameters": [
           {
             "name": "weightedVariations",
-            "type": "object"
+            "$ref": "weightedVariations"
           },
           {
             "name": "algorithm",
-            "type": "string"
-          },
-          {
-            "name": "fraction",
-            "type": "Number",
-            "optional": true
+            "type": "string",
+            "enum": ["shield", "pioneer"]
           }
         ]
       },

@@ -1,13 +1,27 @@
 /* global addonWidgetId */
-/* eslint no-unused-vars: ["error", { "varsIgnorePattern": "getStudySetup|studySetup|shouldAllowEnroll" }]*/
+/* eslint no-unused-vars: ["error", { "varsIgnorePattern": "getStudySetup" }]*/
+
+/**
+ *  Overview:
+ *
+ *  - constructs a well-formated `studySetup` by use by `browser.study.setup`
+ *  - mostly declarative, except that some fields are field at runtime
+ *    asynchronously.
+ *
+ *  Advanced feaures:
+ *  - testing overrides from preferences
+ *  - expiration time
+ *  - some user defined endings.
+ *  - study defined 'shouldAllowEnroll' logic.
+ */
 
 /** Base for studySetup, as used by `browser.study.setup`.
  *
  * Will be augmented by 'getstudySetup'
  */
 const studySetup = {
-  // activeExperimentsTag
-  activeExperimentName: "demoStudy",
+  // telemetryEnvirment.setActiveExperiment
+  activeExperimentName: browser.runtime.id,
 
   // uses shield|pioneer pipeline, watches those permissions
   studyType: "shield",

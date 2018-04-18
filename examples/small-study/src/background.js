@@ -1,11 +1,41 @@
 /* global getStudySetup */
 
+/**
+ *  Goal:  Implement an instrumented feature using
+ *  `browser.study` API
+ *
+ *  Every runtime:
+ *  - instantiate the feature
+ *
+ *    - listen for `onEndStudy` (study endings)
+ *    - listen for `study.onReady`
+ *    - attempt to `browser.study.setup` the study using our studySetup
+ *
+ *      - will fire EITHER endStudy (expired, ineligible)
+ *      - onReady
+ *      - (see docs for `browser.study.setup`)
+ *
+ *    - onReady: configure the feature to match the `variation` study selected
+ *    - or, if we got an `onEndStudy` cleanup and uninstall.
+ *
+ *    During the feature:
+ *    - `sendTelemetry` to send pings
+ *    - `endStudy` to force an ending (for positive or negative reasons!)
+ *
+ *  Interesting things to try next:
+ *  - `browser.study.validateJSON` your pings before sending
+ *  - `endStudy` different endings in response to user action
+ *  - force an override of timestamp to see an `expired`
+ *  - unset the shield or telemetry prefs during runtime to trigger an ending.
+ *
+ */
+
 class FeatureToInstrument {
   /**
-   * listen to onEndStudy, onReady
+   * Listen to onEndStudy, onReady
    * `browser.study.setup` fires onReady OR onEndStudy
    *
-   * call 'enableFeature' to actually do the ui.
+   * call `this.enableFeature` to actually do the ui.
    */
   constructor(studySetup) {
     browser.study.onEndStudy.addListener(this.handleStudyEnding);

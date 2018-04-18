@@ -22,7 +22,6 @@
     "fx-runner": "^1.0.7",
     "geckodriver": "^1.11.0",
     "get-firefox": "^2.1.0",
-    "json-schema-deref-sync": "^0.4.0",
     "mocha": "^3.4.2",
     "npm-run-all": "^4.1.2",
     "pre-commit": "^1.2.2",

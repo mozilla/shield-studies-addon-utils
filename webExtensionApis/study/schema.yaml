@@ -27,7 +27,8 @@
       activeExperimentName:
         type: string
       studyType:
-        type: { "enum": ["shield", "pioneer"] }
+        type: string
+        enum: ["shield", "pioneer"]
       expire:
         type: 'object'
         properties:
@@ -50,17 +51,35 @@
     required:
     - activeExperimentName
     - studyType
-    - expire
     - endings
     - weightedVariations
     - logLevel
     - telemetry
-    additionalProperties: {"type": "any" }
+    additionalProperties: {}
+
   - id: weightedVariations
     type: array
+    items:
+      type: 'object'
+      properties:
+        name:
+          type: "string"
+        weight:
+          type: "number"
+          minimum: 0
+      required: ["name", "weight"]
+
   - id: anEnding
     type: object
     additionalProperties: {"type": "any" }
+
+  - id: filterTelemetryQuery
+    type: object
+    properties:
+      type: {type: ['array'], items: {type:'string'}}
+      n: {type: integer}
+      mininumTimestamp: {type: number}
+      headersOnly: {type: boolean}
 
   functions:
   - name: setup
@@ -93,7 +112,10 @@
       Returns:
       - info object (see `info`)
 
-      Telemetry Sent
+      Telemetry Sent (First run only)
+
+        - enter
+        - install
 
       Fires Events
 
@@ -101,12 +123,11 @@
       - study:ready  OR
       - study:endStudy
 
-      Prefs set
-      - first run
+      Preferences set
+      - `shield.${runtime.id}.firstRunTimestamp`
 
       Note:
-      1. first run is evaluated based on a pref  `shield.${id}.firstRunTimestamp`
-      2. allowEnroll is ONLY used during first run (install)
+      1. allowEnroll is ONLY used during first run (install)
 
     returns:  info
     parameters:
@@ -117,15 +138,54 @@
     type: function
     async: true
     defaultReturn: {urls: ['url1','url2'], endingName:'some-reason'}
-    description: Optionally opens url, then ends study with pings ending, exit.  Study can only have one ending.  Uninstalls addon?
+    description: |
+      Signal to browser.study that it should end.
+
+      Usage scenarios:
+      - addons defined
+        - postive endings (tried feature)
+        - negative endings (client clicked 'no thanks')
+        - expiration / timeout (feature should last for 14 days then uninstall)
+
+      Logic:
+      - If study has already ended, do nothing.
+      - Else: END
+
+      END:
+      - record internally that study is ended.
+      - disable all methods that rely on configuration / setup.
+      - clear all prefs stored by `browser.study`
+      - fire telemetry pings for:
+        - 'exit'
+        - the ending, one of:
+
+          "ineligible",
+          "expired",
+          "user-disable",
+          "ended-positive",
+          "ended-neutral",
+          "ended-negative",
+
+      - augment all ending urls with query urls
+      - fire 'study:end' event to `browser.study.onEndStudy` handlers.
+
+      Addon should then do
+      - open returned urls
+      - feature specific cleanup
+      - uninstall the addon
+
+      Note:
+      1.  calling this function multiple time is safe.
+      `browser.study` will choose the
+
     parameters:
-    - name: anEndingName
+    - name: anEndingAlias
       type: ['string', 'null']
     - name: anEndingObject
       type: object
       optional: true
     # should be anEnding Object
-    returns: directions for what to do next by the addon
+    returns: Object directions for what to do next by the addon
 
   ## study / client information things
   - name: info
@@ -143,58 +203,95 @@
 
       Throws Error if called before `browser.study.setup`
 
-    defaultReturn: {variation: "styleA"}  # TODO add rest
+    defaultReturn: {variation: "styleA", firstRunTimestamp: 1523968204184, activeExperimentName: "some experiment", timeUntilExpire: null}  # TODO add rest
     parameters: []
 
   - name: getDataPermissions
     type: function
     async: true
     description: object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'
-    defaultReturn: {shield: true, pioneer: false, telemetry: true}
+    defaultReturn: {shield: true, pioneer: false, telemetry: true, alwaysPrivateBrowsing: false}
     parameters: []
 
   # telemetry related things
   - name: sendTelemetry
     type: function
+    description: |
+      Send Telemetry using appropriate shield or pioneer methods.
+
+      shield:
+      - `shield-study-addon` ping, requires object string keys and string values
+
+      pioneer:
+      - TBD
+
+      Note:
+      - no conversions / coercion of data happens.
+
+      Note:
+      - undefined what happens if validation fails
+      - undefined what happens when you try to send 'shield' from 'pioneer'
+
+      TBD fix the parameters here.
+
     async: true
     parameters:
     - name: payload
       type: object  # TODO copy existing?
-    - name: pingType
-      type: string
+
     defaultReturn: undefined  # exception if out of policy based on config
     returns:  Nothing
 
-  - name: getSentTelemetry
+  - name: filterTelemetry
     type: function
     async: true
-    description:  for isEligible, testing, and other uses, get recent stored Telemetry pings
+    description: |
+      Filter locally stored telemetry pings using these fields (if set)
+
+      n:
+        if set, no more than `n` pings.
+      type:
+        Array of 'ping types' (e.g., main, crash, shield-study-addon) to filter
+      mininumTimestamp:
+        only pings after this timestamp.
+      headersOnly:
+        boolean.  If true, only the 'headers' will be returned.
+
+      Pings will be returned sorted by timestamp with most recent first.
+
+      Usage scenarios:
+      - enrollment / eligiblity using recent Telemetry behaviours or client environment
+      - addon testing scenarios
+
     defaultReturn: [{pingType: 'main'}]
-    returns:  Array of Telemetry pings
+    returns:  Array of locally stored sent Telemetry pings matching the filter
     parameters:
-    - name: telemetrySelectionOptions
-      type: any
-      description: `{ type, n, minTimestamp, headersOnly }`
+    - name: filterTelemetryQuery
+      $ref: filterTelemetryQuery
 
   # utilities
   - name: deterministicVariation
+    description: |
+      Choose a element from `weightedVariations` array
+      based on various hashes of clientId
+
+      - shield:  TBD
+      - pioneer: TBD
+
     type: function
     async: true
     defaultReturn: "styleA"
-    returns: Name of a variation from weightedVariations
     parameters:
     - name: weightedVariations
-      type: object
+      $ref: weightedVariations
     - name: algorithm
       type: string
-    - name: fraction
-      type: Number
-      optional: true
+      enum: ['shield', 'pioneer']
 
   - name: surveyUrl
     type: function
     async: true
-    description : |
+    description: |
       Format url with study covariate queryArgs appended / mixed in.
 
       Use this for constructing midpoint surveys.

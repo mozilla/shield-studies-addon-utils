@@ -28,8 +28,21 @@
           "name": {
             "type": "string"
           },
-          "type": {}
+          "type": {
+            "type": ["string", "array"]
+          },
+          "$ref": {
+            "type": "string"
+          }
         },
+        "oneOf": [
+          {
+            "required": ["type"]
+          },
+          {
+            "required": ["$ref"]
+          }
+        ],
         "required": ["name"]
       }
     },
