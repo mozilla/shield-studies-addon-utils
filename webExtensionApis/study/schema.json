@@ -309,6 +309,21 @@
             "descripton": "a valid jsonschema object"
           }
         ]
+      },
+      {
+        "name": "log",
+        "type": "function",
+        "async": true,
+        "descripton": "Log to the browser.study.logger.  Affected by study logLevel",
+        "parameters": [
+          {
+            "name": "thingToLog",
+            "type": [
+              "string",
+              "array"
+            ]
+          }
+        ]
       }
     ],
     "events": [

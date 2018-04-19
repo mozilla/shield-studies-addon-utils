@@ -197,6 +197,12 @@ Use this for constructing midpoint surveys.
         return {"valid":true,"errors":[]};
       },
 
+      /* @TODO no description given */
+      log: async function log  ( thingToLog ) {
+        console.log("called log thingToLog");
+        return undefined;
+      },
+
         
       // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
       /* Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation. */
