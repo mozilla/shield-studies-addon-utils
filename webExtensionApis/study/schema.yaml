@@ -21,23 +21,50 @@
   description: Interface for Shield and Pioneer studies.
   apiVersion: 5  # for dev use
   types:   # TODO @glind to actually get this back out of the schemas.json
+  - id: studyTypesEnum
+    type: string
+    enum: ['shield', 'pioneer']
+    testcase:  'shield'
+
+  - id: weightedVariations
+    type: array
+    items:
+      type: 'object'
+      properties:
+        name:
+          type: "string"
+        weight:
+          type: "number"
+          minimum: 0
+      required: ["name", "weight"]
+    testcase: [{name: feature-active, weight: 1.5}]
+
+  - id: anEndingObject
+    # TBD, this is incomplete, and seems a little rocky
+    # Should endings be a list?  a map?
+    # goal make endStudy and this agree :)
+    # what to name the 'return' from endStudy?  EndingInstructions
+    type: object
+    additionalProperties: true
+    testcase: {baseUrls: ['some.url'], endingName: 'anEnding', endingClass: 'ended-positive'}
+
   - id: studySetup
     type: object
     properties:
       activeExperimentName:
         type: string
       studyType:
-        type: "string"
-        enum: ["shield", "pioneer"]
+        $ref: studyTypesEnum
       expire:
         type: 'object'
         properties:
           days:
             type: 'integer'
       endings:
-        type: "array"
+        type: object
+        additionalProperties: true
       weightedVariations:
-        type: "array"
+        $ref: 'weightedVariations'
       logLevel:
         type: "integer"
         minimum: 0
@@ -56,34 +83,17 @@
     - weightedVariations
     - logLevel
     - telemetry
-    additionalProperties: {}
+    additionalProperties: true
     testcase: {
       activeExperimentName: aStudy,
       studyType: 'shield',
       expire: { "days": 10},
-      endings: [],
+      # TODO: sort out endings soon
+      endings: {anEnding: {baseUrl: 'some.url'}},
       logLevel: 30,
       weightedVariations: [{name: feature-active, weight: 1.5}],
       telemetry: {  send: false, removeTestingFlag: false}
     }
-
-  - id: weightedVariations
-    type: array
-    items:
-      type: 'object'
-      properties:
-        name:
-          type: "string"
-        weight:
-          type: "number"
-          minimum: 0
-      required: ["name", "weight"]
-    testcase: [{name: feature-active, weight: 1.5}]
-
-  - id: anEnding
-    type: object
-    additionalProperties: true
-    testcase: {baseUrls: ['some.url'], endingName: 'anEnding', endingClass: 'ended-positive'}
 
   - id: filterTelemetryQuery
     type: object
@@ -294,8 +304,7 @@
     - name: weightedVariations
       $ref: weightedVariations
     - name: algorithm
-      type: string
-      enum: ['shield', 'pioneer']
+      $ref: studyTypesEnum
 
   - name: surveyUrl
     type: function

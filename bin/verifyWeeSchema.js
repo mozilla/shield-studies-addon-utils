@@ -1,24 +1,30 @@
 
 /**
-  * given a propose wee interface schama.json, lint and check it for
+  * given a proposed wee interface `schema.json`, lint and check it for
   * validity
+  *
+  * If exist, validate all `types` against `testcase`.
   */
-// given a proposed WEE schema attept to validate it, including.
+
 
 const path = require("path");
 
 const proposed = require(path.resolve(process.argv[2]));
-// const weeSchemaSchema = require(path.resolve("./wee-schema-schema.json"));
-
 const ajv = new require("ajv")()
 
-// 1. is eevery 'type' and every 'parameter' valid
+const wee = require(path.resolve(path.join(__dirname, 'wee-schema-schema.json')));
+
+let clean = true;
+
+// 1. is every 'type' valid jsonschema
+//    do their testcase (if any) pass?
 for (let i in proposed) {
   let ns = proposed[i];
   for (let j in ns.types || []) {
     let type = ns.types[j];
     let valid = ajv.validateSchema(type);
     if (!valid) {
+      clean = false;
       console.error(`# ERRORS IN ${i}:${j} ${ns.namespace}.types[${j}] "${type.id}"`)
       console.error(ajv.errors)
     }
@@ -27,6 +33,7 @@ for (let i in proposed) {
     if (!type.testcase) continue
     valid = ajv.validate(type, type.testcase);
     if (!valid) {
+      clean = false;
       console.error(`# testcase failed IN ${i}:${j} ${ns.namespace}.types[${j}] "${type.id}"`)
       console.error(ajv.errors)
     }
@@ -34,8 +41,7 @@ for (let i in proposed) {
 
 }
 
-
-// 2. is every 'parameter' valid
+// 2. Does every (function|event) 'parameter' have a valid jsonschema?
 for (let i in proposed) {
   let ns = proposed[i];
   for (let j in ns.functions || []) {
@@ -44,6 +50,7 @@ for (let i in proposed) {
       let parameter = type.parameters[k]
       let valid = ajv.validateSchema(parameter);
       if (!valid) {
+        clean = false;
         console.error(`# ERRORS IN ${i}:${j} ${type.name} ${ns.namespace}.functions[${j}].paramters[${k}]`)
         console.error(ajv.errors)
         debugger;
@@ -56,10 +63,20 @@ for (let i in proposed) {
       let parameter = type.parameters[k]
       let valid = ajv.validateSchema(parameter);
       if (!valid) {
+        clean = false;
         console.error(`# ERRORS IN ${i}:${j} ${type.name} ${ns.namespace}.events[${j}].parameters[${k}]`)
         console.error(ajv.errors)
       }
     }
   }
 }
+
+
+// 3.  Check it against our not great WEE schema for WEE schemas.
+if (!ajv.validate(wee, proposed)) {
+  console.error(ajv.errors);
+}
+
+if (clean) (console.log(`OK: verifyWeeSchema ${process.argv[2]}`))
+
 

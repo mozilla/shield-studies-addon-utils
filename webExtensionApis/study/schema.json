@@ -5,77 +5,13 @@
     "apiVersion": 5,
     "types": [
       {
-        "id": "studySetup",
-        "type": "object",
-        "properties": {
-          "activeExperimentName": {
-            "type": "string"
-          },
-          "studyType": {
-            "type": "string",
-            "enum": [
-              "shield",
-              "pioneer"
-            ]
-          },
-          "expire": {
-            "type": "object",
-            "properties": {
-              "days": {
-                "type": "integer"
-              }
-            }
-          },
-          "endings": {
-            "type": "array"
-          },
-          "weightedVariations": {
-            "type": "array"
-          },
-          "logLevel": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "telemetry": {
-            "type": "object",
-            "properties": {
-              "send": {
-                "type": "boolean"
-              },
-              "removeTestingFlag": {
-                "type": "boolean"
-              }
-            }
-          }
-        },
-        "required": [
-          "activeExperimentName",
-          "studyType",
-          "endings",
-          "weightedVariations",
-          "logLevel",
-          "telemetry"
+        "id": "studyTypesEnum",
+        "type": "string",
+        "enum": [
+          "shield",
+          "pioneer"
         ],
-        "additionalProperties": {},
-        "testcase": {
-          "activeExperimentName": "aStudy",
-          "studyType": "shield",
-          "expire": {
-            "days": 10
-          },
-          "endings": [],
-          "logLevel": 30,
-          "weightedVariations": [
-            {
-              "name": "feature-active",
-              "weight": 1.5
-            }
-          ],
-          "telemetry": {
-            "send": false,
-            "removeTestingFlag": false
-          }
-        }
+        "testcase": "shield"
       },
       {
         "id": "weightedVariations",
@@ -104,7 +40,7 @@
         ]
       },
       {
-        "id": "anEnding",
+        "id": "anEndingObject",
         "type": "object",
         "additionalProperties": true,
         "testcase": {
@@ -113,6 +49,80 @@
           ],
           "endingName": "anEnding",
           "endingClass": "ended-positive"
+        }
+      },
+      {
+        "id": "studySetup",
+        "type": "object",
+        "properties": {
+          "activeExperimentName": {
+            "type": "string"
+          },
+          "studyType": {
+            "$ref": "studyTypesEnum"
+          },
+          "expire": {
+            "type": "object",
+            "properties": {
+              "days": {
+                "type": "integer"
+              }
+            }
+          },
+          "endings": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "weightedVariations": {
+            "$ref": "weightedVariations"
+          },
+          "logLevel": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "telemetry": {
+            "type": "object",
+            "properties": {
+              "send": {
+                "type": "boolean"
+              },
+              "removeTestingFlag": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "required": [
+          "activeExperimentName",
+          "studyType",
+          "endings",
+          "weightedVariations",
+          "logLevel",
+          "telemetry"
+        ],
+        "additionalProperties": true,
+        "testcase": {
+          "activeExperimentName": "aStudy",
+          "studyType": "shield",
+          "expire": {
+            "days": 10
+          },
+          "endings": {
+            "anEnding": {
+              "baseUrl": "some.url"
+            }
+          },
+          "logLevel": 30,
+          "weightedVariations": [
+            {
+              "name": "feature-active",
+              "weight": 1.5
+            }
+          ],
+          "telemetry": {
+            "send": false,
+            "removeTestingFlag": false
+          }
         }
       },
       {
@@ -257,11 +267,7 @@
           },
           {
             "name": "algorithm",
-            "type": "string",
-            "enum": [
-              "shield",
-              "pioneer"
-            ]
+            "$ref": "studyTypesEnum"
           }
         ]
       },

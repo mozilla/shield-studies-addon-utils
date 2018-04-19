@@ -1,5 +1,7 @@
 {
-  "$id": "http://example.com/example.json",
+  "description":  "Derived from Schemas.jsm behaviour.  Incomplete, but tries to catch some common errors",
+  "author":  "Gregg Lind",
+  "status":  "Provisional, take with lots of salt, throw away if we get a real one",
   "type": "array",
   "definitions": {
     "API": {
@@ -66,8 +68,7 @@
     },
     "aType": {
       "type": "object",
-      "properties": {},
-      "required": []
+      "properties": {}
     },
     "aFunction": {
       "type": "object",

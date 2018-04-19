@@ -1,21 +1,10 @@
 /* eslint-env node */
 
-/*
-this.prefs = class extends ExtensionAPI {
-  getAPI(context) {
-    return {
-      prefs: {
-        async get(preelemame) {
-          return "getting";
-        },
-        async set(preelemame, value) {
-          return "set";
-        }
-      }
-    };
-  }
-}
-*/
+/** Goal: create an Example (fake) Api from
+  * a webExtension Experiment schema.json file
+  *
+  */
+const path = require("path");
 
 const FILEHEADER = `/* eslint-disable */
 
@@ -28,7 +17,7 @@ const { EventManager } = ExtensionCommon;
 const { EventEmitter } = ExtensionUtils;
 `;
 
-function schema2shim(schemaApiJSON) {
+function schema2fakeApi(schemaApiJSON) {
   process.stdout.write(FILEHEADER);
 
   for (const i in schemaApiJSON) {
@@ -86,5 +75,4 @@ this.${ns} = class extends ExtensionAPI {
   }
 }
 
-const path = require("path");
-schema2shim(require(path.resolve(process.argv[2])));
+schema2fakeApi(require(path.resolve(process.argv[2])));
