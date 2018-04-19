@@ -13,6 +13,4 @@ ADDON_SRC_PATH="examples/small-study/src"
 
 # bundle the study web extension experiment
 mkdir -p $ADDON_SRC_PATH/privileged/study
-cp $WEBEXTAPIS_PATH/study/api.js $ADDON_SRC_PATH/privileged/study/api.js
-cp $WEBEXTAPIS_PATH/study/fakeApi.js $ADDON_SRC_PATH/privileged/study/fakeApi.js
-cp $WEBEXTAPIS_PATH/study/schema.json $ADDON_SRC_PATH/privileged/study/schema.json
+cp -rp $WEBEXTAPIS_PATH/study/* $ADDON_SRC_PATH/privileged/study
