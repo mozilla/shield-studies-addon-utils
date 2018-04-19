@@ -8,15 +8,39 @@
 
 APIs and tooling that allows add-on developers to build [Shield/Pioneer](https://wiki.mozilla.org/Firefox/Shield/Shield_Studies) ([Normandy](https://wiki.mozilla.org/Firefox/Shield#Normandy_-_User_Profile_Matching_and_Recipe_Deployment)) study add-ons efficiently.
 
+Provides:
+1.  `browser.study` webExtension Experiment api
+2.  Tools for testing.
+
 ## Overview
 
 * `webExtensionApis` - Firefox WebExtension Experiments APIs providing capabilities for study add-ons that are yet not available in the built-in WebExtension APIs
-* `testUtils` - Test utils (helper classes to write functional/unit tests for your study add-on)
-* `examples` - Tested and verified example add-ons using the WebExtension Experiments APIs and test utils
+* `testUtils` - Test utilities (helper classes to write functional/unit tests for your study add-on)
+* `examples` - Tested and verified example add-ons using the WebExtension Experiments APIs and test utilities
 
 ## Get started
 
-Check out [mozilla/shield-studies-addon-template/](https://github.com/mozilla/shield-studies-addon-template/) to get started with an example study where shield-studies-addon-utils is already installed and configured.
+1.  Explore the `small-study`:
+
+  + [./webExtensions/study/api.md] 
+
+    Documentation of the API.  Notice that there are `functions` and `events`.
+
+  + [./examples/small-study/src/manifest.json]
+
+    Notice the `experiment_apis` section.  This maps `browser.study` to the 
+    privileged api code.  (See details below)
+
+  + [./examples/small-study/src/study.js]
+
+    Construct a studyConfig usable by `browser.study`
+
+  + [./examples/small-study/src/backaroiund.js] 
+
+    Using the `browser.study` api within a small instrumented feature.
+
+2. **Go Bigger** Check out [mozilla/shield-studies-addon-template/](https://github.com/mozilla/shield-studies-addon-template/) to get started with an example study where shield-studies-addon-utils is already installed and configured.
+
 
 ## Installing the utils in your add-on
 
