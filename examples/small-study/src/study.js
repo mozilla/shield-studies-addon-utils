@@ -17,10 +17,10 @@
 
 /** Base for studySetup, as used by `browser.study.setup`.
  *
- * Will be augmented by 'getstudySetup'
+ * Will be augmented by 'getStudySetup'
  */
 const studySetup = {
-  // telemetryEnvirment.setActiveExperiment
+  // telemetryEnvironment.setActiveExperiment
   activeExperimentName: browser.runtime.id,
 
   // uses shield|pioneer pipeline, watches those permissions

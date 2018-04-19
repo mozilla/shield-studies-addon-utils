@@ -126,7 +126,7 @@
         }
       },
       {
-        "id": "filterTelemetryQuery",
+        "id": "searchTelemetryQuery",
         "type": "object",
         "properties": {
           "type": {
@@ -163,7 +163,7 @@
         "name": "setup",
         "type": "function",
         "async": true,
-        "description": "Attempt an setup/enrollment, with these effects:\n\n- sets 'studyType' as Shield or Pioneer\n  - affects telemetry\n  - watches for dataPermission changes that should *always*\n    stop that kind of study\n\n- Use or choose variation\n  - `testing.variation` if present\n  - OR deterministicVariation\n    for the studyType using `weightedVariations`\n\n- During firstRun[1] only:\n  - set firstRunTimestamp pref value\n  - send 'enter' ping\n  - if `allowEnroll`, send 'install' ping\n  - else endStudy(\"ineligible\") and return\n\n- Every Run\n  - setActiveExperiment(studySetup)\n  - monitor shield | pioneer permission endings\n  - suggests alarming if `expire` is set.\n\nReturns:\n- info object (see `info`)\n\nTelemetry Sent (First run only)\n\n  - enter\n  - install\n\nFires Events\n\n(At most one of)\n- study:ready  OR\n- study:endStudy\n\nPreferences set\n- `shield.${runtime.id}.firstRunTimestamp`\n\nNote:\n1. allowEnroll is ONLY used during first run (install)\n",
+        "description": "Attempt an setup/enrollment, with these effects:\n\n- sets 'studyType' as Shield or Pioneer\n  - affects telemetry\n  - watches for dataPermission changes that should *always*\n    stop that kind of study\n\n- Use or choose variation\n  - `testing.variation` if present\n  - OR deterministicVariation\n    for the studyType using `weightedVariations`\n\n- During firstRun[1] only:\n  - set firstRunTimestamp pref value\n  - send 'enter' ping\n  - if `allowEnroll`, send 'install' ping\n  - else endStudy(\"ineligible\") and return\n\n- Every Run\n  - setActiveExperiment(studySetup)\n  - monitor shield | pioneer permission endings\n  - suggests alarming if `expire` is set.\n\nReturns:\n- studyInfo object (see `getStudyInfo`)\n\nTelemetry Sent (First run only)\n\n  - enter\n  - install\n\nFires Events\n\n(At most one of)\n- study:onReaday  OR\n- study:onEndStudy\n\nPreferences set\n- `shield.${runtime.id}.firstRunTimestamp`\n\nNote:\n1. allowEnroll is ONLY used during first run (install)\n",
         "parameters": [
           {
             "name": "studySetup",
@@ -199,7 +199,7 @@
         ]
       },
       {
-        "name": "info",
+        "name": "getStudyInfo",
         "type": "function",
         "async": true,
         "description": "current study configuration, including\n- variation\n- activeExperimentName\n- timeUntilExpire\n- firstRunTimestamp\n\nBut not:\n- telemetry clientId\n\nThrows Error if called before `browser.study.setup`\n",
@@ -238,10 +238,10 @@
         "defaultReturn": "undefined"
       },
       {
-        "name": "filterTelemetry",
+        "name": "searchSentTelemetry",
         "type": "function",
         "async": true,
-        "description": "Filter locally stored telemetry pings using these fields (if set)\n\nn:\n  if set, no more than `n` pings.\ntype:\n  Array of 'ping types' (e.g., main, crash, shield-study-addon) to filter\nmininumTimestamp:\n  only pings after this timestamp.\nheadersOnly:\n  boolean.  If true, only the 'headers' will be returned.\n\nPings will be returned sorted by timestamp with most recent first.\n\nUsage scenarios:\n- enrollment / eligiblity using recent Telemetry behaviours or client environment\n- addon testing scenarios\n",
+        "description": "Search locally stored telemetry pings using these fields (if set)\n\nn:\n  if set, no more than `n` pings.\ntype:\n  Array of 'ping types' (e.g., main, crash, shield-study-addon) to filter\nmininumTimestamp:\n  only pings after this timestamp.\nheadersOnly:\n  boolean.  If true, only the 'headers' will be returned.\n\nPings will be returned sorted by timestamp with most recent first.\n\nUsage scenarios:\n- enrollment / eligiblity using recent Telemetry behaviours or client environment\n- addon testing scenarios\n",
         "defaultReturn": [
           {
             "pingType": "main"
@@ -249,8 +249,8 @@
         ],
         "parameters": [
           {
-            "name": "filterTelemetryQuery",
-            "$ref": "filterTelemetryQuery"
+            "name": "searchTelemetryQuery",
+            "$ref": "searchTelemetryQuery"
           }
         ]
       },
@@ -364,7 +364,7 @@
           "urls": [],
           "reason": "some-reason"
         },
-        "description": "Listen for when the study wants to end",
+        "description": "Listen for when the study wants to end.\n\nAct on it by\n- opening surveyUrls\n- tearing down your feature\n- uninstalling the addon\n",
         "parameters": [
           {
             "name": "endingSteps",

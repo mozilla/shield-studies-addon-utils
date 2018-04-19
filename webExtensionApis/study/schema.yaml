@@ -95,7 +95,7 @@
       telemetry: {  send: false, removeTestingFlag: false}
     }
 
-  - id: filterTelemetryQuery
+  - id: searchTelemetryQuery
     type: object
     properties:
       type: {type: ['array'], items: {type:'string'}}
@@ -133,7 +133,7 @@
         - suggests alarming if `expire` is set.
 
       Returns:
-      - info object (see `info`)
+      - studyInfo object (see `getStudyInfo`)
 
       Telemetry Sent (First run only)
 
@@ -143,8 +143,8 @@
       Fires Events
 
       (At most one of)
-      - study:ready  OR
-      - study:endStudy
+      - study:onReaday  OR
+      - study:onEndStudy
 
       Preferences set
       - `shield.${runtime.id}.firstRunTimestamp`
@@ -209,7 +209,7 @@
     # should be anEnding Object
 
   ## study / client information things
-  - name: info
+  - name: getStudyInfo
     type: function
     async: true
     description: |
@@ -262,11 +262,11 @@
 
     defaultReturn: undefined  # exception if out of policy based on config
 
-  - name: filterTelemetry
+  - name: searchSentTelemetry
     type: function
     async: true
     description: |
-      Filter locally stored telemetry pings using these fields (if set)
+      Search locally stored telemetry pings using these fields (if set)
 
       n:
         if set, no more than `n` pings.
@@ -285,8 +285,8 @@
 
     defaultReturn: [{pingType: 'main'}]
     parameters:
-    - name: filterTelemetryQuery
-      $ref: filterTelemetryQuery
+    - name: searchTelemetryQuery
+      $ref: searchTelemetryQuery
 
   # utilities
   - name: deterministicVariation
@@ -371,7 +371,14 @@
   - name: onEndStudy
     type: function
     defaultReturn: {urls: [], reason: 'some-reason'}
-    description: Listen for when the study wants to end
+    description: |
+      Listen for when the study wants to end.
+
+      Act on it by
+      - opening surveyUrls
+      - tearing down your feature
+      - uninstalling the addon
+
     parameters:  # for the callback
     - name: endingSteps
       type: object

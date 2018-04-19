@@ -35,7 +35,7 @@ class FeatureToInstrument {
    * Listen to onEndStudy, onReady
    * `browser.study.setup` fires onReady OR onEndStudy
    *
-   * call `this.enableFeature` to actually do the ui.
+   * call `this.enableFeature` to actually do the feature/experience/ui.
    */
   constructor(studySetup) {
     browser.study.onEndStudy.addListener(this.handleStudyEnding);
@@ -45,6 +45,10 @@ class FeatureToInstrument {
 
   /**
    * do some cleanup / 'feature reset'
+   *
+   * (If you have privileged code, you might need to clean
+   *  that up as well.
+   * See:  https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/lifecycle.html
    */
   async cleanup() {
     await browser.storage.local.clear();
@@ -52,7 +56,7 @@ class FeatureToInstrument {
 
   /**
    * - set up expiration alarms
-   * - make ui with the particular variation for this user.
+   * - make feature/experience/ui with the particular variation for this user.
    */
   async enableFeature(studyInfo) {
     if (studyInfo.timeUntilExpire) {
@@ -66,7 +70,8 @@ class FeatureToInstrument {
 
   /** handles `study:end` signals
    *
-   * calls cleanup
+   * - opens 'ending' urls (surveys, for example)
+   * - calls cleanup
    */
   async handleStudyEnding(ending) {
     console.log(`study wants to end:`, ending);
@@ -83,8 +88,8 @@ class FeatureToInstrument {
 /**
  * Run every startup to get config and instantiate the feature
  */
-async function everyStartup() {
+async function onEveryExtensionLoad() {
   const studySetup = await getStudySetup();
   await new FeatureToInstrument(studySetup);
 }
-everyStartup();
+onEveryExtensionLoad();

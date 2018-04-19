@@ -47,7 +47,7 @@ function schema2fakeApi(schemaApiJSON) {
       /* ${elem.description} */
       ${elem.name}: new EventManager(
         context,
-        "${ns}.${elem.name}", fire => {
+        "${ns}:${elem.name}", fire => {
         const callback = value => {
           fire.async(value);
         };

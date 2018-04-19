@@ -1,45 +1,55 @@
-| [Add-on template](https://github.com/mozilla/shield-studies-addon-template/) | [Engineering hints](#engineering-and-process) | [More documentation](./docs/) | [Shield - Mozilla Wiki](https://wiki.mozilla.org/Firefox/Shield) |
-| ---------------------------------------------------------------------------- | --------------------------------------------- | ----------------------------- | ---------------------------------------------------------------- |
+| [`browser.study` api](./docs/api.md) | [WebExtension template](https://github.com/mozilla/shield-studies-addon-template/) | [Engineering hints](#engineering-and-process) | [Shield - Mozilla Wiki](https://wiki.mozilla.org/Firefox/Shield) |
+| --- | --- | --- | --- | --- |
 
 
-# Shield Studies Add-on Utils
+# Shield Studies Addon Utils
 
 [![Build Status](https://travis-ci.org/mozilla/shield-studies-addon-utils.svg?branch=master)](https://travis-ci.org/mozilla/shield-studies-addon-utils)
 
-APIs and tooling that allows add-on developers to build [Shield/Pioneer](https://wiki.mozilla.org/Firefox/Shield/Shield_Studies) ([Normandy](https://wiki.mozilla.org/Firefox/Shield#Normandy_-_User_Profile_Matching_and_Recipe_Deployment)) study add-ons efficiently.
+**Important: v5 ia UNDER CONSTRUCTION. Tracked at the [develop branch](https://github.com/mozilla/shield-studies-addon-utils/tree/develop/).**
 
-Provides:
-1.  `browser.study` webExtension Experiment api
-2.  Tools for testing.
+This is the home of the  [`shield-studies-addon-utils` npm package](https://www.npmjs.com/package/shield-studies-addon-utils), which provides
 
-## Overview
+- `browser.study` and `browser.prefs` API 
+- Additional useful testing utils
 
-* `webExtensionApis` - Firefox WebExtension Experiments APIs providing capabilities for study add-ons that are yet not available in the built-in WebExtension APIs
-* `testUtils` - Test utilities (helper classes to write functional/unit tests for your study add-on)
-* `examples` - Tested and verified example add-ons using the WebExtension Experiments APIs and test utilities
+[Shield/Pioneer](https://wiki.mozilla.org/Firefox/Shield/Shield_Studies) ([Normandy](https://wiki.mozilla.org/Firefox/Shield#Normandy_-_User_Profile_Matching_and_Recipe_Deployment)) study WebExension Experiments efficiently.
+
+
+## Directory overview
+
+* `webExtensionApis/`
+
+ Firefox WebExtension Experiments APIs providing capabilities for study add-ons that are yet not available in the built-in WebExtension APIs
+
+* `testUtils/` 
+
+  Test utilities (helper classes to write functional/unit tests for your study add-on)
+* `examples/`
+
+  Tested and verified example add-ons using the WebExtension Experiments APIs and test utilities
 
 ## Get started
 
-1.  Explore the `small-study`:
-
-  + [./webExtensions/study/api.md] 
+0.  Read the API:  [api.md](./docs/study/api.md)
 
     Documentation of the API.  Notice that there are `functions` and `events`.
 
-  + [./examples/small-study/src/manifest.json]
+1.  Explore [`examples/small-study`](./examples/small-study/):
 
-    Notice the `experiment_apis` section.  This maps `browser.study` to the 
-    privileged api code.  (See details below)
+  + [`manifest.json`](./examples/small-study/src/manifest.json)
 
-  + [./examples/small-study/src/study.js]
+    Notice the `experiment_apis` section.  This maps `browser.study` to the privileged api code.  (See details below)
 
-    Construct a studyConfig usable by `browser.study`
+  + [study.js](./examples/small-study/src/study.js)
+  
+    Construct a `studySetup` usable by `browser.study.setup`
 
-  + [./examples/small-study/src/backaroiund.js] 
+  + [background.js](./examples/small-study/src/backaround.js)
 
     Using the `browser.study` api within a small instrumented feature.
 
-2. **Go Bigger** Check out [mozilla/shield-studies-addon-template/](https://github.com/mozilla/shield-studies-addon-template/) to get started with an example study where shield-studies-addon-utils is already installed and configured.
+2. **Go Bigger**. Check out [mozilla/shield-studies-addon-template/](https://github.com/mozilla/shield-studies-addon-template/) to get started with an example study where `shield-studies-addon-utils` is already installed and configured.
 
 
 ## Installing the utils in your add-on
@@ -60,6 +70,8 @@ npm install --save shield-studies-addon-utils
 ## WebExtension APIs
 
 ### `browser.study.*`
+
+[Full API documentation](./docs/study/api.md)
 
 Provides these capabilities:
 
@@ -89,26 +101,19 @@ To use, copy `webExtensionApis/study/api.js` and `webExtensionApis/study/schema.
 
 Depending on which data processing pipeline the study add-on is configured to use, the pings end up in different destinations:
 
-* `shield-parquet` - The pings end up in the `shield-study` and `shield-study-addon` Telemetry buckets for faster analysis.
+* `shield` - The pings end up in the `shield-study` and `shield-study-addon` Telemetry buckets for faster analysis.
 * `pioneer` - The pings are encrypted and end up in the Pioneer processing pipeline
-* `custom-telemetry-events` - The pings end up in the ordinary destination for custom telemetry events
+* `custom-telemetry-events` - The pings end up in the ordinary destination for custom telemetry events  (Not Yet Implemented)
+
 
 ### `browser.prefs.*`
+
+**Not yet implemented**
 
 Allows your web extension add-on to set and read preferences.
 
 To use, copy and adjust the files as per the `study` API above.
 
-## What You are Building
-
-* You are building . To deploy these after 57, you will need the magic special signing.
-* Shield study add-ons can not be based on Web Extensions [yet](https://github.com/mozilla/shield-studies-addon-utils/issues/45).
-
-## Gotchas, Opinions, Side Effects, and Misfeatures
-
-1.  No handling of 'timers'. No saved state at all (including the variation name), unless you handle it yourself.
-2.  No 'running' pings in v4 (yet).
-3.  User disable also uninstalls (and cleans up).
 
 ## Development on the Utils
 

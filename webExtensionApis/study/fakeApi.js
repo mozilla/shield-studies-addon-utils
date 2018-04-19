@@ -37,7 +37,7 @@ this.study = class extends ExtensionAPI {
   - suggests alarming if `expire` is set.
 
 Returns:
-- info object (see `info`)
+- studyInfo object (see `getStudyInfo`)
 
 Telemetry Sent (First run only)
 
@@ -47,8 +47,8 @@ Telemetry Sent (First run only)
 Fires Events
 
 (At most one of)
-- study:ready  OR
-- study:endStudy
+- study:onReaday  OR
+- study:onEndStudy
 
 Preferences set
 - `shield.${runtime.id}.firstRunTimestamp`
@@ -116,8 +116,8 @@ But not:
 
 Throws Error if called before `browser.study.setup`
  */
-      info: async function info  (  ) {
-        console.log("called info ");
+      getStudyInfo: async function getStudyInfo  (  ) {
+        console.log("called getStudyInfo ");
         return {"variation":"styleA","firstRunTimestamp":1523968204184,"activeExperimentName":"some experiment","timeUntilExpire":null};
       },
 
@@ -149,7 +149,7 @@ TBD fix the parameters here.
         return "undefined";
       },
 
-      /* Filter locally stored telemetry pings using these fields (if set)
+      /* Search locally stored telemetry pings using these fields (if set)
 
 n:
   if set, no more than `n` pings.
@@ -166,8 +166,8 @@ Usage scenarios:
 - enrollment / eligiblity using recent Telemetry behaviours or client environment
 - addon testing scenarios
  */
-      filterTelemetry: async function filterTelemetry  ( filterTelemetryQuery ) {
-        console.log("called filterTelemetry filterTelemetryQuery");
+      searchSentTelemetry: async function searchSentTelemetry  ( searchTelemetryQuery ) {
+        console.log("called searchSentTelemetry searchTelemetryQuery");
         return [{"pingType":"main"}];
       },
 
@@ -208,7 +208,7 @@ Use this for constructing midpoint surveys.
       /* Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation. */
       onDataPermissionsChange: new EventManager(
         context,
-        "study.onDataPermissionsChange", fire => {
+        "study:onDataPermissionsChange", fire => {
         const callback = value => {
           fire.async(value);
         };
@@ -223,7 +223,7 @@ Use this for constructing midpoint surveys.
       /* Fires when the study is 'ready' for the feature to startup. */
       onReady: new EventManager(
         context,
-        "study.onReady", fire => {
+        "study:onReady", fire => {
         const callback = value => {
           fire.async(value);
         };
@@ -235,10 +235,16 @@ Use this for constructing midpoint surveys.
       
 
       // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
-      /* Listen for when the study wants to end */
+      /* Listen for when the study wants to end.
+
+Act on it by
+- opening surveyUrls
+- tearing down your feature
+- uninstalling the addon
+ */
       onEndStudy: new EventManager(
         context,
-        "study.onEndStudy", fire => {
+        "study:onEndStudy", fire => {
         const callback = value => {
           fire.async(value);
         };

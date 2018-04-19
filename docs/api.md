@@ -30,7 +30,7 @@ Interface for Shield and Pioneer studies.
     - suggests alarming if `expire` is set.
   
   Returns:
-  - info object (see `info`)
+  - studyInfo object (see `getStudyInfo`)
   
   Telemetry Sent (First run only)
   
@@ -40,8 +40,8 @@ Interface for Shield and Pioneer studies.
   Fires Events
   
   (At most one of)
-  - study:ready  OR
-  - study:endStudy
+  - study:onReaday  OR
+  - study:onEndStudy
   
   Preferences set
   - `shield.${runtime.id}.firstRunTimestamp`
@@ -111,7 +111,7 @@ Interface for Shield and Pioneer studies.
   - $ref: 
   - optional: true
 
-### `browser.study.info`
+### `browser.study.getStudyInfo`
 
   current study configuration, including
   - variation
@@ -160,9 +160,9 @@ Interface for Shield and Pioneer studies.
   - $ref: 
   - optional: false
 
-### `browser.study.filterTelemetry`
+### `browser.study.searchSentTelemetry`
 
-  Filter locally stored telemetry pings using these fields (if set)
+  Search locally stored telemetry pings using these fields (if set)
   
   n:
     if set, no more than `n` pings.
@@ -182,8 +182,8 @@ Interface for Shield and Pioneer studies.
 
 **Parameters**
 
-- `filterTelemetryQuery`
-  - type: filterTelemetryQuery
+- `searchTelemetryQuery`
+  - type: searchTelemetryQuery
   - $ref: 
   - optional: false
 
@@ -280,7 +280,13 @@ Interface for Shield and Pioneer studies.
 
 ### `browser.study.onEndStudy`
 
-  Listen for when the study wants to end
+  Listen for when the study wants to end.
+  
+  Act on it by
+  - opening surveyUrls
+  - tearing down your feature
+  - uninstalling the addon
+  
 
 **Parameters**
 
@@ -440,12 +446,12 @@ Interface for Shield and Pioneer studies.
 ```
 
 
-### [4] filterTelemetryQuery
+### [4] searchTelemetryQuery
 
 
 ```json
 {
-  "id": "filterTelemetryQuery",
+  "id": "searchTelemetryQuery",
   "type": "object",
   "properties": {
     "type": {
