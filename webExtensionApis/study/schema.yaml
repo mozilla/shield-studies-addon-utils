@@ -27,7 +27,7 @@
       activeExperimentName:
         type: string
       studyType:
-        type: string
+        type: "string"
         enum: ["shield", "pioneer"]
       expire:
         type: 'object'
@@ -40,6 +40,7 @@
         type: "array"
       logLevel:
         type: "integer"
+        minimum: 0
       telemetry:
         type: object
         properties:
@@ -56,6 +57,15 @@
     - logLevel
     - telemetry
     additionalProperties: {}
+    testcase: {
+      activeExperimentName: aStudy,
+      studyType: 'shield',
+      expire: { "days": 10},
+      endings: [],
+      logLevel: 30,
+      weightedVariations: [{name: feature-active, weight: 1.5}],
+      telemetry: {  send: false, removeTestingFlag: false}
+    }
 
   - id: weightedVariations
     type: array
@@ -68,10 +78,12 @@
           type: "number"
           minimum: 0
       required: ["name", "weight"]
+    testcase: [{name: feature-active, weight: 1.5}]
 
   - id: anEnding
     type: object
-    additionalProperties: {"type": "any" }
+    additionalProperties: true
+    testcase: {baseUrls: ['some.url'], endingName: 'anEnding', endingClass: 'ended-positive'}
 
   - id: filterTelemetryQuery
     type: object
@@ -80,6 +92,7 @@
       n: {type: integer}
       mininumTimestamp: {type: number}
       headersOnly: {type: boolean}
+    testcase: {type: ['shield-study-addon', 'shield-study'], n: 100, minimumTimestamp: 1523968204184, headersOnly: false}
 
   functions:
   - name: setup
@@ -129,7 +142,6 @@
       Note:
       1. allowEnroll is ONLY used during first run (install)
 
-    returns:  info
     parameters:
     - name: studySetup
       $ref: studySetup # TODO, for now, making progress up above
@@ -185,7 +197,6 @@
       type: object
       optional: true
     # should be anEnding Object
-    returns: Object directions for what to do next by the addon
 
   ## study / client information things
   - name: info
@@ -240,7 +251,6 @@
       type: object  # TODO copy existing?
 
     defaultReturn: undefined  # exception if out of policy based on config
-    returns:  Nothing
 
   - name: filterTelemetry
     type: function
@@ -264,7 +274,6 @@
       - addon testing scenarios
 
     defaultReturn: [{pingType: 'main'}]
-    returns:  Array of locally stored sent Telemetry pings matching the filter
     parameters:
     - name: filterTelemetryQuery
       $ref: filterTelemetryQuery
@@ -309,7 +318,6 @@
     async: true
     defaultReturn: {valid: true, errors: []}
     description:  Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client.
-    returns: a validation object - { bool valid, array errors }
     parameters:
     - name: someJson
       type: object

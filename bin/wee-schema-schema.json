@@ -29,7 +29,7 @@
             "type": "string"
           },
           "type": {
-            "type": ["string", "array"]
+            "type": ["string", "array", "object"]
           },
           "$ref": {
             "type": "string"

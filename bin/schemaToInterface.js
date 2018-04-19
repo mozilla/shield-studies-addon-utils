@@ -85,5 +85,6 @@ this.${ns} = class extends ExtensionAPI {
 }`);
   }
 }
+
 const path = require("path");
 schema2shim(require(path.resolve(process.argv[2])));
