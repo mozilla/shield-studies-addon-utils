@@ -29,7 +29,7 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
 
   Tested and verified example add-ons using the WebExtension Experiments APIs and test utilities
 
-## Get started
+## Learn
 
 0.  Read the API: [api.md](./docs/study/api.md)
 
@@ -53,18 +53,29 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
 
 ## Installing the utils in your add-on
 
-**Current: V5 develop branch**
+1.  Install the Package
 
-```
-npm install --save mozilla/shield-studies-addon-utils#develop
-```
+    **Current: V5 develop branch**
+
+    ```
+    npm install --save mozilla/shield-studies-addon-utils#develop
+    ```
 
 
-**Stable version.  (currently v4, DO NOT USE)**
+    **Stable version.  (currently v4, DO NOT USE)**
 
-```
-npm install --save shield-studies-addon-utils
-```
+    ```
+    npm install --save shield-studies-addon-utils
+    ```
+
+2.  Copy the files to your 'privileged' src directory
+
+    ```
+    ./node_modules/.bin/copyStudyUtilsToWebExtension ./privileged --example
+
+    ```
+
+
 
 ## Engineering and Process
 
@@ -79,7 +90,7 @@ npm install --save shield-studies-addon-utils
 
 ### `browser.study.*`
 
-[Full API documentation](./docs/study/api.md)
+[`browser.study` API documentation](./docs/study/api.md)
 
 Provides these capabilities:
 

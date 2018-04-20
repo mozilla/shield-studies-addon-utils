@@ -3,10 +3,14 @@
   "description": "Utilities for building Shield-Study Mozilla Firefox add-ons.",
   "version": "5.0.0-alpha1",
   "author": "Mozilla",
+  "bin": {
+    "copyStudyUtils": "bin/copyStudyUtils.js"
+  },
   "bugs": {
     "url": "https://github.com/mozilla/shield-studies-addon-utils/issues"
   },
   "dependencies": {
+    "commander": "^2.15.1",
     "shield-study-schemas": "^0.8.3"
   },
   "devDependencies": {
