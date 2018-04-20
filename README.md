@@ -53,6 +53,15 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
 
 ## Installing the utils in your add-on
 
+**Current: V5 develop branch**
+
+```
+npm install --save mozilla/shield-studies-addon-utils#develop
+```
+
+
+**Stable version.  (currently v4, DO NOT USE)**
+
 ```
 npm install --save shield-studies-addon-utils
 ```
