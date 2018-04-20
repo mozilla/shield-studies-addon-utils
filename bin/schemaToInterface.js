@@ -1,9 +1,9 @@
 /* eslint-env node */
 
 /** Goal: create an Example (fake) Api from
-  * a webExtension Experiment schema.json file
-  *
-  */
+ * a webExtension Experiment schema.json file
+ *
+ */
 const path = require("path");
 
 const FILEHEADER = `/* eslint-disable */

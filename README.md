@@ -1,5 +1,5 @@
 | [`browser.study` api](./docs/api.md) | [WebExtension template](https://github.com/mozilla/shield-studies-addon-template/) | [Engineering hints](#engineering-and-process) | [Shield - Mozilla Wiki](https://wiki.mozilla.org/Firefox/Shield) |
-|---|---|---|---|
+| ------------------------------------ | ---------------------------------------------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------- |
 
 
 # Shield Studies Addon Utils
@@ -8,49 +8,48 @@
 
 **Important: v5 ia UNDER CONSTRUCTION. Tracked at the [develop branch](https://github.com/mozilla/shield-studies-addon-utils/tree/develop/).**
 
-This is the home of the  [`shield-studies-addon-utils` npm package](https://www.npmjs.com/package/shield-studies-addon-utils), which provides
+This is the home of the [`shield-studies-addon-utils` npm package](https://www.npmjs.com/package/shield-studies-addon-utils), which provides
 
-- `browser.study` and `browser.prefs` API 
-- Additional useful testing utils
+* `browser.study` and `browser.prefs` API
+* Additional useful testing utils
 
 [Shield/Pioneer](https://wiki.mozilla.org/Firefox/Shield/Shield_Studies) ([Normandy](https://wiki.mozilla.org/Firefox/Shield#Normandy_-_User_Profile_Matching_and_Recipe_Deployment)) study WebExension Experiments efficiently.
-
 
 ## Directory overview
 
 * `webExtensionApis/`
 
- Firefox WebExtension Experiments APIs providing capabilities for study add-ons that are yet not available in the built-in WebExtension APIs
+Firefox WebExtension Experiments APIs providing capabilities for study add-ons that are yet not available in the built-in WebExtension APIs
 
-* `testUtils/` 
+* `testUtils/`
 
   Test utilities (helper classes to write functional/unit tests for your study add-on)
+
 * `examples/`
 
   Tested and verified example add-ons using the WebExtension Experiments APIs and test utilities
 
 ## Get started
 
-0.  Read the API:  [api.md](./docs/study/api.md)
+0.  Read the API: [api.md](./docs/study/api.md)
 
-    Documentation of the API.  Notice that there are `functions` and `events`.
+    Documentation of the API. Notice that there are `functions` and `events`.
 
 1.  Explore [`examples/small-study`](./examples/small-study/):
 
-  + [`manifest.json`](./examples/small-study/src/manifest.json)
+* [`manifest.json`](./examples/small-study/src/manifest.json)
 
-    Notice the `experiment_apis` section.  This maps `browser.study` to the privileged api code.  (See details below)
+  Notice the `experiment_apis` section. This maps `browser.study` to the privileged api code. (See details below)
 
-  + [study.js](./examples/small-study/src/study.js)
-  
-    Construct a `studySetup` usable by `browser.study.setup`
+* [study.js](./examples/small-study/src/study.js)
 
-  + [background.js](./examples/small-study/src/backaround.js)
+  Construct a `studySetup` usable by `browser.study.setup`
 
-    Using the `browser.study` api within a small instrumented feature.
+* [background.js](./examples/small-study/src/backaround.js)
 
-2. **Go Bigger**. Check out [mozilla/shield-studies-addon-template/](https://github.com/mozilla/shield-studies-addon-template/) to get started with an example study where `shield-studies-addon-utils` is already installed and configured.
+  Using the `browser.study` api within a small instrumented feature.
 
+2.  **Go Bigger**. Check out [mozilla/shield-studies-addon-template/](https://github.com/mozilla/shield-studies-addon-template/) to get started with an example study where `shield-studies-addon-utils` is already installed and configured.
 
 ## Installing the utils in your add-on
 
@@ -103,8 +102,7 @@ Depending on which data processing pipeline the study add-on is configured to us
 
 * `shield` - The pings end up in the `shield-study` and `shield-study-addon` Telemetry buckets for faster analysis.
 * `pioneer` - The pings are encrypted and end up in the Pioneer processing pipeline
-* `custom-telemetry-events` - The pings end up in the ordinary destination for custom telemetry events  (Not Yet Implemented)
-
+* `custom-telemetry-events` - The pings end up in the ordinary destination for custom telemetry events (Not Yet Implemented)
 
 ### `browser.prefs.*`
 
@@ -113,7 +111,6 @@ Depending on which data processing pipeline the study add-on is configured to us
 Allows your web extension add-on to set and read preferences.
 
 To use, copy and adjust the files as per the `study` API above.
-
 
 ## Development on the Utils
 
