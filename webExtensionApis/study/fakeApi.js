@@ -12,8 +12,7 @@ this.study = class extends ExtensionAPI {
   getAPI(context) {
     return {
       study: {
-
-      /* Attempt an setup/enrollment, with these effects:
+        /* Attempt an setup/enrollment, with these effects:
 
 - sets 'studyType' as Shield or Pioneer
   - affects telemetry
@@ -56,12 +55,12 @@ Preferences set
 Note:
 1. allowEnroll is ONLY used during first run (install)
  */
-      setup: async function setup  ( studySetup ) {
-        console.log("called setup studySetup");
-        return undefined;
-      },
+        setup: async function setup(studySetup) {
+          console.log("called setup studySetup");
+          return undefined;
+        },
 
-      /* Signal to browser.study that it should end.
+        /* Signal to browser.study that it should end.
 
 Usage scenarios:
 - addons defined
@@ -100,12 +99,12 @@ Note:
 1.  calling this function multiple time is safe.
 `browser.study` will choose the
  */
-      endStudy: async function endStudy  ( anEndingAlias, anEndingObject ) {
-        console.log("called endStudy anEndingAlias, anEndingObject");
-        return {"urls":["url1","url2"],"endingName":"some-reason"};
-      },
+        endStudy: async function endStudy(anEndingAlias, anEndingObject) {
+          console.log("called endStudy anEndingAlias, anEndingObject");
+          return { urls: ["url1", "url2"], endingName: "some-reason" };
+        },
 
-      /* current study configuration, including
+        /* current study configuration, including
 - variation
 - activeExperimentName
 - timeUntilExpire
@@ -116,18 +115,28 @@ But not:
 
 Throws Error if called before `browser.study.setup`
  */
-      getStudyInfo: async function getStudyInfo  (  ) {
-        console.log("called getStudyInfo ");
-        return {"variation":"styleA","firstRunTimestamp":1523968204184,"activeExperimentName":"some experiment","timeUntilExpire":null};
-      },
+        getStudyInfo: async function getStudyInfo() {
+          console.log("called getStudyInfo ");
+          return {
+            variation: "styleA",
+            firstRunTimestamp: 1523968204184,
+            activeExperimentName: "some experiment",
+            timeUntilExpire: null,
+          };
+        },
 
-      /* object of current dataPermissions with keys shield, pioneer, telemetry, 'ok' */
-      getDataPermissions: async function getDataPermissions  (  ) {
-        console.log("called getDataPermissions ");
-        return {"shield":true,"pioneer":false,"telemetry":true,"alwaysPrivateBrowsing":false};
-      },
+        /* object of current dataPermissions with keys shield, pioneer, telemetry, 'ok' */
+        getDataPermissions: async function getDataPermissions() {
+          console.log("called getDataPermissions ");
+          return {
+            shield: true,
+            pioneer: false,
+            telemetry: true,
+            alwaysPrivateBrowsing: false,
+          };
+        },
 
-      /* Send Telemetry using appropriate shield or pioneer methods.
+        /* Send Telemetry using appropriate shield or pioneer methods.
 
 shield:
 - `shield-study-addon` ping, requires object string keys and string values
@@ -144,12 +153,12 @@ Note:
 
 TBD fix the parameters here.
  */
-      sendTelemetry: async function sendTelemetry  ( payload ) {
-        console.log("called sendTelemetry payload");
-        return "undefined";
-      },
+        sendTelemetry: async function sendTelemetry(payload) {
+          console.log("called sendTelemetry payload");
+          return "undefined";
+        },
 
-      /* Search locally stored telemetry pings using these fields (if set)
+        /* Search locally stored telemetry pings using these fields (if set)
 
 n:
   if set, no more than `n` pings.
@@ -166,95 +175,96 @@ Usage scenarios:
 - enrollment / eligiblity using recent Telemetry behaviours or client environment
 - addon testing scenarios
  */
-      searchSentTelemetry: async function searchSentTelemetry  ( searchTelemetryQuery ) {
-        console.log("called searchSentTelemetry searchTelemetryQuery");
-        return [{"pingType":"main"}];
-      },
+        searchSentTelemetry: async function searchSentTelemetry(
+          searchTelemetryQuery,
+        ) {
+          console.log("called searchSentTelemetry searchTelemetryQuery");
+          return [{ pingType: "main" }];
+        },
 
-      /* Choose a element from `weightedVariations` array
+        /* Choose a element from `weightedVariations` array
 based on various hashes of clientId
 
 - shield:  TBD
 - pioneer: TBD
  */
-      deterministicVariation: async function deterministicVariation  ( weightedVariations, algorithm ) {
-        console.log("called deterministicVariation weightedVariations, algorithm");
-        return "styleA";
-      },
+        deterministicVariation: async function deterministicVariation(
+          weightedVariations,
+          algorithm,
+        ) {
+          console.log(
+            "called deterministicVariation weightedVariations, algorithm",
+          );
+          return "styleA";
+        },
 
-      /* Format url with study covariate queryArgs appended / mixed in.
+        /* Format url with study covariate queryArgs appended / mixed in.
 
 Use this for constructing midpoint surveys.
  */
-      surveyUrl: async function surveyUrl  ( baseUrl, additionalFields ) {
-        console.log("called surveyUrl baseUrl, additionalFields");
-        return "https://example.com?version=59.0&branch=studyA";
-      },
+        surveyUrl: async function surveyUrl(baseUrl, additionalFields) {
+          console.log("called surveyUrl baseUrl, additionalFields");
+          return "https://example.com?version=59.0&branch=studyA";
+        },
 
-      /* Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client. */
-      validateJSON: async function validateJSON  ( someJson, jsonschema ) {
-        console.log("called validateJSON someJson, jsonschema");
-        return {"valid":true,"errors":[]};
-      },
+        /* Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client. */
+        validateJSON: async function validateJSON(someJson, jsonschema) {
+          console.log("called validateJSON someJson, jsonschema");
+          return { valid: true, errors: [] };
+        },
 
-      /* @TODO no description given */
-      log: async function log  ( thingToLog ) {
-        console.log("called log thingToLog");
-        return undefined;
-      },
+        /* @TODO no description given */
+        log: async function log(thingToLog) {
+          console.log("called log thingToLog");
+          return undefined;
+        },
 
+        // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
+        /* Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation. */
+        onDataPermissionsChange: new EventManager(
+          context,
+          "study:onDataPermissionsChange",
+          fire => {
+            const callback = value => {
+              fire.async(value);
+            };
+            // RegisterSomeInternalCallback(callback);
+            return () => {
+              // UnregisterInternalCallback(callback);
+            };
+          },
+        ).api(),
 
-      // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
-      /* Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation. */
-      onDataPermissionsChange: new EventManager(
-        context,
-        "study:onDataPermissionsChange", fire => {
-        const callback = value => {
-          fire.async(value);
-        };
-        // RegisterSomeInternalCallback(callback);
-        return () => {
-          // UnregisterInternalCallback(callback);
-        };
-      }).api(),
+        // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
+        /* Fires when the study is 'ready' for the feature to startup. */
+        onReady: new EventManager(context, "study:onReady", fire => {
+          const callback = value => {
+            fire.async(value);
+          };
+          // RegisterSomeInternalCallback(callback);
+          return () => {
+            // UnregisterInternalCallback(callback);
+          };
+        }).api(),
 
-
-      // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
-      /* Fires when the study is 'ready' for the feature to startup. */
-      onReady: new EventManager(
-        context,
-        "study:onReady", fire => {
-        const callback = value => {
-          fire.async(value);
-        };
-        // RegisterSomeInternalCallback(callback);
-        return () => {
-          // UnregisterInternalCallback(callback);
-        };
-      }).api(),
-
-
-      // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
-      /* Listen for when the study wants to end.
+        // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
+        /* Listen for when the study wants to end.
 
 Act on it by
 - opening surveyUrls
 - tearing down your feature
 - uninstalling the addon
  */
-      onEndStudy: new EventManager(
-        context,
-        "study:onEndStudy", fire => {
-        const callback = value => {
-          fire.async(value);
-        };
-        // RegisterSomeInternalCallback(callback);
-        return () => {
-          // UnregisterInternalCallback(callback);
-        };
-      }).api(),
-
-      }
-    }
+        onEndStudy: new EventManager(context, "study:onEndStudy", fire => {
+          const callback = value => {
+            fire.async(value);
+          };
+          // RegisterSomeInternalCallback(callback);
+          return () => {
+            // UnregisterInternalCallback(callback);
+          };
+        }).api(),
+      },
+    };
   }
-}
+};
