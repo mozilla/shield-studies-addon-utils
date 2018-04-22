@@ -27,8 +27,9 @@
       }
     }
   },
+  "permissions": ["storage"],
   "background": {
-    "scripts": ["studySetup.js", "background.js"]
+    "scripts": ["study.js", "background.js"]
   },
   "icons": {
     "48": "icons/shield-icon.svg"

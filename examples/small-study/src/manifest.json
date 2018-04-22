@@ -14,7 +14,7 @@
       "schema": "./privileged/study/schema.json",
       "parent": {
         "scopes": ["addon_parent"],
-        "script": "./privileged/study/fakeApi.js",
+        "script": "./privileged/study/api.js",
         "paths": [["study"]]
       }
     }
