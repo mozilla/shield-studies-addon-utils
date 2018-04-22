@@ -96,12 +96,14 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
         const fraction = 0.3;
         const variation = await browser.study.deterministicVariation(
           weightedVariations,
+          "shield",
           fraction,
         );
 
         callback(variation);
       },
     );
+    assert(chosenVariation);
     assert(chosenVariation.name === "kittens");
   });
 

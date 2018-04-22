@@ -191,9 +191,10 @@ based on various hashes of clientId
         deterministicVariation: async function deterministicVariation(
           weightedVariations,
           algorithm,
+          fraction,
         ) {
           console.log(
-            "called deterministicVariation weightedVariations, algorithm",
+            "called deterministicVariation weightedVariations, algorithm, fraction",
           );
           return "styleA";
         },

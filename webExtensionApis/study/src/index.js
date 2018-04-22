@@ -56,7 +56,7 @@ this.study = class extends ExtensionAPI {
           await bootstrap.startup(extension);
         },
 
-        async deterministicVariation(weightedVariations, fraction) {
+        async deterministicVariation(weightedVariations, algorithm, fraction) {
           if (typeof fraction === "string") {
             fraction = parseFloat(fraction);
           }

@@ -256,6 +256,11 @@
           {
             "name": "algorithm",
             "$ref": "studyTypesEnum"
+          },
+          {
+            "name": "fraction",
+            "type": "number",
+            "optional": true
           }
         ]
       },

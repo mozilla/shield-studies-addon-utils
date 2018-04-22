@@ -305,6 +305,9 @@
       $ref: weightedVariations
     - name: algorithm
       $ref: studyTypesEnum
+    - name: fraction
+      type: number
+      optional: true
 
   - name: surveyUrl
     type: function

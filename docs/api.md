@@ -220,9 +220,15 @@ based on various hashes of clientId
   * optional: false
 
 * `algorithm`
+
   * type: algorithm
   * $ref:
   * optional: false
+
+* `fraction`
+  * type: fraction
+  * $ref:
+  * optional: true
 
 ### `browser.study.surveyUrl`
 
