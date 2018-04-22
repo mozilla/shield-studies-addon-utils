@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 /* eslint-env node */
 
-=======
->>>>>>> Post format
 /**
  * given a proposed wee interface `schema.json`, lint and check it for
  * validity

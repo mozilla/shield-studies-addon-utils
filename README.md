@@ -11,8 +11,8 @@
 This is the home of the [`shield-studies-addon-utils` npm package](https://www.npmjs.com/package/shield-studies-addon-utils), which provides
 
 * WebExtensionExperiment API's
-    *   `browser.study` 
-    *   `browser.prefs`
+  * `browser.study`
+  * `browser.prefs`
 * Additional useful testing utilities
 * `copyStudyUtils` command for using these in your study addon
 
@@ -67,18 +67,18 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
 1.  Explore [`examples/small-study`](./examples/small-study/):
 
     * [`manifest.json`](./examples/small-study/src/manifest.json)
-    
+
       Notice the `experiment_apis` section. This maps `browser.study` to the privileged api code. (See details below)
-    
+
     * [`study.js`](./examples/small-study/src/study.js)
-    
+
       Construct a `studySetup` usable by `browser.study.setup`
-    
+
     * [`background.js`](./examples/small-study/src/backaround.js)
-    
+
       Using the `browser.study` api within a small instrumented feature.
 
-2.  **Go Bigger**. Check out [mozilla/shield-studies-addon-template/](https://github.com/mozilla/shield-studies-addon-template/) to get started with an example study where `shield-studies-addon-utils` is already installed and configured.
+1.  **Go Bigger**. Check out [mozilla/shield-studies-addon-template/](https://github.com/mozilla/shield-studies-addon-template/) to get started with an example study where `shield-studies-addon-utils` is already installed and configured.
 
 ## Installing the utils in your add-on
 
@@ -90,7 +90,7 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
     npm install --save mozilla/shield-studies-addon-utils#develop
     ```
 
-    **Stable version.  (currently v4, DO NOT USE)**
+    **Stable version. (currently v4, DO NOT USE)**
 
     ```
     npm install --save shield-studies-addon-utils
@@ -100,9 +100,7 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
 
     ```
     ./node_modules/.bin/copyStudyUtilsToWebExtension ./privileged --example
-
     ```
-
 
 ## Engineering and Process
 
