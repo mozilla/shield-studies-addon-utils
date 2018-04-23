@@ -14,7 +14,7 @@ const { TextEncoder } = Cu.getGlobalForObject(Services);
  */
 export function chooseWeighted(weightedVariations, fraction = Math.random()) {
   /*
-   weightedVaiations, list of:
+   weightedVariations, list of:
    {
     name: string of any length
     weight: float >= 0
