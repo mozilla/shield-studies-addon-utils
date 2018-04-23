@@ -216,24 +216,44 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
       assert(!activeExperiments.hasOwnProperty("shield-utils-test"));
     });
 
-    it("should send the correct reason telemetry", async() => {
+    it("should send the correct exit telemetry", async() => {
       const studyPings = await utils.telemetry.getMostRecentPingsByType(
         driver,
         "shield-study",
       );
-      const pingBeforeTheMostRecentPing = studyPings[1];
-      assert(
-        pingBeforeTheMostRecentPing.payload.data.study_state === "expired",
-      );
-    });
 
-    it("should send the uninstall telemetry", async() => {
-      const studyPings = await utils.telemetry.getMostRecentPingsByType(
-        driver,
-        "shield-study",
-      );
+      assert(studyPings.length >= 2);
+
+      // The two exit pings are sent immediately after one another and it's
+      // original sending order is not reflected by the return of
+      // TelemetryArchive.promiseArchivedPingList
+      // Thus, we can only test that the last two pings are the correct ones
+      // but not that their order is correct
+
       const theMostRecentPing = studyPings[0];
-      assert(theMostRecentPing.payload.data.study_state === "exit");
+      const thePingBeforeTheMostRecentPing = studyPings[1];
+
+      assert(theMostRecentPing);
+      assert(thePingBeforeTheMostRecentPing);
+
+      assert(
+        theMostRecentPing.payload.data.study_state === "exit" ||
+          theMostRecentPing.payload.data.study_state === "expired",
+      );
+      assert(
+        thePingBeforeTheMostRecentPing.payload.data.study_state === "exit" ||
+          thePingBeforeTheMostRecentPing.payload.data.study_state === "expired",
+      );
+
+      if (theMostRecentPing.payload.data.study_state === "exit") {
+        assert(
+          thePingBeforeTheMostRecentPing.payload.data.study_state === "expired",
+        );
+      }
+
+      if (thePingBeforeTheMostRecentPing.payload.data.study_state === "exit") {
+        assert(theMostRecentPing.payload.data.study_state === "expired");
+      }
     });
 
     // TODO: glind - restore these tests
@@ -269,6 +289,15 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
         });
         assert(correctURLOpened);
       });
+      if (theMostRecentPing.payload.data.study_state === "exit") {
+        assert(
+          thePingBeforeTheMostRecentPing.payload.data.study_state === "expired",
+        );
+      }
+
+      if (thePingBeforeTheMostRecentPing.payload.data.study_state === "exit") {
+        assert(theMostRecentPing.payload.data.study_state === "expired");
+      }
     });
     */
   });
