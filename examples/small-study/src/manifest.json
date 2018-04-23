@@ -10,12 +10,14 @@
     }
   },
   "experiment_apis": {
-    // browser.{study,studyTest,prefs})
+    // study is the exported object from api.js
     "study": {
+      // namespace keys match the paths below
       "schema": "./privileged/study/schema.json",
       "parent": {
         "scopes": ["addon_parent"],
         "script": "./privileged/study/api.js",
+        // keys of the object exported by api.js:study.getApi()
         "paths": [["study"], ["studyTest"], ["prefs"]]
       }
     }

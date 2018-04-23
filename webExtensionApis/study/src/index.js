@@ -57,6 +57,23 @@ this.study = class extends ExtensionAPI {
     const { extension } = this;
 
     return {
+      studyTest: {
+        async firstSeen() {
+          return studyUtils.firstSeen();
+        },
+
+        async setActive() {
+          return studyUtils.setActive();
+        },
+
+        async startup({ reason }) {
+          return studyUtils.startup({ reason });
+        },
+      },
+
+      // eslint-disable-next-line no-undef
+      prefs: Services.prefs,
+
       study: {
         /**
          * Schema.json `functions`
@@ -355,43 +372,6 @@ this.study = class extends ExtensionAPI {
         /**
          * Schema.json `properties`
          */
-      },
-    };
-  }
-};
-
-this.studyTest = class extends ExtensionAPI {
-  getAPI(context) {
-    const { studyUtils } = require("./studyUtils.js");
-    return {
-      studyTest: {
-        async firstSeen() {
-          return studyUtils.firstSeen();
-        },
-
-        async setActive() {
-          return studyUtils.setActive();
-        },
-
-        async startup({ reason }) {
-          return studyUtils.startup({ reason });
-        },
-      },
-    };
-  }
-};
-
-this.prefs = class extends ExtensionAPI {
-  /** TODO, change obsersers into signal emitters.
-   *
-   */
-  getAPI(context) {
-    return {
-      prefs: {
-        async getStringPref(aPrefName, aDefaultValue) {
-          // eslint-disable-next-line no-undef
-          return Services.prefs.getStringPref(aPrefName, aDefaultValue);
-        },
       },
     };
   }
