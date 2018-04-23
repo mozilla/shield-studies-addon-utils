@@ -33,4 +33,31 @@ module.exports.telemetry = {
       callback(await getMostRecentPingsByType(passedPingType));
     }, pingType);
   },
+  pingsReport: pings => {
+    if (pings.length === 0) {
+      return { report: "No pings found" };
+    }
+    const p0 = pings[0].payload;
+    // print common fields
+    const report =
+      `
+// common fields
+
+branch        ${p0.branch}
+study_name    ${p0.study_name}
+addon_version ${p0.addon_version}
+version       ${p0.version}
+
+` +
+      pings
+        .map(
+          (p, i) => `${i} ${p.creationDate} ${p.payload.type}
+${JSON.stringify(p.payload.data, null, 2)}
+
+`,
+        )
+        .join("\n");
+
+    return report;
+  },
 };
