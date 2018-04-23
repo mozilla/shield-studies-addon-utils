@@ -220,26 +220,6 @@ Use this for constructing midpoint surveys.
           return undefined;
         },
 
-        /* @TODO no description given */
-        test_studyUtils_firstSeen: async function test_studyUtils_firstSeen() {
-          console.log("called test_studyUtils_firstSeen ");
-          return undefined;
-        },
-
-        /* @TODO no description given */
-        test_studyUtils_setActive: async function test_studyUtils_setActive() {
-          console.log("called test_studyUtils_setActive ");
-          return undefined;
-        },
-
-        /* @TODO no description given */
-        test_studyUtils_startup: async function test_studyUtils_startup(
-          details,
-        ) {
-          console.log("called test_studyUtils_startup details");
-          return undefined;
-        },
-
         // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
         /* Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation. */
         onDataPermissionsChange: new EventManager(
@@ -285,6 +265,44 @@ Act on it by
             // UnregisterInternalCallback(callback);
           };
         }).api(),
+      },
+    };
+  }
+};
+this.studyTest = class extends ExtensionAPI {
+  getAPI(context) {
+    return {
+      studyTest: {
+        /* @TODO no description given */
+        firstSeen: async function firstSeen() {
+          console.log("called firstSeen ");
+          return undefined;
+        },
+
+        /* @TODO no description given */
+        setActive: async function setActive() {
+          console.log("called setActive ");
+          return undefined;
+        },
+
+        /* @TODO no description given */
+        startup: async function startup(details) {
+          console.log("called startup details");
+          return undefined;
+        },
+      },
+    };
+  }
+};
+this.prefs = class extends ExtensionAPI {
+  getAPI(context) {
+    return {
+      prefs: {
+        /* @TODO no description given */
+        getStringPref: async function getStringPref(aPrefName, aDefaultValue) {
+          console.log("called getStringPref aPrefName, aDefaultValue");
+          return undefined;
+        },
       },
     };
   }

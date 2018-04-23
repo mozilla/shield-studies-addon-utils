@@ -4,11 +4,13 @@
 
 ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
+ChromeUtils.import("resource://gre/modules/Services.jsm");
 
 // eslint-disable-next-line no-undef
 const { EventManager } = ExtensionCommon;
 // eslint-disable-next-line no-undef
 const { EventEmitter } = ExtensionUtils;
+
 // eslint-disable-next-line no-unused-vars
 class Foo extends EventEmitter {
   foo() {
@@ -56,6 +58,10 @@ this.study = class extends ExtensionAPI {
 
     return {
       study: {
+        /**
+         * Schema.json `functions`
+         */
+
         /* Attempt an setup/enrollment, with these effects:
 
   - sets 'studyType' as Shield or Pioneer
@@ -290,6 +296,10 @@ this.study = class extends ExtensionAPI {
           return undefined;
         },
 
+        /**
+         * Schema.json `events`
+         */
+
         // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
         /* Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation. */
         onDataPermissionsChange: new EventManager(
@@ -340,18 +350,47 @@ this.study = class extends ExtensionAPI {
           return () => {
             // UnregisterInternalCallback(callback);
           };
-        }).api(),
+        }).api,
 
-        async test_studyUtils_firstSeen() {
+        /**
+         * Schema.json `properties`
+         */
+      },
+    };
+  }
+};
+
+this.studyTest = class extends ExtensionAPI {
+  getAPI(context) {
+    const { studyUtils } = require("./studyUtils.js");
+    return {
+      studyTest: {
+        async firstSeen() {
           return studyUtils.firstSeen();
         },
 
-        async test_studyUtils_setActive() {
+        async setActive() {
           return studyUtils.setActive();
         },
 
-        async test_studyUtils_startup({ reason }) {
+        async startup({ reason }) {
           return studyUtils.startup({ reason });
+        },
+      },
+    };
+  }
+};
+
+this.prefs = class extends ExtensionAPI {
+  /** TODO, change obsersers into signal emitters.
+   *
+   */
+  getAPI(context) {
+    return {
+      prefs: {
+        async getStringPref(aPrefName, aDefaultValue) {
+          // eslint-disable-next-line no-undef
+          return Services.prefs.getStringPref(aPrefName, aDefaultValue);
         },
       },
     };

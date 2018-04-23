@@ -128,6 +128,7 @@ async function getStudySetup() {
   };
   prefs;
   studySetup.allowEnroll = await shouldAllowEnroll();
+  studySetup.eligible = studySetup.allowEnroll;
   studySetup.testing = {
     // variation: await browser.prefs.getStringPref(prefs.variation);
     // firstRunTimestamp: await browser.prefs.getStringPref(prefs.firstRunTimestamp);

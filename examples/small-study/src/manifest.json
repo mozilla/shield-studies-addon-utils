@@ -10,12 +10,13 @@
     }
   },
   "experiment_apis": {
+    // browser.{study,studyTest,prefs})
     "study": {
       "schema": "./privileged/study/schema.json",
       "parent": {
         "scopes": ["addon_parent"],
         "script": "./privileged/study/api.js",
-        "paths": [["study"]]
+        "paths": [["study"], ["studyTest"], ["prefs"]]
       }
     }
   },

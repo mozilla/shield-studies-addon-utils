@@ -350,27 +350,6 @@
     - name: thingToLog
       type: [string, array]
 
-  - name: test_studyUtils_firstSeen
-    type: function
-    async: true
-    descripton:
-    parameters: []
-
-  - name: test_studyUtils_setActive
-    type: function
-    async: true
-    descripton:
-    parameters: []
-
-  - name: test_studyUtils_startup
-    type: function
-    async: true
-    descripton:
-    parameters:
-    - name: details
-      type: object
-      additionalProperties: true
-
   # things that would be 'listeners' are 'events' in webExtensions
   # https://github.com/motin/shield-studies-addon-template/blob/convert-to-webextension-experiments/src/privileged/introductionNotificationBar/api.js#L107
   # https://github.com/motin/shield-studies-addon-template/blob/convert-to-webextension-experiments/src/privileged/introductionNotificationBar/schema.json#L15
@@ -410,3 +389,55 @@
     parameters:  # for the callback
     - name: endingSteps
       type: object
+
+
+- namespace:  studyTest
+  description: Interface for Test Utilities
+  apiVersion: 5  # for dev use
+  functions:
+    - name: firstSeen
+      type: function
+      async: true
+      descripton:
+      parameters: []
+
+    - name: setActive
+      type: function
+      async: true
+      descripton:
+      parameters: []
+
+    - name: startup
+      type: function
+      async: true
+      descripton:
+      parameters:
+      - name: details
+        type: object
+        additionalProperties: true
+
+- namespace: prefs
+  description: |
+    Temporary subset of `Services.prefs` API,
+    described at:  https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Services.jsm
+
+    See https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIPrefBranch
+
+    No attempt here to improve the api at all.
+
+    TODO: Convert observers to events.
+
+    If a true 'prefs' api lands in tree, this module will be removed.
+
+  apiVersion: 5  # for dev use
+  functions:
+  - name: getStringPref
+    type: 'function'
+    async: true
+    description: ''
+    parameters:
+    - name: aPrefName
+      type: 'string'
+    - name: aDefaultValue
+      type: 'string'
+      optional: true

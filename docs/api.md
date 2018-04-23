@@ -4,7 +4,7 @@ Interface for Shield and Pioneer studies.
 
 ## Functions
 
-### `browser.study.setup`
+### `browser.study.setup( studySetup )`
 
 Attempt an setup/enrollment, with these effects:
 
@@ -63,7 +63,7 @@ Note:
   * $ref:
   * optional: false
 
-### `browser.study.endStudy`
+### `browser.study.endStudy( anEndingAlias, anEndingObject )`
 
 Signal to browser.study that it should end.
 
@@ -123,7 +123,7 @@ Note:
   * $ref:
   * optional: true
 
-### `browser.study.getStudyInfo`
+### `browser.study.getStudyInfo( )`
 
 current study configuration, including
 
@@ -140,13 +140,13 @@ Throws Error if called before `browser.study.setup`
 
 **Parameters**
 
-### `browser.study.getDataPermissions`
+### `browser.study.getDataPermissions( )`
 
 object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'
 
 **Parameters**
 
-### `browser.study.sendTelemetry`
+### `browser.study.sendTelemetry( payload )`
 
 Send Telemetry using appropriate shield or pioneer methods.
 
@@ -176,7 +176,7 @@ TBD fix the parameters here.
   * $ref:
   * optional: false
 
-### `browser.study.searchSentTelemetry`
+### `browser.study.searchSentTelemetry( searchTelemetryQuery )`
 
 Search locally stored telemetry pings using these fields (if set)
 
@@ -203,7 +203,7 @@ Usage scenarios:
   * $ref:
   * optional: false
 
-### `browser.study.deterministicVariation`
+### `browser.study.deterministicVariation( weightedVariations, algorithm, fraction )`
 
 Choose a element from `weightedVariations` array
 based on various hashes of clientId
@@ -230,7 +230,7 @@ based on various hashes of clientId
   * $ref:
   * optional: true
 
-### `browser.study.surveyUrl`
+### `browser.study.surveyUrl( baseUrl, additionalFields )`
 
 Format url with study covariate queryArgs appended / mixed in.
 
@@ -249,7 +249,7 @@ Use this for constructing midpoint surveys.
   * $ref:
   * optional: true
 
-### `browser.study.validateJSON`
+### `browser.study.validateJSON( someJson, jsonschema )`
 
 Using AJV, do jsonschema validation of an object. Can be used to validate your arguments, packets at client.
 
@@ -266,7 +266,7 @@ Using AJV, do jsonschema validation of an object. Can be used to validate your a
   * $ref:
   * optional: false
 
-### `browser.study.log`
+### `browser.study.log( thingToLog )`
 
 **Parameters**
 
@@ -275,26 +275,9 @@ Using AJV, do jsonschema validation of an object. Can be used to validate your a
   * $ref:
   * optional: false
 
-### `browser.study.test_studyUtils_firstSeen`
-
-**Parameters**
-
-### `browser.study.test_studyUtils_setActive`
-
-**Parameters**
-
-### `browser.study.test_studyUtils_startup`
-
-**Parameters**
-
-* `details`
-  * type: details
-  * $ref:
-  * optional: false
-
 ## Events
 
-### `browser.study.onDataPermissionsChange`
+### `browser.study.onDataPermissionsChange ()` Event
 
 Fires whenever any 'dataPermission' changes, with the new dataPermission object. Allows watching for shield or pioneer revocation.
 
@@ -305,7 +288,7 @@ Fires whenever any 'dataPermission' changes, with the new dataPermission object.
   * $ref:
   * optional: false
 
-### `browser.study.onReady`
+### `browser.study.onReady ()` Event
 
 Fires when the study is 'ready' for the feature to startup.
 
@@ -316,7 +299,7 @@ Fires when the study is 'ready' for the feature to startup.
   * $ref:
   * optional: false
 
-### `browser.study.onEndStudy`
+### `browser.study.onEndStudy ()` Event
 
 Listen for when the study wants to end.
 
@@ -332,6 +315,8 @@ Act on it by
   * type: endingSteps
   * $ref:
   * optional: false
+
+## Properties TBD
 
 ## Data Types
 
@@ -517,3 +502,76 @@ Act on it by
   }
 }
 ```
+
+# Namespace: `browser.studyTest`
+
+Interface for Test Utilities
+
+## Functions
+
+### `browser.studyTest.firstSeen( )`
+
+**Parameters**
+
+### `browser.studyTest.setActive( )`
+
+**Parameters**
+
+### `browser.studyTest.startup( details )`
+
+**Parameters**
+
+* `details`
+  * type: details
+  * $ref:
+  * optional: false
+
+## Events
+
+(None)
+
+## Properties TBD
+
+## Data Types
+
+(None)
+
+# Namespace: `browser.prefs`
+
+Temporary subset of `Services.prefs` API,
+described at: https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Services.jsm
+
+See https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIPrefBranch
+
+No attempt here to improve the api at all.
+
+TODO: Convert observers to events.
+
+If a true 'prefs' api lands in tree, this module will be removed.
+
+## Functions
+
+### `browser.prefs.getStringPref( aPrefName, aDefaultValue )`
+
+**Parameters**
+
+* `aPrefName`
+
+  * type: aPrefName
+  * $ref:
+  * optional: false
+
+* `aDefaultValue`
+  * type: aDefaultValue
+  * $ref:
+  * optional: true
+
+## Events
+
+(None)
+
+## Properties TBD
+
+## Data Types
+
+(None)
