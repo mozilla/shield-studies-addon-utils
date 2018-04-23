@@ -45,7 +45,7 @@ Fires Events
 
 (At most one of)
 
-* study:onReaday OR
+* study:onReady OR
 * study:onEndStudy
 
 Preferences set
