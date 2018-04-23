@@ -363,7 +363,7 @@ class StudyUtils {
       // hash the studyName and telemetryId to get the same branch every time.
       this.throwIfNotSetup("deterministicVariation needs studyName");
       const clientId = await this.getTelemetryId();
-      const studyName = this.studySetup.study.studyName;
+      const studyName = this.studySetup.activeExperimentName;
       fraction = await this.sampling.hashFraction(studyName + clientId, 12);
     }
     return this.sampling.chooseWeighted(weightedVariations, fraction);
@@ -386,7 +386,7 @@ class StudyUtils {
     log.debug("getting info");
     this.throwIfNotSetup("info");
     return {
-      studyName: this.studySetup.study.studyName,
+      studyName: this.studySetup.activeExperimentName,
       addon: this.studySetup.addon,
       variation: this.getVariation(),
       shieldId: this.getShieldId(),
@@ -400,7 +400,7 @@ class StudyUtils {
   // TODO glind, maybe this is getter / setter?
   get telemetryConfig() {
     this.throwIfNotSetup("telemetryConfig");
-    return this.studySetup.study.telemetry;
+    return this.studySetup.telemetry;
   }
 
   /**
@@ -510,7 +510,7 @@ class StudyUtils {
     * Check if the study ending shows the user a page in a new tab
     * (ex: survey, explanation, etc.)
     */
-    const ending = this.studySetup.study.endings[reason];
+    const ending = this.studySetup.endings[reason];
     if (ending) {
       // baseUrl: needs to be appended with query arguments before use,
       // exactUrl: used as is

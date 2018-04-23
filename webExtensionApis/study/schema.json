@@ -118,6 +118,14 @@
         }
       },
       {
+        "id": "telemetryPayload",
+        "type": "object",
+        "additionalProperties": true,
+        "testcase": {
+          "foo": "bar"
+        }
+      },
+      {
         "id": "searchTelemetryQuery",
         "type": "object",
         "properties": {
@@ -125,18 +133,23 @@
             "type": ["array"],
             "items": {
               "type": "string"
-            }
+            },
+            "optional": true
           },
           "n": {
-            "type": "integer"
+            "type": "integer",
+            "optional": true
           },
-          "mininumTimestamp": {
-            "type": "number"
+          "minimumTimestamp": {
+            "type": "number",
+            "optional": true
           },
           "headersOnly": {
-            "type": "boolean"
+            "type": "boolean",
+            "optional": true
           }
         },
+        "additionalProperties": false,
         "testcase": {
           "type": ["shield-study-addon", "shield-study"],
           "n": 100,
@@ -172,11 +185,11 @@
         "parameters": [
           {
             "name": "anEndingAlias",
-            "type": ["string", "null"]
+            "type": "string"
           },
           {
             "name": "anEndingObject",
-            "type": "object",
+            "$ref": "anEndingObject",
             "optional": true
           }
         ]
@@ -218,7 +231,7 @@
         "parameters": [
           {
             "name": "payload",
-            "type": "object"
+            "$ref": "telemetryPayload"
           }
         ],
         "defaultReturn": "undefined"
@@ -228,7 +241,7 @@
         "type": "function",
         "async": true,
         "description":
-          "Search locally stored telemetry pings using these fields (if set)\n\nn:\n  if set, no more than `n` pings.\ntype:\n  Array of 'ping types' (e.g., main, crash, shield-study-addon) to filter\nmininumTimestamp:\n  only pings after this timestamp.\nheadersOnly:\n  boolean.  If true, only the 'headers' will be returned.\n\nPings will be returned sorted by timestamp with most recent first.\n\nUsage scenarios:\n- enrollment / eligiblity using recent Telemetry behaviours or client environment\n- addon testing scenarios\n",
+          "Search locally stored telemetry pings using these fields (if set)\n\nn:\n  if set, no more than `n` pings.\ntype:\n  Array of 'ping types' (e.g., main, crash, shield-study-addon) to filter\nminimumTimestamp:\n  only pings after this timestamp.\nheadersOnly:\n  boolean.  If true, only the 'headers' will be returned.\n\nPings will be returned sorted by timestamp with most recent first.\n\nUsage scenarios:\n- enrollment / eligiblity using recent Telemetry behaviours or client environment\n- addon testing scenarios\n",
         "defaultReturn": [
           {
             "pingType": "main"
@@ -315,6 +328,33 @@
           {
             "name": "thingToLog",
             "type": ["string", "array"]
+          }
+        ]
+      },
+      {
+        "name": "test_studyUtils_firstSeen",
+        "type": "function",
+        "async": true,
+        "descripton": null,
+        "parameters": []
+      },
+      {
+        "name": "test_studyUtils_setActive",
+        "type": "function",
+        "async": true,
+        "descripton": null,
+        "parameters": []
+      },
+      {
+        "name": "test_studyUtils_startup",
+        "type": "function",
+        "async": true,
+        "descripton": null,
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "additionalProperties": true
           }
         ]
       }

@@ -10,25 +10,28 @@ const utils = require("./utils");
 function studySetupForTests() {
   // Minimal configuration to pass schema validation
   const studySetup = {
-    study: {
-      studyName: "shield-utils-test",
-      endings: {
-        ineligible: {
-          baseUrl: "http://www.example.com/?reason=ineligible",
-        },
-      },
-      telemetry: {
-        send: true, // assumed false. Actually send pings?
-        removeTestingFlag: false, // Marks pings to be discarded, set true for to have the pings processed in the pipeline
-        // TODO "onInvalid": "throw"  // invalid packet for schema?  throw||log
+    activeExperimentName: "shield-utils-test",
+    studyType: "shield",
+    endings: {
+      ineligible: {
+        baseUrl: "http://www.example.com/?reason=ineligible",
       },
     },
+    telemetry: {
+      send: true, // assumed false. Actually send pings?
+      removeTestingFlag: false, // Marks pings to be discarded, set true for to have the pings processed in the pipeline
+      // TODO "onInvalid": "throw"  // invalid packet for schema?  throw||log
+    },
+    logLevel: 10,
     weightedVariations: [
       {
         name: "control",
         weight: 1,
       },
     ],
+    expire: {
+      days: 14,
+    },
   };
 
   // Set dynamic study configuration flags
@@ -112,12 +115,12 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
       driver,
       async(_studySetupForTests, callback) => {
         // Ensure we have configured study and are supposed to run our feature
-        await browser.study.configure(_studySetupForTests);
+        await browser.study.setup(_studySetupForTests);
 
         // Send custom telemetry
-        await browser.study.telemetry({ foo: "bar" });
+        await browser.study.sendTelemetry({ foo: "bar" });
 
-        const studyPings = await browser.study.getTelemetryPings({
+        const studyPings = await browser.study.searchSentTelemetry({
           type: ["shield-study-addon"],
         });
         callback(studyPings[0]);
@@ -133,11 +136,11 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
         driver,
         async(_studySetupForTests, callback) => {
           // Ensure we have configured study and are supposed to run our feature
-          await browser.study.configure(_studySetupForTests);
+          await browser.study.setup(_studySetupForTests);
 
           browser.study.test_studyUtils_firstSeen();
 
-          const studyPings = await browser.study.getTelemetryPings({
+          const studyPings = await browser.study.searchSentTelemetry({
             type: ["shield-study"],
           });
           callback(studyPings[0]);
@@ -152,7 +155,7 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
         driver,
         async(_studySetupForTests, callback) => {
           // Ensure we have configured study and are supposed to run our feature
-          await browser.study.configure(_studySetupForTests);
+          await browser.study.setup(_studySetupForTests);
 
           browser.study.test_studyUtils_setActive();
 
@@ -171,11 +174,11 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
         driver,
         async(_studySetupForTests, callback) => {
           // Ensure we have configured study and are supposed to run our feature
-          await browser.study.configure(_studySetupForTests);
+          await browser.study.setup(_studySetupForTests);
 
           await browser.study.test_studyUtils_startup({ reason: 5 }); // ADDON_INSTALL = 5
 
-          const studyPings = await browser.study.getTelemetryPings({
+          const studyPings = await browser.study.searchSentTelemetry({
             type: ["shield-study"],
           });
           callback(studyPings[0]);
@@ -192,12 +195,13 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
         driver,
         async(_studySetupForTests, callback) => {
           // Ensure we have configured study and are supposed to run our feature
-          await browser.study.configure(_studySetupForTests);
+          await browser.study.setup(_studySetupForTests);
 
           // TODO add tests for other reasons (?)
-          await browser.study.endStudy({
-            reason: "expired",
-            fullname: "TEST_FULLNAME",
+          await browser.study.endStudy("expired", {
+            baseUrls: ["some.url"],
+            endingName: "anEnding",
+            endingClass: "ended-positive",
           });
           callback();
         },

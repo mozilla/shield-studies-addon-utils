@@ -100,8 +100,9 @@ this.study = class extends ExtensionAPI {
   1. allowEnroll is ONLY used during first run (install)
    */
         setup: async function setup(studySetup) {
-          console.log("called setup studySetup");
-          return undefined;
+          bootstrap = studyUtilsBootstrap.Bootstrap(studySetup, studyUtils);
+          await bootstrap.configure(extension);
+          await bootstrap.startup(extension);
         },
 
         /* Signal to browser.study that it should end.
@@ -144,8 +145,12 @@ this.study = class extends ExtensionAPI {
   `browser.study` will choose the
    */
         endStudy: async function endStudy(anEndingAlias, anEndingObject) {
-          console.log("called endStudy anEndingAlias, anEndingObject");
-          return { urls: ["url1", "url2"], endingName: "some-reason" };
+          console.log("called endStudy anEndingAlias");
+          return studyUtils.endStudy({
+            reason: anEndingAlias,
+            fullname: anEndingAlias,
+          });
+          // return { urls: ["url1", "url2"], endingName: "some-reason" };
         },
 
         /* current study configuration, including
@@ -161,12 +166,15 @@ this.study = class extends ExtensionAPI {
    */
         getStudyInfo: async function getStudyInfo() {
           console.log("called getStudyInfo ");
+          return studyUtils.info();
+          /*
           return {
             variation: "styleA",
             firstRunTimestamp: 1523968204184,
             activeExperimentName: "some experiment",
             timeUntilExpire: null,
           };
+          */
         },
 
         /* object of current dataPermissions with keys shield, pioneer, telemetry, 'ok' */
@@ -199,7 +207,19 @@ this.study = class extends ExtensionAPI {
    */
         sendTelemetry: async function sendTelemetry(payload) {
           console.log("called sendTelemetry payload");
-          return "undefined";
+          function throwIfInvalid(obj) {
+            // Check: all keys and values must be strings,
+            for (const k in obj) {
+              if (typeof k !== "string")
+                throw new Error(`key ${k} not a string`);
+              if (typeof obj[k] !== "string")
+                throw new Error(`value ${k} ${obj[k]} not a string`);
+            }
+            return true;
+          }
+
+          throwIfInvalid(payload);
+          studyUtils.telemetry(payload);
         },
 
         /* Search locally stored telemetry pings using these fields (if set)
@@ -223,7 +243,9 @@ this.study = class extends ExtensionAPI {
           searchTelemetryQuery,
         ) {
           console.log("called searchSentTelemetry searchTelemetryQuery");
-          return [{ pingType: "main" }];
+          const { getTelemetryPings } = require("./pings.js");
+          return getTelemetryPings(searchTelemetryQuery);
+          // return [{ pingType: "main" }];
         },
 
         /* Choose a element from `weightedVariations` array
@@ -240,7 +262,11 @@ this.study = class extends ExtensionAPI {
           console.log(
             "called deterministicVariation weightedVariations, algorithm, fraction",
           );
-          return "styleA";
+          return await studyUtils.deterministicVariation(
+            weightedVariations,
+            fraction,
+          );
+          // return "styleA";
         },
 
         /* Format url with study covariate queryArgs appended / mixed in.
@@ -315,87 +341,6 @@ this.study = class extends ExtensionAPI {
             // UnregisterInternalCallback(callback);
           };
         }).api(),
-      },
-      study_: {
-        /**
-         * ensure we have configured study
-         * and are supposed to run our feature
-         * @returns {Promise<void>}
-         */
-        async configure(studySetup) {
-          bootstrap = studyUtilsBootstrap.Bootstrap(studySetup, studyUtils);
-          await bootstrap.configure(extension);
-        },
-
-        async startup() {
-          await bootstrap.startup(extension);
-        },
-
-        async deterministicVariation(weightedVariations, algorithm, fraction) {
-          if (typeof fraction === "string") {
-            fraction = parseFloat(fraction);
-          }
-          return await studyUtils.deterministicVariation(
-            weightedVariations,
-            fraction,
-          );
-        },
-
-        /**
-         * current studyUtils configuration, including 'variation'
-         * @returns {Promise<void>}
-         */
-        async info() {
-          return studyUtils.info();
-        },
-
-        /**
-         *
-         * `telemetry`
-         *
-         * - check all pings for validity as "shield-study-addon" pings
-         * - send a 'shield-study-addon' packet
-         *
-         * Good practice: send all Telemetry from one function for easier
-         * logging, debugging, validation
-         *
-         * Note: keys, values must be strings to fulfill the
-         *   `shield-study-addon` ping-type validation.
-         *   This allows `payload.data.attributes` to store
-         *   correctly at Parquet at s.t.m.o.
-         *
-         *   Bold claim:  catching errors here
-         *
-         */
-        async telemetry(data) {
-          function throwIfInvalid(obj) {
-            // Check: all keys and values must be strings,
-            for (const k in obj) {
-              if (typeof k !== "string")
-                throw new Error(`key ${k} not a string`);
-              if (typeof obj[k] !== "string")
-                throw new Error(`value ${k} ${obj[k]} not a string`);
-            }
-            return true;
-          }
-
-          throwIfInvalid(data);
-          studyUtils.telemetry(data);
-        },
-
-        /**
-         * for ending a study
-         * @param data
-         * @returns {Promise<void>}
-         */
-        async endStudy(data) {
-          studyUtils.endStudy(data);
-        },
-
-        async getTelemetryPings(filter) {
-          const { getTelemetryPings } = require("./pings.js");
-          return getTelemetryPings(filter);
-        },
 
         async test_studyUtils_firstSeen() {
           return studyUtils.firstSeen();
