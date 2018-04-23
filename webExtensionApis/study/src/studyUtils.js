@@ -16,7 +16,6 @@ import sampling from "./sampling";
 
 /*
 * TODO glind survey / urls & query args
-* TODO glind publish as v4
 */
 const EXPORTED_SYMBOLS = ["studyUtils"];
 
@@ -55,15 +54,12 @@ const { TelemetryEnvironment } = Cu.import(
 *      (used to capture feature-specific state) sent as Map(string,string).
 *    - "shield-study-error": data used to notify, group and count some kinds
 *      of errors from shield studies
-*  - ShieldUtils API ducktypes:
-*    - "weightedVariations": the array of branch name:weight pairs used to
-*      randomly assign the user
-*    to a branch
-*    - "webExtensionMsg": the message object passed into the
-*      StudyUtils.respondToWebExtensionMessage method
-*    - "studySetup": the options object passed into the StudyUtils.setup method
 */
-import schemas from "./schemas";
+const schemas = {
+  "shield-study": require("shield-study-schemas/schemas-client/shield-study.schema.json"), // eslint-disable-line max-len
+  "shield-study-addon": require("shield-study-schemas/schemas-client/shield-study-addon.schema.json"), // eslint-disable-line max-len
+  "shield-study-error": require("shield-study-schemas/schemas-client/shield-study-error.schema.json"), // eslint-disable-line max-len
+};
 import jsonschema from "./jsonschema";
 
 /**
@@ -275,7 +271,6 @@ class StudyUtils {
   setup(studySetup) {
     log = createLog("shield-study-utils", studyUtilsLoggingLevel);
     log.debug("setting up!");
-    jsonschema.validateOrThrow(studySetup, schemas.studySetup);
     this.studySetup = studySetup;
     this._isSetup = true;
     return this;
@@ -363,7 +358,7 @@ class StudyUtils {
       // hash the studyName and telemetryId to get the same branch every time.
       this.throwIfNotSetup("deterministicVariation needs studyName");
       const clientId = await this.getTelemetryId();
-      const studyName = this.studySetup.study.studyName;
+      const studyName = this.studySetup.activeExperimentName;
       fraction = await this.sampling.hashFraction(studyName + clientId, 12);
     }
     return this.sampling.chooseWeighted(weightedVariations, fraction);
@@ -386,7 +381,7 @@ class StudyUtils {
     log.debug("getting info");
     this.throwIfNotSetup("info");
     return {
-      studyName: this.studySetup.study.studyName,
+      studyName: this.studySetup.activeExperimentName,
       addon: this.studySetup.addon,
       variation: this.getVariation(),
       shieldId: this.getShieldId(),
@@ -400,7 +395,7 @@ class StudyUtils {
   // TODO glind, maybe this is getter / setter?
   get telemetryConfig() {
     this.throwIfNotSetup("telemetryConfig");
-    return this.studySetup.study.telemetry;
+    return this.studySetup.telemetry;
   }
 
   /**
@@ -510,7 +505,7 @@ class StudyUtils {
     * Check if the study ending shows the user a page in a new tab
     * (ex: survey, explanation, etc.)
     */
-    const ending = this.studySetup.study.endings[reason];
+    const ending = this.studySetup.endings[reason];
     if (ending) {
       // baseUrl: needs to be appended with query arguments before use,
       // exactUrl: used as is

@@ -46,7 +46,7 @@ Telemetry Sent (First run only)
 Fires Events
 
 (At most one of)
-- study:onReaday  OR
+- study:onReady  OR
 - study:onEndStudy
 
 Preferences set
@@ -164,7 +164,7 @@ n:
   if set, no more than `n` pings.
 type:
   Array of 'ping types' (e.g., main, crash, shield-study-addon) to filter
-mininumTimestamp:
+minimumTimestamp:
   only pings after this timestamp.
 headersOnly:
   boolean.  If true, only the 'headers' will be returned.
@@ -191,9 +191,10 @@ based on various hashes of clientId
         deterministicVariation: async function deterministicVariation(
           weightedVariations,
           algorithm,
+          fraction,
         ) {
           console.log(
-            "called deterministicVariation weightedVariations, algorithm",
+            "called deterministicVariation weightedVariations, algorithm, fraction",
           );
           return "styleA";
         },
@@ -216,6 +217,26 @@ Use this for constructing midpoint surveys.
         /* @TODO no description given */
         log: async function log(thingToLog) {
           console.log("called log thingToLog");
+          return undefined;
+        },
+
+        /* @TODO no description given */
+        test_studyUtils_firstSeen: async function test_studyUtils_firstSeen() {
+          console.log("called test_studyUtils_firstSeen ");
+          return undefined;
+        },
+
+        /* @TODO no description given */
+        test_studyUtils_setActive: async function test_studyUtils_setActive() {
+          console.log("called test_studyUtils_setActive ");
+          return undefined;
+        },
+
+        /* @TODO no description given */
+        test_studyUtils_startup: async function test_studyUtils_startup(
+          details,
+        ) {
+          console.log("called test_studyUtils_startup details");
           return undefined;
         },
 

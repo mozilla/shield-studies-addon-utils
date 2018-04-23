@@ -28,7 +28,7 @@ for (const i in proposed) {
     if (!valid) {
       clean = false;
       console.error(
-        `# ERRORS IN ${i}:${j} ${ns.namespace}.types[${j}] "${type.id}"`,
+        `# SCHEMA ERROR: ${ns.namespace}.${type.name} "${type.id}"`,
       );
       console.error(ajv.errors);
     }
@@ -39,7 +39,7 @@ for (const i in proposed) {
     if (!valid) {
       clean = false;
       console.error(
-        `# testcase failed IN ${i}:${j} ${ns.namespace}.types[${j}] "${
+        `# testcase failed IN ${i}:${j} ${ns.namespace}.${type.name} "${
           type.id
         }"`,
       );
@@ -59,9 +59,7 @@ for (const i in proposed) {
       if (!valid) {
         clean = false;
         console.error(
-          `# ERRORS IN ${i}:${j} ${type.name} ${
-            ns.namespace
-          }.functions[${j}].paramters[${k}]`,
+          `# SCHEMA ERROR: ${ns.namespace}.${type.name}({${parameter.name}})`,
         );
         console.error(ajv.errors);
       }
@@ -75,9 +73,7 @@ for (const i in proposed) {
       if (!valid) {
         clean = false;
         console.error(
-          `# ERRORS IN ${i}:${j} ${type.name} ${
-            ns.namespace
-          }.events[${j}].parameters[${k}]`,
+          `# SCHEMA ERROR: ${ns.namespace}.${type.name}({${parameter.name}})`,
         );
         console.error(ajv.errors);
       }

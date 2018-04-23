@@ -45,7 +45,7 @@ Fires Events
 
 (At most one of)
 
-* study:onReaday OR
+* study:onReady OR
 * study:onEndStudy
 
 Preferences set
@@ -184,7 +184,7 @@ n:
 if set, no more than `n` pings.
 type:
 Array of 'ping types' (e.g., main, crash, shield-study-addon) to filter
-mininumTimestamp:
+minimumTimestamp:
 only pings after this timestamp.
 headersOnly:
 boolean. If true, only the 'headers' will be returned.
@@ -220,9 +220,15 @@ based on various hashes of clientId
   * optional: false
 
 * `algorithm`
+
   * type: algorithm
   * $ref:
   * optional: false
+
+* `fraction`
+  * type: fraction
+  * $ref:
+  * optional: true
 
 ### `browser.study.surveyUrl`
 
@@ -266,6 +272,23 @@ Using AJV, do jsonschema validation of an object. Can be used to validate your a
 
 * `thingToLog`
   * type: thingToLog
+  * $ref:
+  * optional: false
+
+### `browser.study.test_studyUtils_firstSeen`
+
+**Parameters**
+
+### `browser.study.test_studyUtils_setActive`
+
+**Parameters**
+
+### `browser.study.test_studyUtils_startup`
+
+**Parameters**
+
+* `details`
+  * type: details
   * $ref:
   * optional: false
 
@@ -445,7 +468,20 @@ Act on it by
 }
 ```
 
-### [4] searchTelemetryQuery
+### [4] telemetryPayload
+
+```json
+{
+  "id": "telemetryPayload",
+  "type": "object",
+  "additionalProperties": true,
+  "testcase": {
+    "foo": "bar"
+  }
+}
+```
+
+### [5] searchTelemetryQuery
 
 ```json
 {
@@ -456,18 +492,23 @@ Act on it by
       "type": ["array"],
       "items": {
         "type": "string"
-      }
+      },
+      "optional": true
     },
     "n": {
-      "type": "integer"
+      "type": "integer",
+      "optional": true
     },
-    "mininumTimestamp": {
-      "type": "number"
+    "minimumTimestamp": {
+      "type": "number",
+      "optional": true
     },
     "headersOnly": {
-      "type": "boolean"
+      "type": "boolean",
+      "optional": true
     }
   },
+  "additionalProperties": false,
   "testcase": {
     "type": ["shield-study-addon", "shield-study"],
     "n": 100,

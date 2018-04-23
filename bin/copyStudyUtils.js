@@ -68,7 +68,7 @@ const program = require("commander");
 program
   .arguments(
     "<privilegedDirname>",
-    "root directory in you addon for privileged code",
+    "root directory in your add-on for privileged code",
   )
   .option(
     "--example",
