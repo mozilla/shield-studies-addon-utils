@@ -41,7 +41,7 @@ function studySetupForTests() {
   return studySetup;
 }
 
-describe("Shield Study Add-on Utils Functional Tests", function() {
+describe("Tests for the browser.study.* API (not specific to any add-on background logic)", function() {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
   this.timeout(15000);
 
@@ -255,50 +255,5 @@ describe("Shield Study Add-on Utils Functional Tests", function() {
         assert(theMostRecentPing.payload.data.study_state === "expired");
       }
     });
-
-    // TODO: glind - restore these tests
-    /*
-    describe("test the opening of an URL at the end of the study", function() {
-      it("should open a new tab", async() => {
-        const newTabOpened = await driver.wait(async() => {
-          const handles = await driver.getAllWindowHandles();
-          return handles.length === 2; // opened a new tab
-        }, 3000);
-        assert(newTabOpened);
-      });
-
-      it("should open a new tab to the correct URL", async() => {
-        const currentHandle = await driver.getWindowHandle();
-        const firefox = require("selenium-webdriver/firefox");
-        const Context = firefox.Context;
-        driver.setContext(Context.CONTENT);
-        // Find the new window handle.
-        let newWindowHandle = null;
-        const handles = await driver.getAllWindowHandles();
-        for (const handle of handles) {
-          if (handle !== currentHandle) {
-            newWindowHandle = handle;
-          }
-        }
-        const correctURLOpened = await driver.wait(async() => {
-          await driver.switchTo().window(newWindowHandle);
-          const currentURL = await driver.getCurrentUrl();
-          return currentURL.startsWith(
-            "http://www.example.com/?reason=expired",
-          );
-        });
-        assert(correctURLOpened);
-      });
-      if (theMostRecentPing.payload.data.study_state === "exit") {
-        assert(
-          thePingBeforeTheMostRecentPing.payload.data.study_state === "expired",
-        );
-      }
-
-      if (thePingBeforeTheMostRecentPing.payload.data.study_state === "exit") {
-        assert(theMostRecentPing.payload.data.study_state === "expired");
-      }
-    });
-    */
   });
 });
