@@ -1,6 +1,3 @@
-import jsonschema from "./jsonschema";
-import schemas from "./schemas";
-
 const { utils: Cu } = Components;
 Cu.import("resource://gre/modules/Services.jsm");
 const { TextEncoder } = Cu.getGlobalForObject(Services);
@@ -23,7 +20,6 @@ export function chooseWeighted(weightedVariations, fraction = Math.random()) {
     weight: float >= 0
    }
   */
-  jsonschema.validateOrThrow(weightedVariations, schemas.weightedVariations);
 
   const weights = weightedVariations.map(x => x.weight || 1);
   const partial = cumsum(weights);
