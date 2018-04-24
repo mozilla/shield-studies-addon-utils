@@ -1,14 +1,13 @@
-/* global addonWidgetId */
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "getStudySetup" }]*/
 
 /**
  *  Overview:
  *
- *  - constructs a well-formated `studySetup` by use by `browser.study.setup`
+ *  - constructs a well-formatted `studySetup` by use by `browser.study.setup`
  *  - mostly declarative, except that some fields are field at runtime
  *    asynchronously.
  *
- *  Advanced feaures:
+ *  Advanced features:
  *  - testing overrides from preferences
  *  - expiration time
  *  - some user defined endings.
@@ -20,7 +19,7 @@
  * Will be augmented by 'getStudySetup'
  */
 const studySetup = {
-  // telemetryEnvironment.setActiveExperiment
+  // used for activeExperiments tagging (telemetryEnvironment.setActiveExperiment)
   activeExperimentName: browser.runtime.id,
 
   // uses shield|pioneer pipeline, watches those permissions
@@ -75,7 +74,7 @@ const studySetup = {
     },
   ],
 
-  //
+  // maximum time that the study should run, from the first run
   expire: {
     days: 14,
   },
@@ -88,7 +87,8 @@ const studySetup = {
   },
 };
 
-/** Determine, based on common and study-specific criteria, if enroll (first run)
+/**
+ * Determine, based on common and study-specific criteria, if enroll (first run)
  * should proceed.
  *
  * False values imply that during first run, we should endStudy(`ineligible`)
@@ -97,7 +97,7 @@ const studySetup = {
  *
  * (Guards against Normandy or other deployment mistakes or inadequacies)
  *
- * This implementation caches in localstore to speed up second run.
+ * This implementation caches in local storage to speed up second run.
  *
  */
 async function shouldAllowEnroll() {
@@ -105,10 +105,11 @@ async function shouldAllowEnroll() {
   let allowed = await browser.storage.local.get("allowedToEnroll");
   if (allowed) return true;
 
-  /* First run, we must calculate the answer.
-     If false, the study will endStudy with 'ineligible' during `setup`
+  /*
+  First run, we must calculate the answer.
+  If false, the study will endStudy with 'ineligible' during `setup`
   */
-  // could have other reasons to be eligible, such addons, prefs
+  // could have other reasons to be eligible, such add-ons, prefs
   const dataPermissions = await browser.study.dataPermissions();
   allowed = dataPermissions.shield;
 
@@ -117,8 +118,8 @@ async function shouldAllowEnroll() {
   return allowed;
 }
 
-/** Augment studySetup with a few async values
- *
+/**
+ * Augment studySetup with a few async values
  */
 async function getStudySetup() {
   const id = browser.runtime.id;
