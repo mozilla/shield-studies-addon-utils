@@ -367,7 +367,7 @@ this.study = class extends ExtensionAPI {
           return () => {
             // UnregisterInternalCallback(callback);
           };
-        }).api,
+        }).api(),
 
         /**
          * Schema.json `properties`
