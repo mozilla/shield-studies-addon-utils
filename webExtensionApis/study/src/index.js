@@ -4,7 +4,6 @@
 
 ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
-ChromeUtils.import("resource://gre/modules/Services.jsm");
 
 // eslint-disable-next-line no-undef
 const { EventManager } = ExtensionCommon;
@@ -70,9 +69,6 @@ this.study = class extends ExtensionAPI {
           return studyUtils.startup({ reason });
         },
       },
-
-      // eslint-disable-next-line no-undef
-      prefs: Services.prefs,
 
       study: {
         /**
