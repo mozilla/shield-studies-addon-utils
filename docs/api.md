@@ -295,7 +295,13 @@ Fires when the study is 'ready' for the feature to startup.
 **Parameters**
 
 * `studyInfo`
+
   * type: studyInfo
+  * $ref:
+  * optional: false
+
+* `isFirstRun`
+  * type: isFirstRun
   * $ref:
   * optional: false
 

@@ -15,8 +15,8 @@ class StudyApiEventEmitter extends EventEmitter {
     this.emit("dataPermissionsChange", updatedPermissions);
   }
 
-  emitReady(studyInfo) {
-    this.emit("ready", studyInfo);
+  emitReady(studyInfo, isFirstRun) {
+    this.emit("ready", studyInfo, isFirstRun);
   }
 
   emitEndStudy(ending) {
@@ -119,7 +119,9 @@ this.study = class extends ExtensionAPI {
             await bootstrap.configure(extension);
             await bootstrap.startup(extension);
             const studyInfo = studyUtils.info();
-            studyApiEventEmitter.emitReady(studyInfo);
+            // TODO: Only set true on first run
+            const isFirstRun = true;
+            studyApiEventEmitter.emitReady(studyInfo, isFirstRun);
             return studyInfo;
           } catch (e) {
             console.error("browser.study.setup error");
@@ -336,8 +338,8 @@ this.study = class extends ExtensionAPI {
         // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
         /* Fires when the study is 'ready' for the feature to startup. */
         onReady: new EventManager(context, "study:onReady", fire => {
-          const listener = (eventReference, studyInfo) => {
-            fire.async(studyInfo);
+          const listener = (eventReference, studyInfo, isFirstRun) => {
+            fire.async(studyInfo, isFirstRun);
           };
           studyApiEventEmitter.once("ready", listener);
           return () => {

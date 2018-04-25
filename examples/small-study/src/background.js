@@ -57,7 +57,7 @@ class StudyLifeCycleHandler {
    * - set up expiration alarms
    * - make feature/experience/ui with the particular variation for this user.
    */
-  async enableFeature(studyInfo) {
+  async enableFeature(studyInfo, isFirstRun) {
     if (studyInfo.timeUntilExpire) {
       browser.alarm.create(studyInfo.timeUntilExpire, () =>
         browser.study.endStudy("expired"),

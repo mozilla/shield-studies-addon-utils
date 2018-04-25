@@ -374,6 +374,8 @@
     parameters:  # for the callback
     - name: studyInfo
       type: object
+    - name: isFirstRun
+      type: boolean
 
   - name: onEndStudy
     type: function
