@@ -226,6 +226,7 @@ this.study = class extends ExtensionAPI {
    */
         sendTelemetry: async function sendTelemetry(payload) {
           console.log("called sendTelemetry payload");
+
           function throwIfInvalid(obj) {
             // Check: all keys and values must be strings,
             for (const k in obj) {
