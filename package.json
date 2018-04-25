@@ -62,7 +62,7 @@
   },
   "scripts": {
     "apiDocs": "node ./bin/documentSchema.js ./webExtensionApis/study/schema.json > docs/api.md ",
-    "build": "cd webExtensionApis/study && webpack && npm run fakeApi",
+    "build": "cd webExtensionApis/study && webpack",
     "docformat": "doctoc --title '**Contents**' docs/*.md && prettier '**/*.md' --write",
     "eslint": "eslint . --ext jsm --ext js --ext json",
     "eslint-fix": "npm run eslint -- --fix",
