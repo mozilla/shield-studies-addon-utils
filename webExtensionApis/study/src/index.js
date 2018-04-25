@@ -56,20 +56,6 @@ this.study = class extends ExtensionAPI {
     const { extension } = this;
 
     return {
-      studyTest: {
-        async firstSeen() {
-          return studyUtils.firstSeen();
-        },
-
-        async setActive() {
-          return studyUtils.setActive();
-        },
-
-        async startup({ reason }) {
-          return studyUtils.startup({ reason });
-        },
-      },
-
       study: {
         /**
          * Schema.json `functions`
@@ -368,6 +354,19 @@ this.study = class extends ExtensionAPI {
         /**
          * Schema.json `properties`
          */
+      },
+      studyTest: {
+        async firstSeen() {
+          return studyUtils.firstSeen();
+        },
+
+        async setActive() {
+          return studyUtils.setActive();
+        },
+
+        async startup({ reason }) {
+          return studyUtils.startup({ reason });
+        },
       },
     };
   }
