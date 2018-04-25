@@ -105,7 +105,7 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
   });
 
   /*
-  TODO: Figure out why we can't catch this type of exception
+  TODO: Figure out why if/how/when we can catch this type of exception (currently it stops test execution completely)
   it("should be able to catch exceptions thrown in the WebExtensions API", async() => {
     const caughtError = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
       driver,
@@ -145,7 +145,7 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
         }
       },
     );
-    // TODO: Figure out why we can't catch the actual error
+    // TODO: Figure out if/how/when we can catch the actual error
     // assert(caughtError === "Error: An async exception thrown for test purposes");
     assert(caughtError === "Error: An unexpected error occurred");
   });
@@ -188,23 +188,20 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
       driver,
       async callback => {
         let _caughtError = null;
-
         try {
-          // Send custom telemetry
           await browser.study.sendTelemetry({ foo: "bar" });
-
-          // We should not reach this statement
           callback(false);
         } catch (e) {
-          console.log("Caught error", e);
-
-          _caughtError = "foo";
+          // console.log("Caught error", e);
+          _caughtError = e.toString();
+          callback(_caughtError);
         }
-
         callback(_caughtError);
       },
     );
-    assert(caughtError === "foo");
+    // TODO: Figure out if/how/when we can catch the actual error
+    // assert(caughtError === "Error: telemetry: this method can't be used until `setup` is called");
+    assert(caughtError === "Error: An unexpected error occurred");
   });
 
   describe("test the browser.study.setup() side effects", function() {

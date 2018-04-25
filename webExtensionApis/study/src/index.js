@@ -243,7 +243,7 @@ this.study = class extends ExtensionAPI {
           }
 
           throwIfInvalid(payload);
-          studyUtils.telemetry(payload);
+          await studyUtils.telemetry(payload);
         },
 
         /* Search locally stored telemetry pings using these fields (if set)
