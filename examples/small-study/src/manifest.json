@@ -10,15 +10,20 @@
     }
   },
   "experiment_apis": {
-    // study is the exported object from api.js
+    "prefs": {
+      "schema": "./privileged/prefs/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "./privileged/prefs/api.js",
+        "paths": [["prefs"]]
+      }
+    },
     "study": {
-      // namespace keys match the paths below
       "schema": "./privileged/study/schema.json",
       "parent": {
         "scopes": ["addon_parent"],
         "script": "./privileged/study/api.js",
-        // keys of the object exported by api.js:study.getApi()
-        "paths": [["study"], ["studyTest"], ["prefs"]]
+        "paths": [["study"]]
       }
     }
   },
