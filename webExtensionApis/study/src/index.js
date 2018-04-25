@@ -10,10 +10,17 @@ const { EventManager } = ExtensionCommon;
 // eslint-disable-next-line no-undef
 const { EventEmitter } = ExtensionUtils;
 
-// eslint-disable-next-line no-unused-vars
-class Foo extends EventEmitter {
-  foo() {
-    this.emit("foo");
+class StudyApiEventEmitter extends EventEmitter {
+  emitDataPermissionsChange(updatedPermissions) {
+    this.emit("dataPermissionsChange", updatedPermissions);
+  }
+
+  emitReady(studyInfo) {
+    this.emit("ready", studyInfo);
+  }
+
+  emitEndStudy(endingSteps) {
+    this.emit("endStudy", endingSteps);
   }
 }
 
@@ -105,9 +112,16 @@ this.study = class extends ExtensionAPI {
   1. allowEnroll is ONLY used during first run (install)
    */
         setup: async function setup(studySetup) {
-          bootstrap = studyUtilsBootstrap.Bootstrap(studySetup, studyUtils);
-          await bootstrap.configure(extension);
-          await bootstrap.startup(extension);
+          try {
+            bootstrap = studyUtilsBootstrap.Bootstrap(studySetup, studyUtils);
+            await bootstrap.configure(extension);
+            await bootstrap.startup(extension);
+            const studyInfo = studyUtils.info();
+            StudyApiEventEmitter.emitReady(studyInfo);
+          } catch (e) {
+            console.error("browser.study.setup error");
+            console.error(e);
+          }
         },
 
         /* Signal to browser.study that it should end.
@@ -305,14 +319,12 @@ this.study = class extends ExtensionAPI {
           context,
           "study:onDataPermissionsChange",
           fire => {
-            /*
-            const callback = value => {
+            const listener = value => {
               fire.async(value);
             };
-            */
-            // RegisterSomeInternalCallback(callback);
+            StudyApiEventEmitter.on("dataPermissionsChange", listener);
             return () => {
-              // UnregisterInternalCallback(callback);
+              StudyApiEventEmitter.off("dataPermissionsChange", listener);
             };
           },
         ).api(),
@@ -320,14 +332,12 @@ this.study = class extends ExtensionAPI {
         // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
         /* Fires when the study is 'ready' for the feature to startup. */
         onReady: new EventManager(context, "study:onReady", fire => {
-          /*
-          const callback = value => {
+          const listener = value => {
             fire.async(value);
           };
-          */
-          // RegisterSomeInternalCallback(callback);
+          StudyApiEventEmitter.on("ready", listener);
           return () => {
-            // UnregisterInternalCallback(callback);
+            StudyApiEventEmitter.off("ready", listener);
           };
         }).api(),
 
@@ -339,17 +349,20 @@ this.study = class extends ExtensionAPI {
   - tearing down your feature
   - uninstalling the addon
    */
-        onEndStudy: new EventManager(context, "study:onEndStudy", fire => {
-          /*
-          const callback = value => {
-            fire.async(value);
-          };
-          */
-          // RegisterSomeInternalCallback(callback);
-          return () => {
-            // UnregisterInternalCallback(callback);
-          };
-        }).api(),
+        onEndStudy: new EventManager(
+          context,
+          "study:onEndStudy",
+
+          fire => {
+            const listener = value => {
+              fire.async(value);
+            };
+            StudyApiEventEmitter.on("endStudy", listener);
+            return () => {
+              StudyApiEventEmitter.off("endStudy", listener);
+            };
+          },
+        ).api(),
 
         /**
          * Schema.json `properties`
