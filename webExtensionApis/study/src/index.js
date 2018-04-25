@@ -104,7 +104,7 @@ this.study = class extends ExtensionAPI {
   Fires Events
 
   (At most one of)
-  - study:onReaday  OR
+  - study:onReady  OR
   - study:onEndStudy
 
   Preferences set

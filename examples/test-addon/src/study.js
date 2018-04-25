@@ -19,7 +19,7 @@
  * Will be augmented by 'getStudySetup'
  */
 const studySetup = {
-  // telemetryEnvironment.setActiveExperiment
+  // used for activeExperiments tagging (telemetryEnvironment.setActiveExperiment)
   activeExperimentName: browser.runtime.id,
 
   // uses shield|pioneer pipeline, watches those permissions
@@ -54,9 +54,9 @@ const studySetup = {
       study_state: "ended-neutral",
     },
     "some-study-defined-ending-with-survey-url": {
-      study_state: "ended-negative",
       baseUrl:
         "http://www.example.com/?reason=some-study-defined-ending-with-survey-url",
+      study_state: "ended-negative",
     },
   },
 
@@ -79,7 +79,7 @@ const studySetup = {
     },
   ],
 
-  //
+  // maximum time that the study should run, from the first run
   expire: {
     days: 14,
   },
@@ -102,17 +102,18 @@ const studySetup = {
  *
  * (Guards against Normandy or other deployment mistakes or inadequacies)
  *
- * This implementation caches in localstore to speed up second run.
+ * This implementation caches in local storage to speed up second run.
  */
 async function shouldAllowEnroll() {
   // Cached answer.  Used on 2nd run
   let allowed = await browser.storage.local.get("allowedToEnroll");
   if (allowed) return true;
 
-  /* First run, we must calculate the answer.
-     If false, the study will endStudy with 'ineligible' during `setup`
+  /*
+  First run, we must calculate the answer.
+  If false, the study will endStudy with 'ineligible' during `setup`
   */
-  // could have other reasons to be eligible, such addons, prefs
+  // could have other reasons to be eligible, such add-ons, prefs
   const dataPermissions = await browser.study.dataPermissions();
   allowed = dataPermissions.shield;
 

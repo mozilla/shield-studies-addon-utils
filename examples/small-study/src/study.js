@@ -3,8 +3,8 @@
 /**
  *  Overview:
  *
- *  - constructs a well-formatted `studySetup` by use by `browser.study.setup`
- *  - mostly declarative, except that some fields are field at runtime
+ *  - constructs a well-formatted `studySetup` for use by `browser.study.setup`
+ *  - mostly declarative, except that some fields are set at runtime
  *    asynchronously.
  *
  *  Advanced features:
@@ -50,15 +50,15 @@ const studySetup = {
 
     /** User defined endings */
     "some-study-defined-ending": {
-      study_state: "ended-neutral",
       baseUrl: null,
+      study_state: "ended-neutral",
     },
   },
 
   // logging
   logLevel: 10,
 
-  /* Study branches and sample weights, overweighing feature branches */
+  // Study branches and sample weights, overweighing feature branches
   weightedVariations: [
     {
       name: "feature-active",
@@ -80,7 +80,7 @@ const studySetup = {
   },
 
   // Optional: testing overrides.
-  // Set from prefs in getstudySetup
+  // Set from prefs in getStudySetup
   testing: {
     variation: null,
     firstRunTimestamp: null,
@@ -98,7 +98,6 @@ const studySetup = {
  * (Guards against Normandy or other deployment mistakes or inadequacies)
  *
  * This implementation caches in local storage to speed up second run.
- *
  */
 async function shouldAllowEnroll() {
   // Cached answer.  Used on 2nd run
