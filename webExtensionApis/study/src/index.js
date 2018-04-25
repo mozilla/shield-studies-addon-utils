@@ -120,10 +120,12 @@ this.study = class extends ExtensionAPI {
             await bootstrap.startup(extension);
             const studyInfo = studyUtils.info();
             studyApiEventEmitter.emitReady(studyInfo);
+            return studyInfo;
           } catch (e) {
             console.error("browser.study.setup error");
             console.error(e);
           }
+          return null;
         },
 
         /* Signal to browser.study that it should end.
