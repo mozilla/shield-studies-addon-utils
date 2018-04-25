@@ -42,7 +42,7 @@ this.Bootstrap = function(studySetup, studyUtils) {
       ) {
         //  telemetry "enter" ONCE
         studyUtils.firstSeen();
-        if (!studySetup.eligible) {
+        if (!studySetup.allowEnroll) {
           this.log.debug("User is ineligible, ending study.");
           // 1. uses studySetup.endings.ineligible.url if any,
           // 2. sends UT for "ineligible"

@@ -10,7 +10,7 @@ const utils = require("./utils");
 function studySetupForTests() {
   // Minimal configuration to pass schema validation
   const studySetup = {
-    activeExperimentName: "shield-utils-test",
+    activeExperimentName: "shield-utils-test-addon@shield.mozilla.org",
     studyType: "shield",
     endings: {
       ineligible: {
@@ -20,7 +20,6 @@ function studySetupForTests() {
     telemetry: {
       send: true, // assumed false. Actually send pings?
       removeTestingFlag: false, // Marks pings to be discarded, set true for to have the pings processed in the pipeline
-      // TODO "onInvalid": "throw"  // invalid packet for schema?  throw||log
     },
     logLevel: 10,
     weightedVariations: [
@@ -35,8 +34,7 @@ function studySetupForTests() {
   };
 
   // Set dynamic study configuration flags
-  studySetup.eligible = true;
-  studySetup.expired = false;
+  studySetup.allowEnroll = true;
 
   return studySetup;
 }
@@ -138,7 +136,7 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
           // Ensure we have configured study and are supposed to run our feature
           await browser.study.setup(_studySetupForTests);
 
-          browser.study.test_studyUtils_firstSeen();
+          browser.studyTest.firstSeen();
 
           const studyPings = await browser.study.searchSentTelemetry({
             type: ["shield-study"],
@@ -157,7 +155,7 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
           // Ensure we have configured study and are supposed to run our feature
           await browser.study.setup(_studySetupForTests);
 
-          browser.study.test_studyUtils_setActive();
+          browser.studyTest.setActive();
 
           callback();
         },
@@ -166,7 +164,8 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
       const activeExperiments = await utils.telemetry.getActiveExperiments(
         driver,
       );
-      assert(activeExperiments.hasOwnProperty("shield-utils-test"));
+      const studySetup = studySetupForTests();
+      assert(activeExperiments.hasOwnProperty(studySetup.activeExperimentName));
     });
 
     it("should send the correct telemetry ping on first install", async() => {
@@ -176,7 +175,7 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
           // Ensure we have configured study and are supposed to run our feature
           await browser.study.setup(_studySetupForTests);
 
-          await browser.study.test_studyUtils_startup({ reason: 5 }); // ADDON_INSTALL = 5
+          await browser.studyTest.startup({ reason: 5 }); // ADDON_INSTALL = 5
 
           const studyPings = await browser.study.searchSentTelemetry({
             type: ["shield-study"],
