@@ -285,10 +285,9 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
       });
 
       it("should have sent the correct exit telemetry", async() => {
-        const studyPings = await utils.telemetry.getMostRecentPingsByType(
-          driver,
-          "shield-study",
-        );
+        const studyPings = await utils.telemetry.searchSentTelemetry(driver, {
+          type: ["shield-study"],
+        });
 
         assert(studyPings.length >= 2);
 
@@ -326,6 +325,13 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
         ) {
           assert(theMostRecentPing.payload.data.study_state === "expired");
         }
+      });
+
+      it("should have not sent more than one shield-study-addon telemetry in total", async() => {
+        const studyPings = await utils.telemetry.searchSentTelemetry(driver, {
+          type: ["shield-study-addon"],
+        });
+        assert(studyPings.length === 1);
       });
     });
   });

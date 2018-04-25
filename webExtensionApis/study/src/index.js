@@ -263,13 +263,12 @@ this.study = class extends ExtensionAPI {
   - enrollment / eligiblity using recent Telemetry behaviours or client environment
   - addon testing scenarios
    */
-        searchSentTelemetry: async function searchSentTelemetry(
-          searchTelemetryQuery,
-        ) {
-          console.log("called searchSentTelemetry searchTelemetryQuery");
-          const { getTelemetryPings } = require("./pings.js");
-          return getTelemetryPings(searchTelemetryQuery);
-          // return [{ pingType: "main" }];
+        async searchSentTelemetry(searchTelemetryQuery) {
+          Components.utils.import(
+            "resource://gre/modules/TelemetryArchive.jsm",
+          );
+          const { searchTelemetryArchive } = require("./telemetry.js");
+          return searchTelemetryArchive(TelemetryArchive, searchTelemetryQuery);
         },
 
         /* Choose a element from `weightedVariations` array
