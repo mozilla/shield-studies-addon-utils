@@ -509,6 +509,28 @@ Interface for Test Utilities
 
 ## Functions
 
+### `browser.studyTest.throwAnException( message )`
+
+Throws an exception from a privileged function - for making sure that we can catch these in our web extension
+
+**Parameters**
+
+* `message`
+  * type: message
+  * $ref:
+  * optional: false
+
+### `browser.studyTest.throwAnExceptionAsync( message )`
+
+Throws an exception from a privileged async function - for making sure that we can catch these in our web extension
+
+**Parameters**
+
+* `message`
+  * type: message
+  * $ref:
+  * optional: false
+
 ### `browser.studyTest.firstSeen( )`
 
 **Parameters**

@@ -395,26 +395,41 @@
   description: Interface for Test Utilities
   apiVersion: 5  # for dev use
   functions:
-    - name: firstSeen
-      type: function
-      async: true
-      descripton:
-      parameters: []
+  - name: throwAnException
+    type: function
+    description: 'Throws an exception from a privileged function - for making sure that we can catch these in our web extension'
+    parameters:
+    - name: message
+      type: string
 
-    - name: setActive
-      type: function
-      async: true
-      descripton:
-      parameters: []
+  - name: throwAnExceptionAsync
+    type: function
+    description: 'Throws an exception from a privileged async function - for making sure that we can catch these in our web extension'
+    async: true
+    parameters:
+    - name: message
+      type: string
 
-    - name: startup
-      type: function
-      async: true
-      descripton:
-      parameters:
-      - name: details
-        type: object
-        additionalProperties: true
+  - name: firstSeen
+    type: function
+    async: true
+    description: ''
+    parameters: []
+
+  - name: setActive
+    type: function
+    async: true
+    description: ''
+    parameters: []
+
+  - name: startup
+    type: function
+    async: true
+    description: ''
+    parameters:
+    - name: details
+      type: object
+      additionalProperties: true
 
 - namespace: prefs
   description: |

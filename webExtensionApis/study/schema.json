@@ -389,24 +389,49 @@
     "apiVersion": 5,
     "functions": [
       {
+        "name": "throwAnException",
+        "type": "function",
+        "description":
+          "Throws an exception from a privileged function - for making sure that we can catch these in our web extension",
+        "parameters": [
+          {
+            "name": "message",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "throwAnExceptionAsync",
+        "type": "function",
+        "description":
+          "Throws an exception from a privileged async function - for making sure that we can catch these in our web extension",
+        "async": true,
+        "parameters": [
+          {
+            "name": "message",
+            "type": "string"
+          }
+        ]
+      },
+      {
         "name": "firstSeen",
         "type": "function",
         "async": true,
-        "descripton": null,
+        "description": "",
         "parameters": []
       },
       {
         "name": "setActive",
         "type": "function",
         "async": true,
-        "descripton": null,
+        "description": "",
         "parameters": []
       },
       {
         "name": "startup",
         "type": "function",
         "async": true,
-        "descripton": null,
+        "description": "",
         "parameters": [
           {
             "name": "details",

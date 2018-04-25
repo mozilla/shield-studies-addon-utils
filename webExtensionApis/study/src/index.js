@@ -369,6 +369,14 @@ this.study = class extends ExtensionAPI {
          */
       },
       studyTest: {
+        throwAnException(message) {
+          throw new Error(message);
+        },
+
+        throwAnExceptionAsync: async function throwAnExceptionAsync(message) {
+          throw new Error(message);
+        },
+
         async firstSeen() {
           return studyUtils.firstSeen();
         },

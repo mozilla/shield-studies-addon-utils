@@ -273,6 +273,18 @@ this.studyTest = class extends ExtensionAPI {
   getAPI(context) {
     return {
       studyTest: {
+        /* Throws an exception from a privileged function - for making sure that we can catch these in our web extension */
+        throwAnException: function throwAnException(message) {
+          console.log("called throwAnException message");
+          return undefined;
+        },
+
+        /* Throws an exception from a privileged async function - for making sure that we can catch these in our web extension */
+        throwAnExceptionAsync: async function throwAnExceptionAsync(message) {
+          console.log("called throwAnExceptionAsync message");
+          return undefined;
+        },
+
         /* @TODO no description given */
         firstSeen: async function firstSeen() {
           console.log("called firstSeen ");

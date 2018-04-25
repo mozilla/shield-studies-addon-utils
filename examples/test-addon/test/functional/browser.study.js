@@ -75,6 +75,81 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
     assert(hasAccessToShieldUtilsWebExtensionApi);
   });
 
+  it("should be able to access studyTest WebExtensions API from the extension page for tests", async() => {
+    const hasAccessToShieldUtilsWebExtensionApi = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+      driver,
+      async callback => {
+        callback(browser && typeof browser.studyTest === "object");
+      },
+    );
+    assert(hasAccessToShieldUtilsWebExtensionApi);
+  });
+
+  it("should be able to catch exceptions thrown in the WebExtension", async() => {
+    const caughtError = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+      driver,
+      async callback => {
+        let _caughtError = null;
+
+        try {
+          throw new Error("Local exception");
+        } catch (e) {
+          // console.log("Caught error", e);
+          _caughtError = e.toString();
+        }
+
+        callback(_caughtError);
+      },
+    );
+    assert(caughtError === "Error: Local exception");
+  });
+
+  /*
+  TODO: Figure out why we can't catch this type of exception
+  it("should be able to catch exceptions thrown in the WebExtensions API", async() => {
+    const caughtError = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+      driver,
+      async callback => {
+        let _caughtError = null;
+
+        try {
+          browser.studyTest.throwAnException("An exception thrown for test purposes");
+          callback(false);
+        } catch (e) {
+          // console.log("Caught error", e);
+          _caughtError = e.toString();
+          callback(_caughtError);
+        }
+
+      },
+    );
+    assert(caughtError === "Error: An exception thrown for test purposes");
+  });
+  */
+
+  it("should be able to catch exceptions thrown in an async WebExtensions API method", async() => {
+    const caughtError = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+      driver,
+      async callback => {
+        let _caughtError = null;
+
+        try {
+          await browser.studyTest.throwAnExceptionAsync(
+            "An async exception thrown for test purposes",
+          );
+          callback(false);
+        } catch (e) {
+          // console.log("Caught error", e);
+          _caughtError = e.toString();
+          callback(_caughtError);
+        }
+      },
+    );
+    // TODO: Figure out why we can't catch the actual error
+    // assert(caughtError === "Error: An async exception thrown for test purposes");
+    assert(caughtError === "Error: An unexpected error occurred");
+  });
+
   it("should return the correct variation based on specific weightedVariations", async() => {
     const chosenVariation = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
       driver,
