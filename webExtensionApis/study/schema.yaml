@@ -398,6 +398,7 @@
   - name: throwAnException
     type: function
     description: 'Throws an exception from a privileged function - for making sure that we can catch these in our web extension'
+    async: false
     parameters:
     - name: message
       type: string
