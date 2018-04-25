@@ -248,17 +248,73 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
       assert(shieldTelemetryPing.payload.data.attributes.foo === "bar");
     });
 
-    it("should have sent the correct ping (enter) on first seen", async() => {
-      const firstSeenPing = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
-        driver,
-        async callback => {
-          const studyPings = await browser.study.searchSentTelemetry({
-            type: ["shield-study"],
-          });
-          callback(studyPings[0]);
-        },
-      );
-      assert(firstSeenPing.payload.data.study_state === "enter");
+    describe("should have sent the expected telemetry", function() {
+      let studyPings;
+
+      before(async() => {
+        studyPings = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+          driver,
+          async callback => {
+            const _studyPings = await browser.study.searchSentTelemetry({
+              type: ["shield-study", "shield-study-addon"],
+            });
+            callback(_studyPings);
+          },
+        );
+        // For debugging tests
+        // console.log("Pings report: ", utils.telemetry.pingsReport(studyPings));
+      });
+
+      it("should have sent at least one shield telemetry ping", async() => {
+        assert(studyPings.length > 0, "at least one shield telemetry ping");
+      });
+
+      it("should have sent one shield-study telemetry ping with study_state=enter", async() => {
+        const filteredPings = utils.telemetry.filterPings(
+          [
+            ping =>
+              ping.type === "shield-study" &&
+              ping.payload.data.study_state === "enter",
+          ],
+          studyPings,
+        );
+        assert(
+          filteredPings.length > 0,
+          "at least one shield-study telemetry ping with study_state=enter",
+        );
+      });
+
+      /*
+      it("should have sent one shield-study telemetry ping with study_state=installed", async() => {
+        const filteredPings = utils.telemetry.filterPings(
+          [
+            ping =>
+              ping.type === "shield-study" &&
+              ping.payload.data.study_state === "installed",
+          ],
+          studyPings,
+        );
+        assert(
+          filteredPings.length > 0,
+          "at least one shield-study telemetry ping with study_state=installed",
+        );
+      });
+      */
+
+      it("should have sent one shield-study-addon telemetry ping with payload.data.attributes.foo=bar", async() => {
+        const filteredPings = utils.telemetry.filterPings(
+          [
+            ping =>
+              ping.type === "shield-study-addon" &&
+              ping.payload.data.attributes.foo === "bar",
+          ],
+          studyPings,
+        );
+        assert(
+          filteredPings.length > 0,
+          "at least one shield-study-addon telemetry ping with payload.data.attributes.foo=bar",
+        );
+      });
     });
 
     describe("test the browser.study.endStudy() side effects", function() {
@@ -284,54 +340,46 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
         assert(!activeExperiments.hasOwnProperty("shield-utils-test"));
       });
 
-      it("should have sent the correct exit telemetry", async() => {
-        const studyPings = await utils.telemetry.searchSentTelemetry(driver, {
-          type: ["shield-study"],
+      describe("should have sent the expected exit telemetry", function() {
+        let studyPings;
+
+        before(async() => {
+          studyPings = await utils.telemetry.searchSentTelemetry(driver, {
+            type: ["shield-study", "shield-study-addon"],
+          });
+          // For debugging tests
+          // console.log("Final pings report: ", utils.telemetry.pingsReport(studyPings));
         });
 
-        assert(studyPings.length >= 2);
-
-        // The two exit pings are sent immediately after one another and it's
-        // original sending order is not reflected by the return of
-        // TelemetryArchive.promiseArchivedPingList
-        // Thus, we can only test that the last two pings are the correct ones
-        // but not that their order is correct
-
-        const theMostRecentPing = studyPings[0];
-        const thePingBeforeTheMostRecentPing = studyPings[1];
-
-        assert(theMostRecentPing);
-        assert(thePingBeforeTheMostRecentPing);
-
-        assert(
-          theMostRecentPing.payload.data.study_state === "exit" ||
-            theMostRecentPing.payload.data.study_state === "expired",
-        );
-        assert(
-          thePingBeforeTheMostRecentPing.payload.data.study_state === "exit" ||
-            thePingBeforeTheMostRecentPing.payload.data.study_state ===
-              "expired",
-        );
-
-        if (theMostRecentPing.payload.data.study_state === "exit") {
-          assert(
-            thePingBeforeTheMostRecentPing.payload.data.study_state ===
-              "expired",
+        it("one shield-study telemetry ping with study_state=exit", async() => {
+          const filteredPings = utils.telemetry.filterPings(
+            [
+              ping =>
+                ping.type === "shield-study" &&
+                ping.payload.data.study_state === "exit",
+            ],
+            studyPings,
           );
-        }
-
-        if (
-          thePingBeforeTheMostRecentPing.payload.data.study_state === "exit"
-        ) {
-          assert(theMostRecentPing.payload.data.study_state === "expired");
-        }
-      });
-
-      it("should have not sent more than one shield-study-addon telemetry in total", async() => {
-        const studyPings = await utils.telemetry.searchSentTelemetry(driver, {
-          type: ["shield-study-addon"],
+          assert(
+            filteredPings.length > 0,
+            "at least one shield-study telemetry ping with study_state=exit",
+          );
         });
-        assert(studyPings.length === 1);
+
+        it("one shield-study telemetry ping with study_state=expired", async() => {
+          const filteredPings = utils.telemetry.filterPings(
+            [
+              ping =>
+                ping.type === "shield-study" &&
+                ping.payload.data.study_state === "expired",
+            ],
+            studyPings,
+          );
+          assert(
+            filteredPings.length > 0,
+            "at least one shield-study telemetry ping with study_state=expired",
+          );
+        });
       });
     });
   });

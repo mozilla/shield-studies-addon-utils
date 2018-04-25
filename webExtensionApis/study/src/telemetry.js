@@ -9,6 +9,13 @@
  * - n:  positive integer. at most n pings.
  * - timestamp:  only pings after this timestamp.
  * - headersOnly: boolean, just the 'headers' for the pings, not the full bodies.
+ *
+ * TODO: Fix shortcoming:
+ * Some pings are sent immediately after one another and it's
+ * original sending order is not reflected by the return of
+ * TelemetryArchive.promiseArchivedPingList
+ * Thus, we can currently only test that the last two pings are the
+ * correct ones but not that their order is correct
  */
 async function searchTelemetryArchive(TelemetryArchive, searchTelemetryQuery) {
   let { type } = searchTelemetryQuery;

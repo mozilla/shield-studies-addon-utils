@@ -2,6 +2,7 @@
 
 const {
   searchTelemetryArchive,
+  SearchError,
 } = require("../webExtensionApis/study/src/telemetry");
 
 const firefox = require("selenium-webdriver/firefox");
@@ -20,7 +21,8 @@ module.exports.telemetry = {
 
   /**
    * Expose browser.study.searchSentTelemetry() to test utils so that it can
-   * be used also after the extension has been uninstalled
+   * be used regardless of the current browser context as well as
+   * after the extension has been uninstalled
    *
    * @param driver
    * @param searchTelemetryQuery
@@ -47,6 +49,18 @@ module.exports.telemetry = {
       type: ["shield-study", "shield-study-addon"],
       timestamp: ts,
     });
+  },
+
+  filterPings: (conditionArray, pings) => {
+    const resultingPings = [];
+    for (const condition of conditionArray) {
+      const index = pings.findIndex(ping => condition(ping));
+      if (index === -1) {
+        throw new SearchError(condition);
+      }
+      resultingPings.push(pings[index]);
+    }
+    return resultingPings;
   },
 
   summarizePings: pings => {
