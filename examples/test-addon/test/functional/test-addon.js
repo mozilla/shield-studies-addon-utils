@@ -41,13 +41,33 @@ describe("Tests verifying that the test add-on works as expected", function() {
   });
 
   describe('test the test add-on\'s "onEveryExtensionLoad" process', function() {
+    /**
+     * Before running the tests in this group, trigger onEveryExtensionLoad and wait for the study to be running
+     */
     before(async() => {
-      await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+      const response = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
         driver,
         async callback => {
-          callback();
+          const _response = await browser.runtime
+            .sendMessage("test:onEveryExtensionLoad")
+            .catch(console.error);
+          callback(_response);
         },
       );
+      assert(response);
+    });
+
+    it("should return the correct variation", async() => {
+      const chosenVariation = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+        driver,
+        async callback => {
+          const { variation } = await browser.study.getStudyInfo();
+          callback(variation);
+        },
+      );
+      console.log("chosenVariation", chosenVariation);
+      assert(chosenVariation);
+      assert(chosenVariation.name === "kittens");
     });
 
     describe("test the library's endStudy() function", function() {

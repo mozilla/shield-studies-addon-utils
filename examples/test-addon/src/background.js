@@ -1,5 +1,7 @@
 /* global getStudySetup */
 
+const promiseFeatureIsEnabled = new Promise(() => {});
+
 class FeatureToInstrument {
   /**
    * Listen to onEndStudy, onReady
@@ -36,6 +38,7 @@ class FeatureToInstrument {
     }
     browser.browserAction.setTitle({ title: studyInfo.variation });
     console.log(`changed the browser action title: ${studyInfo.variation}`);
+    promiseFeatureIsEnabled.resolve();
   }
 
   /** handles `study:end` signals
@@ -67,11 +70,17 @@ async function onEveryExtensionLoad() {
 // for events sent by tests. This allows us to control and test the execution
 // properly.
 // onEveryExtensionLoad();
-browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+browser.runtime.onMessage.addListener(async(request, sender, sendResponse) => {
   console.log("request", request);
   if (request === "test:onEveryExtensionLoad") {
-    onEveryExtensionLoad();
+    console.log("Running onEveryExtensionLoad()");
+    await onEveryExtensionLoad();
+    console.log("Waiting for feature to be enabled");
+    await promiseFeatureIsEnabled;
+    console.log("Sending response");
+    return sendResponse(true);
   }
+  return false;
 });
 
 // The tests that probe the web extensions APIs directly rely on an extension
