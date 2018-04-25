@@ -311,8 +311,8 @@ Act on it by
 
 **Parameters**
 
-* `endingSteps`
-  * type: endingSteps
+* `ending`
+  * type: ending
   * $ref:
   * optional: false
 

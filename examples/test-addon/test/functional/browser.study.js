@@ -108,58 +108,51 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
     assert(chosenVariation.name === "kittens");
   });
 
-  it("telemetry should be working", async() => {
-    const shieldTelemetryPing = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+  it("should not be able to send telemetry before setup", async() => {
+    const caughtError = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
       driver,
-      async(_studySetupForTests, callback) => {
-        // Ensure we have configured study and are supposed to run our feature
-        await browser.study.setup(_studySetupForTests);
+      async callback => {
+        let _caughtError = null;
 
-        // Send custom telemetry
-        await browser.study.sendTelemetry({ foo: "bar" });
+        try {
+          // Send custom telemetry
+          await browser.study.sendTelemetry({ foo: "bar" });
 
-        const studyPings = await browser.study.searchSentTelemetry({
-          type: ["shield-study-addon"],
-        });
-        callback(studyPings[0]);
+          // We should not reach this statement
+          assert(false);
+        } catch (e) {
+          console.log("Caught error", e);
+
+          _caughtError = "foo";
+        }
+
+        callback(_caughtError);
       },
-      studySetupForTests(),
     );
-    assert(shieldTelemetryPing.payload.data.attributes.foo === "bar");
+    assert(caughtError === "foo");
   });
 
-  describe('test the library\'s "startup" process', function() {
-    it("should send the correct ping on first seen", async() => {
-      const firstSeenPing = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
-        driver,
-        async(_studySetupForTests, callback) => {
-          // Ensure we have configured study and are supposed to run our feature
-          await browser.study.setup(_studySetupForTests);
-
-          browser.studyTest.firstSeen();
-
-          const studyPings = await browser.study.searchSentTelemetry({
-            type: ["shield-study"],
-          });
-          callback(studyPings[0]);
-        },
-        studySetupForTests(),
-      );
-      assert(firstSeenPing.payload.data.study_state === "enter");
-    });
-
-    it("should set the experiment to active in Telemetry", async() => {
+  describe("test the browser.study.setup() side effects", function() {
+    it("should fire the onReady event upon successful setup", async() => {
       await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
         driver,
         async(_studySetupForTests, callback) => {
-          // Ensure we have configured study and are supposed to run our feature
-          await browser.study.setup(_studySetupForTests);
-
-          browser.studyTest.setActive();
-
-          callback();
+          // Ensure we have a configured study and are supposed to run our feature
+          browser.study.onReady.addListener(async studyInfo => {
+            callback(studyInfo);
+          });
+          browser.study.setup(_studySetupForTests);
         },
         studySetupForTests(),
+      );
+    });
+
+    it("should have set the experiment to active in Telemetry", async() => {
+      await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+        driver,
+        async callback => {
+          callback();
+        },
       );
       const activeExperiments = await utils.telemetry.getActiveExperiments(
         driver,
@@ -168,91 +161,100 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
       assert(activeExperiments.hasOwnProperty(studySetup.activeExperimentName));
     });
 
-    it("should send the correct telemetry ping on first install", async() => {
-      const installedPing = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+    it("shield-study-addon telemetry should be working", async() => {
+      const shieldTelemetryPing = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
         driver,
-        async(_studySetupForTests, callback) => {
-          // Ensure we have configured study and are supposed to run our feature
-          await browser.study.setup(_studySetupForTests);
+        async callback => {
+          // Send custom telemetry
+          await browser.study.sendTelemetry({ foo: "bar" });
+          const studyPings = await browser.study.searchSentTelemetry({
+            type: ["shield-study-addon"],
+          });
+          callback(studyPings[0]);
+        },
+      );
+      assert(shieldTelemetryPing.payload.data.attributes.foo === "bar");
+    });
 
-          await browser.studyTest.startup({ reason: 5 }); // ADDON_INSTALL = 5
-
+    it("should have sent the correct ping (enter) on first seen", async() => {
+      const firstSeenPing = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+        driver,
+        async callback => {
           const studyPings = await browser.study.searchSentTelemetry({
             type: ["shield-study"],
           });
           callback(studyPings[0]);
         },
-        studySetupForTests(),
       );
-      assert(installedPing.payload.data.study_state === "installed");
-    });
-  });
-
-  describe("test the library's endStudy() function", function() {
-    before(async() => {
-      await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
-        driver,
-        async(_studySetupForTests, callback) => {
-          // Ensure we have configured study and are supposed to run our feature
-          await browser.study.setup(_studySetupForTests);
-
-          // TODO add tests for other reasons (?)
-          await browser.study.endStudy("expired", {
-            baseUrls: ["some.url"],
-            endingName: "anEnding",
-            endingClass: "ended-positive",
-          });
-          callback();
-        },
-        studySetupForTests(),
-      );
+      assert(firstSeenPing.payload.data.study_state === "enter");
     });
 
-    it("should set the experiment as inactive", async() => {
-      const activeExperiments = await utils.telemetry.getActiveExperiments(
-        driver,
-      );
-      assert(!activeExperiments.hasOwnProperty("shield-utils-test"));
-    });
-
-    it("should send the correct exit telemetry", async() => {
-      const studyPings = await utils.telemetry.getMostRecentPingsByType(
-        driver,
-        "shield-study",
-      );
-
-      assert(studyPings.length >= 2);
-
-      // The two exit pings are sent immediately after one another and it's
-      // original sending order is not reflected by the return of
-      // TelemetryArchive.promiseArchivedPingList
-      // Thus, we can only test that the last two pings are the correct ones
-      // but not that their order is correct
-
-      const theMostRecentPing = studyPings[0];
-      const thePingBeforeTheMostRecentPing = studyPings[1];
-
-      assert(theMostRecentPing);
-      assert(thePingBeforeTheMostRecentPing);
-
-      assert(
-        theMostRecentPing.payload.data.study_state === "exit" ||
-          theMostRecentPing.payload.data.study_state === "expired",
-      );
-      assert(
-        thePingBeforeTheMostRecentPing.payload.data.study_state === "exit" ||
-          thePingBeforeTheMostRecentPing.payload.data.study_state === "expired",
-      );
-
-      if (theMostRecentPing.payload.data.study_state === "exit") {
-        assert(
-          thePingBeforeTheMostRecentPing.payload.data.study_state === "expired",
+    describe("test the browser.study.endStudy() side effects", function() {
+      before(async() => {
+        await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+          driver,
+          async callback => {
+            // TODO add tests for other reasons (?)
+            await browser.study.endStudy("expired", {
+              baseUrls: ["some.url"],
+              endingName: "anEnding",
+              endingClass: "ended-positive",
+            });
+            callback();
+          },
         );
-      }
+      });
 
-      if (thePingBeforeTheMostRecentPing.payload.data.study_state === "exit") {
-        assert(theMostRecentPing.payload.data.study_state === "expired");
-      }
+      it("should have set the experiment as inactive", async() => {
+        const activeExperiments = await utils.telemetry.getActiveExperiments(
+          driver,
+        );
+        assert(!activeExperiments.hasOwnProperty("shield-utils-test"));
+      });
+
+      it("should have sent the correct exit telemetry", async() => {
+        const studyPings = await utils.telemetry.getMostRecentPingsByType(
+          driver,
+          "shield-study",
+        );
+
+        assert(studyPings.length >= 2);
+
+        // The two exit pings are sent immediately after one another and it's
+        // original sending order is not reflected by the return of
+        // TelemetryArchive.promiseArchivedPingList
+        // Thus, we can only test that the last two pings are the correct ones
+        // but not that their order is correct
+
+        const theMostRecentPing = studyPings[0];
+        const thePingBeforeTheMostRecentPing = studyPings[1];
+
+        assert(theMostRecentPing);
+        assert(thePingBeforeTheMostRecentPing);
+
+        assert(
+          theMostRecentPing.payload.data.study_state === "exit" ||
+            theMostRecentPing.payload.data.study_state === "expired",
+        );
+        assert(
+          thePingBeforeTheMostRecentPing.payload.data.study_state === "exit" ||
+            thePingBeforeTheMostRecentPing.payload.data.study_state ===
+              "expired",
+        );
+
+        if (theMostRecentPing.payload.data.study_state === "exit") {
+          assert(
+            thePingBeforeTheMostRecentPing.payload.data.study_state ===
+              "expired",
+          );
+        }
+
+        if (
+          thePingBeforeTheMostRecentPing.payload.data.study_state === "exit"
+        ) {
+          assert(theMostRecentPing.payload.data.study_state === "expired");
+        }
+      });
     });
   });
 });

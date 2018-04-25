@@ -37,10 +37,9 @@ class FeatureToInstrument {
    *
    * call `this.enableFeature` to actually do the feature/experience/ui.
    */
-  constructor(studySetup) {
+  constructor() {
     browser.study.onEndStudy.addListener(this.handleStudyEnding);
     browser.study.onReady.addListener(this.enableFeature);
-    browser.study.setup(studySetup);
   }
 
   /**
@@ -64,8 +63,12 @@ class FeatureToInstrument {
         browser.study.endStudy("expired"),
       );
     }
-    browser.browserAction.setTitle({ title: studyInfo.variation });
-    console.log(`changed the browser action title: ${studyInfo.variation}`);
+    browser.browserAction.setTitle({ title: studyInfo.variation.name });
+    console.log(
+      `Changed the browser action title to the variation name: ${
+        studyInfo.variation.name
+      }`,
+    );
   }
 
   /** handles `study:end` signals
@@ -89,7 +92,8 @@ class FeatureToInstrument {
  * Run every startup to get config and instantiate the feature
  */
 async function onEveryExtensionLoad() {
+  new FeatureToInstrument();
   const studySetup = await getStudySetup();
-  await new FeatureToInstrument(studySetup);
+  await browser.study.setup(studySetup);
 }
 onEveryExtensionLoad();

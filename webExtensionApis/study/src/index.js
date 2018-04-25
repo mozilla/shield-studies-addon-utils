@@ -19,8 +19,8 @@ class StudyApiEventEmitter extends EventEmitter {
     this.emit("ready", studyInfo);
   }
 
-  emitEndStudy(endingSteps) {
-    this.emit("endStudy", endingSteps);
+  emitEndStudy(ending) {
+    this.emit("endStudy", ending);
   }
 }
 
@@ -61,6 +61,8 @@ this.study = class extends ExtensionAPI {
     let bootstrap;
 
     const { extension } = this;
+
+    const studyApiEventEmitter = new StudyApiEventEmitter();
 
     return {
       study: {
@@ -117,7 +119,7 @@ this.study = class extends ExtensionAPI {
             await bootstrap.configure(extension);
             await bootstrap.startup(extension);
             const studyInfo = studyUtils.info();
-            StudyApiEventEmitter.emitReady(studyInfo);
+            studyApiEventEmitter.emitReady(studyInfo);
           } catch (e) {
             console.error("browser.study.setup error");
             console.error(e);
@@ -320,12 +322,12 @@ this.study = class extends ExtensionAPI {
           context,
           "study:onDataPermissionsChange",
           fire => {
-            const listener = value => {
-              fire.async(value);
+            const listener = (eventReference, updatedPermissions) => {
+              fire.async(updatedPermissions);
             };
-            StudyApiEventEmitter.on("dataPermissionsChange", listener);
+            studyApiEventEmitter.on("dataPermissionsChange", listener);
             return () => {
-              StudyApiEventEmitter.off("dataPermissionsChange", listener);
+              studyApiEventEmitter.off("dataPermissionsChange", listener);
             };
           },
         ).api(),
@@ -333,12 +335,12 @@ this.study = class extends ExtensionAPI {
         // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
         /* Fires when the study is 'ready' for the feature to startup. */
         onReady: new EventManager(context, "study:onReady", fire => {
-          const listener = value => {
-            fire.async(value);
+          const listener = (eventReference, studyInfo) => {
+            fire.async(studyInfo);
           };
-          StudyApiEventEmitter.on("ready", listener);
+          studyApiEventEmitter.once("ready", listener);
           return () => {
-            StudyApiEventEmitter.off("ready", listener);
+            studyApiEventEmitter.off("ready", listener);
           };
         }).api(),
 
@@ -350,20 +352,15 @@ this.study = class extends ExtensionAPI {
   - tearing down your feature
   - uninstalling the addon
    */
-        onEndStudy: new EventManager(
-          context,
-          "study:onEndStudy",
-
-          fire => {
-            const listener = value => {
-              fire.async(value);
-            };
-            StudyApiEventEmitter.on("endStudy", listener);
-            return () => {
-              StudyApiEventEmitter.off("endStudy", listener);
-            };
-          },
-        ).api(),
+        onEndStudy: new EventManager(context, "study:onEndStudy", fire => {
+          const listener = (eventReference, ending) => {
+            fire.async(ending);
+          };
+          studyApiEventEmitter.on("endStudy", listener);
+          return () => {
+            studyApiEventEmitter.off("endStudy", listener);
+          };
+        }).api(),
 
         /**
          * Schema.json `properties`

@@ -376,7 +376,7 @@
           "Listen for when the study wants to end.\n\nAct on it by\n- opening surveyUrls\n- tearing down your feature\n- uninstalling the addon\n",
         "parameters": [
           {
-            "name": "endingSteps",
+            "name": "ending",
             "type": "object"
           }
         ]

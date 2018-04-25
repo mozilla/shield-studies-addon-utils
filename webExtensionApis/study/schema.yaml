@@ -387,7 +387,7 @@
       - uninstalling the addon
 
     parameters:  # for the callback
-    - name: endingSteps
+    - name: ending
       type: object
 
 
