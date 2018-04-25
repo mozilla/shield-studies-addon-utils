@@ -581,8 +581,8 @@ class StudyUtils {
    *   - the study's telemetryConfig.send is set to false
    */
   async _telemetry(data, bucket = "shield-study-addon") {
-    log.debug(`telemetry in:  ${bucket} ${JSON.stringify(data)}`);
     this.throwIfNotSetup("_telemetry");
+    log.debug(`telemetry in:  ${bucket} ${JSON.stringify(data)}`);
     const info = this.info();
     const payload = {
       version: PACKET_VERSION,
@@ -645,6 +645,7 @@ class StudyUtils {
    * @returns {Promise|boolean} - see StudyUtils._telemetry
    */
   async telemetry(data) {
+    this.throwIfNotSetup("telemetry");
     log.debug(`telemetry ${JSON.stringify(data)}`);
     const toSubmit = {
       attributes: data,

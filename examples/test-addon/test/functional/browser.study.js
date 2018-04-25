@@ -119,7 +119,7 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
           await browser.study.sendTelemetry({ foo: "bar" });
 
           // We should not reach this statement
-          assert(false);
+          callback(false);
         } catch (e) {
           console.log("Caught error", e);
 
