@@ -30,7 +30,7 @@
  *
  */
 
-class FeatureToInstrument {
+class StudyLifeCycleHandler {
   /**
    * Listen to onEndStudy, onReady
    * `browser.study.setup` fires onReady OR onEndStudy
@@ -92,7 +92,7 @@ class FeatureToInstrument {
  * Run every startup to get config and instantiate the feature
  */
 async function onEveryExtensionLoad() {
-  new FeatureToInstrument();
+  new StudyLifeCycleHandler();
   const studySetup = await getStudySetup();
   await browser.study.setup(studySetup);
 }
