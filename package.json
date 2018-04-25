@@ -36,6 +36,7 @@
     "yamljs": "^0.3.0"
   },
   "files": [
+    "bin/copyStudyUtils.js",
     "testUtils",
     "webExtensionApis/prefs/api.js",
     "webExtensionApis/prefs/schema.json",
