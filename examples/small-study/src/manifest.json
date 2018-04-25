@@ -26,8 +26,12 @@
   "background": {
     "scripts": ["study.js", "background.js"]
   },
+  "icons": {
+    "48": "icons/shield-icon.svg"
+  },
   "browser_action": {
     "browser_style": true,
+    "default_icon": "icons/shield-icon.svg",
     "default_title": "Test"
   }
 }
