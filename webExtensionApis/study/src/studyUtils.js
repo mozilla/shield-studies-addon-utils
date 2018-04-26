@@ -28,6 +28,11 @@ Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
 
+ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
+
+// eslint-disable-next-line no-undef
+const { ExtensionError } = ExtensionUtils;
+
 let log;
 const studyUtilsLoggingLevel = "Trace"; // Fatal: 70, Error: 60, Warn: 50, Info: 40, Config: 30, Debug: 20, Trace: 10, All: -1,
 
@@ -214,7 +219,9 @@ class StudyUtils {
       if (!allowedMethods.includes(msg)) {
         const errStr1 = "respondToWebExtensionMessage:";
         const errStr2 = "is not in allowed studyUtils methods:";
-        throw new Error(`${errStr1} "${msg}" ${errStr2} ${allowedMethods}`);
+        throw new ExtensionError(
+          `${errStr1} "${msg}" ${errStr2} ${allowedMethods}`,
+        );
       }
       /*
         * handle async
@@ -258,7 +265,7 @@ class StudyUtils {
    */
   throwIfNotSetup(name = "unknown") {
     if (!this._isSetup)
-      throw new Error(
+      throw new ExtensionError(
         name + ": this method can't be used until `setup` is called",
       );
   }

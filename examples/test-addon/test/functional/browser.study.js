@@ -145,9 +145,9 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
         }
       },
     );
-    // TODO: Figure out if/how/when we can catch the actual error
-    // assert(caughtError === "Error: An async exception thrown for test purposes");
-    assert(caughtError === "Error: An unexpected error occurred");
+    assert(
+      caughtError === "Error: An async exception thrown for test purposes",
+    );
   });
 
   it("should return the correct variation based on specific weightedVariations", async() => {
@@ -199,9 +199,10 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
         callback(_caughtError);
       },
     );
-    // TODO: Figure out if/how/when we can catch the actual error
-    // assert(caughtError === "Error: telemetry: this method can't be used until `setup` is called");
-    assert(caughtError === "Error: An unexpected error occurred");
+    assert(
+      caughtError ===
+        "Error: telemetry: this method can't be used until `setup` is called",
+    );
   });
 
   describe("test the browser.study.setup() side effects", function() {

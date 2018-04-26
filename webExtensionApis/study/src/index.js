@@ -8,7 +8,7 @@ ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 // eslint-disable-next-line no-undef
 const { EventManager } = ExtensionCommon;
 // eslint-disable-next-line no-undef
-const { EventEmitter } = ExtensionUtils;
+const { EventEmitter, ExtensionError } = ExtensionUtils;
 
 class StudyApiEventEmitter extends EventEmitter {
   emitDataPermissionsChange(updatedPermissions) {
@@ -187,7 +187,7 @@ this.study = class extends ExtensionAPI {
   But not:
   - telemetry clientId
 
-  Throws Error if called before `browser.study.setup`
+  Throws ExtensionError if called before `browser.study.setup`
    */
         getStudyInfo: async function getStudyInfo() {
           console.log("called getStudyInfo ");
@@ -237,9 +237,9 @@ this.study = class extends ExtensionAPI {
             // Check: all keys and values must be strings,
             for (const k in obj) {
               if (typeof k !== "string")
-                throw new Error(`key ${k} not a string`);
+                throw new ExtensionError(`key ${k} not a string`);
               if (typeof obj[k] !== "string")
-                throw new Error(`value ${k} ${obj[k]} not a string`);
+                throw new ExtensionError(`value ${k} ${obj[k]} not a string`);
             }
             return true;
           }
@@ -270,7 +270,11 @@ this.study = class extends ExtensionAPI {
             "resource://gre/modules/TelemetryArchive.jsm",
           );
           const { searchTelemetryArchive } = require("./telemetry.js");
-          return searchTelemetryArchive(TelemetryArchive, searchTelemetryQuery);
+          return searchTelemetryArchive(
+            ExtensionError,
+            TelemetryArchive,
+            searchTelemetryQuery,
+          );
         },
 
         /* Choose a element from `weightedVariations` array
@@ -371,11 +375,11 @@ this.study = class extends ExtensionAPI {
       },
       studyTest: {
         throwAnException(message) {
-          throw new Error(message);
+          throw new ExtensionError(message);
         },
 
-        throwAnExceptionAsync: async function throwAnExceptionAsync(message) {
-          throw new Error(message);
+        async throwAnExceptionAsync(message) {
+          throw new ExtensionError(message);
         },
 
         async firstSeen() {

@@ -17,7 +17,11 @@
  * Thus, we can currently only test that the last two pings are the
  * correct ones but not that their order is correct
  */
-async function searchTelemetryArchive(TelemetryArchive, searchTelemetryQuery) {
+async function searchTelemetryArchive(
+  ErrorToThrow,
+  TelemetryArchive,
+  searchTelemetryQuery,
+) {
   let { type } = searchTelemetryQuery;
   const { n, timestamp, headersOnly } = searchTelemetryQuery;
   // {type, id, timestampCreated}
@@ -35,7 +39,7 @@ async function searchTelemetryArchive(TelemetryArchive, searchTelemetryQuery) {
   pings.sort((a, b) => b.timestampCreated - a.timestampCreated);
 
   if (pings.length === 0) {
-    throw new SearchError(searchTelemetryQuery);
+    throw new ErrorToThrow(searchTelemetryQuery);
   }
 
   if (n) pings = pings.slice(0, n);

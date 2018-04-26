@@ -31,14 +31,24 @@ module.exports.telemetry = {
   searchSentTelemetry: async(driver, searchTelemetryQuery) => {
     driver.setContext(Context.CHROME);
     return driver.executeAsyncScript(
-      async(_searchTelemetryArchive, _searchTelemetryQuery, callback) => {
+      async(
+        _SearchError,
+        _searchTelemetryArchive,
+        _searchTelemetryQuery,
+        callback,
+      ) => {
         // eslint-disable-next-line no-eval
         eval(_searchTelemetryArchive);
         Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
         callback(
-          await searchTelemetryArchive(TelemetryArchive, _searchTelemetryQuery),
+          await searchTelemetryArchive(
+            _SearchError,
+            TelemetryArchive,
+            _searchTelemetryQuery,
+          ),
         );
       },
+      SearchError,
       searchTelemetryArchive,
       searchTelemetryQuery,
     );
