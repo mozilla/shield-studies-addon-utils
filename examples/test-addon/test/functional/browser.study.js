@@ -207,18 +207,18 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
 
   describe("test the browser.study.setup() side effects", function() {
     it("should fire the onReady event upon successful setup", async() => {
-      const isFirstRun = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+      const studyInfo = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
         driver,
         async(_studySetupForTests, callback) => {
           // Ensure we have a configured study and are supposed to run our feature
-          browser.study.onReady.addListener(async(studyInfo, _isFirstRun) => {
-            callback(_isFirstRun);
+          browser.study.onReady.addListener(async _studyInfo => {
+            callback(_studyInfo);
           });
           browser.study.setup(_studySetupForTests);
         },
         studySetupForTests(),
       );
-      assert(isFirstRun);
+      assert(studyInfo);
     });
 
     it("should have set the experiment to active in Telemetry", async() => {

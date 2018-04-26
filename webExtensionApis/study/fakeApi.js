@@ -109,6 +109,7 @@ Note:
 - activeExperimentName
 - timeUntilExpire
 - firstRunTimestamp
+- isFirstRun
 
 But not:
 - telemetry clientId

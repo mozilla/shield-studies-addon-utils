@@ -389,6 +389,7 @@ class StudyUtils {
     this.throwIfNotSetup("info");
     return {
       studyName: this.studySetup.activeExperimentName,
+      isFirstRun: false,
       addon: this.studySetup.addon,
       variation: this.getVariation(),
       shieldId: this.getShieldId(),

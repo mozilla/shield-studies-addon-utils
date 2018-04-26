@@ -199,7 +199,7 @@
         "type": "function",
         "async": true,
         "description":
-          "current study configuration, including\n- variation\n- activeExperimentName\n- timeUntilExpire\n- firstRunTimestamp\n\nBut not:\n- telemetry clientId\n\nThrows Error if called before `browser.study.setup`\n",
+          "current study configuration, including\n- variation\n- activeExperimentName\n- timeUntilExpire\n- firstRunTimestamp\n- isFirstRun\n\nBut not:\n- telemetry clientId\n\nThrows Error if called before `browser.study.setup`\n",
         "defaultReturn": {
           "variation": "styleA",
           "firstRunTimestamp": 1523968204184,
@@ -362,10 +362,6 @@
           {
             "name": "studyInfo",
             "type": "object"
-          },
-          {
-            "name": "isFirstRun",
-            "type": "boolean"
           }
         ]
       },

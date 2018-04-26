@@ -223,6 +223,7 @@
       - activeExperimentName
       - timeUntilExpire
       - firstRunTimestamp
+      - isFirstRun
 
       But not:
       - telemetry clientId
@@ -374,8 +375,6 @@
     parameters:  # for the callback
     - name: studyInfo
       type: object
-    - name: isFirstRun
-      type: boolean
 
   - name: onEndStudy
     type: function
