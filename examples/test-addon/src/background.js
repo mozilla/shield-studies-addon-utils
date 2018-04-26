@@ -1,16 +1,15 @@
 /* global getStudySetup */
 
-class FeatureToInstrument {
+class StudyLifeCycleHandler {
   /**
    * Listen to onEndStudy, onReady
    * `browser.study.setup` fires onReady OR onEndStudy
    *
    * call `this.enableFeature` to actually do the feature/experience/ui.
    */
-  constructor(studySetup) {
+  constructor() {
     browser.study.onEndStudy.addListener(this.handleStudyEnding);
     browser.study.onReady.addListener(this.enableFeature);
-    browser.study.setup(studySetup);
   }
 
   /**
@@ -29,13 +28,26 @@ class FeatureToInstrument {
    * - make feature/experience/ui with the particular variation for this user.
    */
   async enableFeature(studyInfo) {
+    console.log("enableFeature - studyInfo", studyInfo);
+    console.log("Checking expiration");
     if (studyInfo.timeUntilExpire) {
+      console.log("Setting up expiration");
       browser.alarm.create(studyInfo.timeUntilExpire, () =>
         browser.study.endStudy("expired"),
       );
     }
-    browser.browserAction.setTitle({ title: studyInfo.variation });
-    console.log(`changed the browser action title: ${studyInfo.variation}`);
+    console.log(
+      `Setting the browser action title to the variation name: '${
+        studyInfo.variation.name
+      }'`,
+    );
+    browser.browserAction.setTitle({ title: studyInfo.variation.name });
+    console.log(
+      "Feature is now enabled, sending 'test:onFeatureEnabled' event (for the tests)",
+    );
+    browser.runtime.sendMessage("test:onFeatureEnabled").catch(console.error);
+    console.log("Removing onReady listener this.enableFeature");
+    browser.study.onReady.removeListener(this.enableFeature);
   }
 
   /** handles `study:end` signals
@@ -59,20 +71,27 @@ class FeatureToInstrument {
  * Run every startup to get config and instantiate the feature
  */
 async function onEveryExtensionLoad() {
+  new StudyLifeCycleHandler();
   const studySetup = await getStudySetup();
-  await new FeatureToInstrument(studySetup);
+  await browser.study.setup(studySetup);
 }
 
 // Since this is a test-addon, we don't initiate any code directly, but wait
 // for events sent by tests. This allows us to control and test the execution
 // properly.
+// Note: Since this is the first onMessage listener, it will be able to send
+// a response to the sending party
 // onEveryExtensionLoad();
-browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log("request", request);
+const onEveryExtensionLoadTestListener = request => {
+  console.log("onEveryExtensionLoad listener - request", request);
   if (request === "test:onEveryExtensionLoad") {
+    console.log("Removing onEveryExtensionLoadTestListener");
+    browser.runtime.onMessage.removeListener(onEveryExtensionLoadTestListener);
+    console.log("Running onEveryExtensionLoad()");
     onEveryExtensionLoad();
   }
-});
+};
+browser.runtime.onMessage.addListener(onEveryExtensionLoadTestListener);
 
 // The tests that probe the web extensions APIs directly rely on an extension
 // page opening up in a new window/tab.

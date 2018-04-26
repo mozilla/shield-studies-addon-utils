@@ -5,6 +5,11 @@ const EXPORTED_SYMBOLS = ["Bootstrap"];
 const { utils: Cu } = Components;
 Cu.import("resource://gre/modules/Services.jsm");
 
+ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
+
+// eslint-disable-next-line no-undef
+const { ExtensionError } = ExtensionUtils;
+
 this.Bootstrap = function(studySetup, studyUtils) {
   return {
     /**
@@ -42,7 +47,7 @@ this.Bootstrap = function(studySetup, studyUtils) {
       ) {
         //  telemetry "enter" ONCE
         studyUtils.firstSeen();
-        if (!studySetup.eligible) {
+        if (!studySetup.allowEnroll) {
           this.log.debug("User is ineligible, ending study.");
           // 1. uses studySetup.endings.ineligible.url if any,
           // 2. sends UT for "ineligible"
@@ -99,7 +104,7 @@ this.Bootstrap = function(studySetup, studyUtils) {
       if (name !== "") {
         const variation = weightedVariations.filter(x => x.name === name)[0];
         if (!variation) {
-          throw new Error(`about:config => ${
+          throw new ExtensionError(`about:config => ${
             studySetup.variationOverridePreference
           } set to ${name},
           but no variation with that name exists.`);

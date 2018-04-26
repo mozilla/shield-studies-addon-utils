@@ -36,11 +36,13 @@
     "yamljs": "^0.3.0"
   },
   "files": [
+    "bin/copyStudyUtils.js",
     "testUtils",
     "webExtensionApis/prefs/api.js",
     "webExtensionApis/prefs/schema.json",
     "webExtensionApis/study/api.js",
-    "webExtensionApis/study/schema.json"
+    "webExtensionApis/study/schema.json",
+    "webExtensionApis/study/src/telemetry.js"
   ],
   "homepage": "https://github.com/mozilla/shield-studies-addon-utils#readme",
   "keywords": [
@@ -62,16 +64,16 @@
   },
   "scripts": {
     "apiDocs": "node ./bin/documentSchema.js ./webExtensionApis/study/schema.json > docs/api.md ",
-    "build": "cd webExtensionApis/study && webpack && npm run fakeApi",
+    "build": "cd webExtensionApis/study && webpack && yaml2json schema.yaml -p > schema.json && node ../../bin/verifyWeeSchema.js schema.json",
     "docformat": "doctoc --title '**Contents**' docs/*.md && prettier '**/*.md' --write",
     "eslint": "eslint . --ext jsm --ext js --ext json",
     "eslint-fix": "npm run eslint -- --fix",
-    "fakeApi": "cd webExtensionApis/study && yaml2json schema.yaml -p > schema.json && node ../../bin/verifyWeeSchema.js schema.json  && node ../../bin/schemaToInterface.js ./schema.json > fakeApi.js && npm run apiDocs && npm run format",
+    "fakeApi": "cd webExtensionApis/study && node ../../bin/schemaToInterface.js ./schema.json > fakeApi.js",
     "format": "prettier '**/*.{css,js,jsm,json,md}' --trailing-comma=all --ignore-path=.eslintignore --write",
     "lint": "npm-run-all lint:*",
     "lint:eslint": "npm run eslint",
     "lint:fixpack": "fixpack",
-    "postbuild": "npm run fakeApi  # while we work out the api",
+    "postbuild": "npm run fakeApi && npm run apiDocs && npm run format # while we work out the api",
     "postformat": "npm run eslint-fix && fixpack",
     "prebuild": "npm run lint",
     "prepare": "fixpack && npm run build",

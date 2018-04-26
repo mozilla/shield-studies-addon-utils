@@ -28,6 +28,11 @@ Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
 
+ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
+
+// eslint-disable-next-line no-undef
+const { ExtensionError } = ExtensionUtils;
+
 let log;
 const studyUtilsLoggingLevel = "Trace"; // Fatal: 70, Error: 60, Warn: 50, Info: 40, Config: 30, Debug: 20, Trace: 10, All: -1,
 
@@ -214,7 +219,9 @@ class StudyUtils {
       if (!allowedMethods.includes(msg)) {
         const errStr1 = "respondToWebExtensionMessage:";
         const errStr2 = "is not in allowed studyUtils methods:";
-        throw new Error(`${errStr1} "${msg}" ${errStr2} ${allowedMethods}`);
+        throw new ExtensionError(
+          `${errStr1} "${msg}" ${errStr2} ${allowedMethods}`,
+        );
       }
       /*
         * handle async
@@ -258,7 +265,7 @@ class StudyUtils {
    */
   throwIfNotSetup(name = "unknown") {
     if (!this._isSetup)
-      throw new Error(
+      throw new ExtensionError(
         name + ": this method can't be used until `setup` is called",
       );
   }
@@ -382,6 +389,7 @@ class StudyUtils {
     this.throwIfNotSetup("info");
     return {
       studyName: this.studySetup.activeExperimentName,
+      isFirstRun: false,
       addon: this.studySetup.addon,
       variation: this.getVariation(),
       shieldId: this.getShieldId(),
@@ -581,8 +589,8 @@ class StudyUtils {
    *   - the study's telemetryConfig.send is set to false
    */
   async _telemetry(data, bucket = "shield-study-addon") {
-    log.debug(`telemetry in:  ${bucket} ${JSON.stringify(data)}`);
     this.throwIfNotSetup("_telemetry");
+    log.debug(`telemetry in:  ${bucket} ${JSON.stringify(data)}`);
     const info = this.info();
     const payload = {
       version: PACKET_VERSION,
@@ -645,6 +653,7 @@ class StudyUtils {
    * @returns {Promise|boolean} - see StudyUtils._telemetry
    */
   async telemetry(data) {
+    this.throwIfNotSetup("telemetry");
     log.debug(`telemetry ${JSON.stringify(data)}`);
     const toSubmit = {
       attributes: data,

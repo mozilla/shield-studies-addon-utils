@@ -17,13 +17,12 @@
 <p>This is an extension page for shield-studies-addon-utils/test-addon</p>
 
 <p>This add-on initiates no background logic on it's own, so that the tests
-    can test each lifecycle event in isolation.</p>
+    can test the state of the add-on before "onEveryExtensionLoad()".</p>
 
-<p>For manual testing, use the buttons below to run the code
-    corresponding to each lifecycle event.</p>
+<p>For manual testing, use the button below to run the code.</p>
 
 <p>
-    <button id="initiateStudy-button" class="button-style">initiateStudy</button>
+    <button id="onEveryExtensionLoad-button" class="button-style">onEveryExtensionLoad</button>
 </p>
 
 <script src="./page.js"></script>

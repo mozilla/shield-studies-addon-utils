@@ -8,11 +8,20 @@ ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 // eslint-disable-next-line no-undef
 const { EventManager } = ExtensionCommon;
 // eslint-disable-next-line no-undef
-const { EventEmitter } = ExtensionUtils;
-// eslint-disable-next-line no-unused-vars
-class Foo extends EventEmitter {
-  foo() {
-    this.emit("foo");
+const { EventEmitter, ExtensionError } = ExtensionUtils;
+
+class StudyApiEventEmitter extends EventEmitter {
+  emitDataPermissionsChange(updatedPermissions) {
+    this.emit("dataPermissionsChange", updatedPermissions);
+  }
+
+  emitReady(studyInfo) {
+    studyInfo.isFirstRun = true;
+    this.emit("ready", studyInfo);
+  }
+
+  emitEndStudy(ending) {
+    this.emit("endStudy", ending);
   }
 }
 
@@ -54,8 +63,14 @@ this.study = class extends ExtensionAPI {
 
     const { extension } = this;
 
+    const studyApiEventEmitter = new StudyApiEventEmitter();
+
     return {
       study: {
+        /**
+         * Schema.json `functions`
+         */
+
         /* Attempt an setup/enrollment, with these effects:
 
   - sets 'studyType' as Shield or Pioneer
@@ -90,7 +105,7 @@ this.study = class extends ExtensionAPI {
   Fires Events
 
   (At most one of)
-  - study:onReaday  OR
+  - study:onReady  OR
   - study:onEndStudy
 
   Preferences set
@@ -100,9 +115,20 @@ this.study = class extends ExtensionAPI {
   1. allowEnroll is ONLY used during first run (install)
    */
         setup: async function setup(studySetup) {
-          bootstrap = studyUtilsBootstrap.Bootstrap(studySetup, studyUtils);
-          await bootstrap.configure(extension);
-          await bootstrap.startup(extension);
+          try {
+            bootstrap = studyUtilsBootstrap.Bootstrap(studySetup, studyUtils);
+            await bootstrap.configure(extension);
+            await bootstrap.startup(extension);
+            const studyInfo = studyUtils.info();
+            // TODO: Only set true on first run
+            const isFirstRun = true;
+            studyApiEventEmitter.emitReady(studyInfo, isFirstRun);
+            return studyInfo;
+          } catch (e) {
+            console.error("browser.study.setup error");
+            console.error(e);
+          }
+          return null;
         },
 
         /* Signal to browser.study that it should end.
@@ -162,7 +188,7 @@ this.study = class extends ExtensionAPI {
   But not:
   - telemetry clientId
 
-  Throws Error if called before `browser.study.setup`
+  Throws ExtensionError if called before `browser.study.setup`
    */
         getStudyInfo: async function getStudyInfo() {
           console.log("called getStudyInfo ");
@@ -207,19 +233,20 @@ this.study = class extends ExtensionAPI {
    */
         sendTelemetry: async function sendTelemetry(payload) {
           console.log("called sendTelemetry payload");
+
           function throwIfInvalid(obj) {
             // Check: all keys and values must be strings,
             for (const k in obj) {
               if (typeof k !== "string")
-                throw new Error(`key ${k} not a string`);
+                throw new ExtensionError(`key ${k} not a string`);
               if (typeof obj[k] !== "string")
-                throw new Error(`value ${k} ${obj[k]} not a string`);
+                throw new ExtensionError(`value ${k} ${obj[k]} not a string`);
             }
             return true;
           }
 
           throwIfInvalid(payload);
-          studyUtils.telemetry(payload);
+          await studyUtils.telemetry(payload);
         },
 
         /* Search locally stored telemetry pings using these fields (if set)
@@ -239,13 +266,16 @@ this.study = class extends ExtensionAPI {
   - enrollment / eligiblity using recent Telemetry behaviours or client environment
   - addon testing scenarios
    */
-        searchSentTelemetry: async function searchSentTelemetry(
-          searchTelemetryQuery,
-        ) {
-          console.log("called searchSentTelemetry searchTelemetryQuery");
-          const { getTelemetryPings } = require("./pings.js");
-          return getTelemetryPings(searchTelemetryQuery);
-          // return [{ pingType: "main" }];
+        async searchSentTelemetry(searchTelemetryQuery) {
+          Components.utils.import(
+            "resource://gre/modules/TelemetryArchive.jsm",
+          );
+          const { searchTelemetryArchive } = require("./telemetry.js");
+          return searchTelemetryArchive(
+            ExtensionError,
+            TelemetryArchive,
+            searchTelemetryQuery,
+          );
         },
 
         /* Choose a element from `weightedVariations` array
@@ -290,20 +320,22 @@ this.study = class extends ExtensionAPI {
           return undefined;
         },
 
+        /**
+         * Schema.json `events`
+         */
+
         // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
         /* Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation. */
         onDataPermissionsChange: new EventManager(
           context,
           "study:onDataPermissionsChange",
           fire => {
-            /*
-            const callback = value => {
-              fire.async(value);
+            const listener = (eventReference, updatedPermissions) => {
+              fire.async(updatedPermissions);
             };
-            */
-            // RegisterSomeInternalCallback(callback);
+            studyApiEventEmitter.on("dataPermissionsChange", listener);
             return () => {
-              // UnregisterInternalCallback(callback);
+              studyApiEventEmitter.off("dataPermissionsChange", listener);
             };
           },
         ).api(),
@@ -311,14 +343,12 @@ this.study = class extends ExtensionAPI {
         // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
         /* Fires when the study is 'ready' for the feature to startup. */
         onReady: new EventManager(context, "study:onReady", fire => {
-          /*
-          const callback = value => {
-            fire.async(value);
+          const listener = (eventReference, studyInfo) => {
+            fire.async(studyInfo);
           };
-          */
-          // RegisterSomeInternalCallback(callback);
+          studyApiEventEmitter.once("ready", listener);
           return () => {
-            // UnregisterInternalCallback(callback);
+            studyApiEventEmitter.off("ready", listener);
           };
         }).api(),
 
@@ -331,26 +361,37 @@ this.study = class extends ExtensionAPI {
   - uninstalling the addon
    */
         onEndStudy: new EventManager(context, "study:onEndStudy", fire => {
-          /*
-          const callback = value => {
-            fire.async(value);
+          const listener = (eventReference, ending) => {
+            fire.async(ending);
           };
-          */
-          // RegisterSomeInternalCallback(callback);
+          studyApiEventEmitter.on("endStudy", listener);
           return () => {
-            // UnregisterInternalCallback(callback);
+            studyApiEventEmitter.off("endStudy", listener);
           };
         }).api(),
 
-        async test_studyUtils_firstSeen() {
+        /**
+         * Schema.json `properties`
+         */
+      },
+      studyTest: {
+        throwAnException(message) {
+          throw new ExtensionError(message);
+        },
+
+        async throwAnExceptionAsync(message) {
+          throw new ExtensionError(message);
+        },
+
+        async firstSeen() {
           return studyUtils.firstSeen();
         },
 
-        async test_studyUtils_setActive() {
+        async setActive() {
           return studyUtils.setActive();
         },
 
-        async test_studyUtils_startup({ reason }) {
+        async startup({ reason }) {
           return studyUtils.startup({ reason });
         },
       },

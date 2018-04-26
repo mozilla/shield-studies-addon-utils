@@ -199,7 +199,7 @@
         "type": "function",
         "async": true,
         "description":
-          "current study configuration, including\n- variation\n- activeExperimentName\n- timeUntilExpire\n- firstRunTimestamp\n\nBut not:\n- telemetry clientId\n\nThrows Error if called before `browser.study.setup`\n",
+          "current study configuration, including\n- variation\n- activeExperimentName\n- timeUntilExpire\n- firstRunTimestamp\n- isFirstRun\n\nBut not:\n- telemetry clientId\n\nThrows Error if called before `browser.study.setup`\n",
         "defaultReturn": {
           "variation": "styleA",
           "firstRunTimestamp": 1523968204184,
@@ -330,33 +330,6 @@
             "type": ["string", "array"]
           }
         ]
-      },
-      {
-        "name": "test_studyUtils_firstSeen",
-        "type": "function",
-        "async": true,
-        "descripton": null,
-        "parameters": []
-      },
-      {
-        "name": "test_studyUtils_setActive",
-        "type": "function",
-        "async": true,
-        "descripton": null,
-        "parameters": []
-      },
-      {
-        "name": "test_studyUtils_startup",
-        "type": "function",
-        "async": true,
-        "descripton": null,
-        "parameters": [
-          {
-            "name": "details",
-            "type": "object",
-            "additionalProperties": true
-          }
-        ]
       }
     ],
     "events": [
@@ -403,8 +376,93 @@
           "Listen for when the study wants to end.\n\nAct on it by\n- opening surveyUrls\n- tearing down your feature\n- uninstalling the addon\n",
         "parameters": [
           {
-            "name": "endingSteps",
+            "name": "ending",
             "type": "object"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "namespace": "studyTest",
+    "description": "Interface for Test Utilities",
+    "apiVersion": 5,
+    "functions": [
+      {
+        "name": "throwAnException",
+        "type": "function",
+        "description":
+          "Throws an exception from a privileged function - for making sure that we can catch these in our web extension",
+        "async": false,
+        "parameters": [
+          {
+            "name": "message",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "throwAnExceptionAsync",
+        "type": "function",
+        "description":
+          "Throws an exception from a privileged async function - for making sure that we can catch these in our web extension",
+        "async": true,
+        "parameters": [
+          {
+            "name": "message",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "firstSeen",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": []
+      },
+      {
+        "name": "setActive",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": []
+      },
+      {
+        "name": "startup",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "additionalProperties": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "namespace": "prefs",
+    "description":
+      "Temporary subset of `Services.prefs` API,\ndescribed at:  https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Services.jsm\n\nSee https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIPrefBranch\n\nNo attempt here to improve the api at all.\n\nTODO: Convert observers to events.\n\nIf a true 'prefs' api lands in tree, this module will be removed.\n",
+    "apiVersion": 5,
+    "functions": [
+      {
+        "name": "getStringPref",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": [
+          {
+            "name": "aPrefName",
+            "type": "string"
+          },
+          {
+            "name": "aDefaultValue",
+            "type": "string",
+            "optional": true
           }
         ]
       }

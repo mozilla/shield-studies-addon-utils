@@ -1,5 +1,10 @@
 /* eslint-env commonjs */
 
+ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
+
+// eslint-disable-next-line no-undef
+const { ExtensionError } = ExtensionUtils;
+
 const Ajv = require("ajv/dist/ajv.min.js");
 const ajv = new Ajv();
 
@@ -24,7 +29,7 @@ const jsonschema = {
   validateOrThrow(data, schema) {
     const valid = ajv.validate(schema, data);
     if (!valid) {
-      throw new Error(JSON.stringify(ajv.errors));
+      throw new ExtensionError(JSON.stringify(ajv.errors));
     }
     return true;
   },

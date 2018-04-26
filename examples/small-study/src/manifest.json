@@ -1,15 +1,23 @@
 {
-  "name": "A Small Shield Addon",
+  "name": "A Small Shield Add-on",
   "description": "Demo of shield-studies-addon-utils",
   "version": "1.0.0",
   "manifest_version": 2,
   "applications": {
     "gecko": {
-      "id": "shield-studies-demo@shield.mozilla.org",
+      "id": "shield-utils-small-study-demo@shield.mozilla.org",
       "strict_min_version": "60.0"
     }
   },
   "experiment_apis": {
+    "prefs": {
+      "schema": "./privileged/prefs/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "./privileged/prefs/api.js",
+        "paths": [["prefs"]]
+      }
+    },
     "study": {
       "schema": "./privileged/study/schema.json",
       "parent": {
@@ -23,9 +31,12 @@
   "background": {
     "scripts": ["study.js", "background.js"]
   },
-
+  "icons": {
+    "48": "icons/shield-icon.svg"
+  },
   "browser_action": {
     "browser_style": true,
+    "default_icon": "icons/shield-icon.svg",
     "default_title": "Test"
   }
 }

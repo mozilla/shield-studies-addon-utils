@@ -41,12 +41,42 @@ describe("Tests verifying that the test add-on works as expected", function() {
   });
 
   describe('test the test add-on\'s "onEveryExtensionLoad" process', function() {
+    /**
+     * Before running the tests in this group, trigger onEveryExtensionLoad and wait for the study to be running
+     */
     before(async() => {
       await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
         driver,
         async callback => {
-          callback();
+          // Let the test add-on know it is time to load the background logic
+          await browser.runtime
+            .sendMessage("test:onEveryExtensionLoad")
+            .catch(console.error);
+
+          // Wait for the feature to be enabled before continuing with the test assertions
+          browser.runtime.onMessage.addListener(request => {
+            console.log("test:onFeatureEnabled listener - request:", request);
+            if (request === "test:onFeatureEnabled") {
+              callback();
+            }
+          });
         },
+      );
+    });
+
+    it("should have chosen one of the study's variations", async() => {
+      const chosenVariation = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+        driver,
+        async callback => {
+          const { variation } = await browser.study.getStudyInfo();
+          callback(variation);
+        },
+      );
+      assert(chosenVariation);
+      assert(
+        chosenVariation.name === "feature-active" ||
+          chosenVariation.name === "feature-passive" ||
+          chosenVariation.name === "control",
       );
     });
 

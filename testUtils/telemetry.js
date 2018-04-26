@@ -1,5 +1,10 @@
 /* eslint-env node */
 
+const {
+  searchTelemetryArchive,
+  SearchError,
+} = require("../webExtensionApis/study/src/telemetry");
+
 const firefox = require("selenium-webdriver/firefox");
 const Context = firefox.Context;
 
@@ -13,26 +18,65 @@ module.exports.telemetry = {
       callback(TelemetryEnvironment.getActiveExperiments());
     });
   },
-  getMostRecentPingsByType: async(driver, pingType) => {
+
+  /**
+   * Expose browser.study.searchSentTelemetry() to test utils so that it can
+   * be used regardless of the current browser context as well as
+   * after the extension has been uninstalled
+   *
+   * @param driver
+   * @param searchTelemetryQuery
+   * @returns {Promise<*>}
+   */
+  searchSentTelemetry: async(driver, searchTelemetryQuery) => {
     driver.setContext(Context.CHROME);
-    return driver.executeAsyncScript(async(passedPingType, callback) => {
-      Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
-      // Returns array of pings of type `type` in sorted order by timestamp
-      // first element is most recent ping
-      async function getMostRecentPingsByType(type) {
-        const pings = await TelemetryArchive.promiseArchivedPingList();
-
-        const filteredPings = pings.filter(p => p.type === type);
-        filteredPings.sort((a, b) => b.timestampCreated - a.timestampCreated);
-
-        const pingData = filteredPings.map(ping =>
-          TelemetryArchive.promiseArchivedPingById(ping.id),
+    return driver.executeAsyncScript(
+      async(
+        _SearchError,
+        _searchTelemetryArchive,
+        _searchTelemetryQuery,
+        callback,
+      ) => {
+        // eslint-disable-next-line no-eval
+        eval(_searchTelemetryArchive);
+        Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
+        callback(
+          await searchTelemetryArchive(
+            _SearchError,
+            TelemetryArchive,
+            _searchTelemetryQuery,
+          ),
         );
-        return Promise.all(pingData);
-      }
-      callback(await getMostRecentPingsByType(passedPingType));
-    }, pingType);
+      },
+      SearchError,
+      searchTelemetryArchive,
+      searchTelemetryQuery,
+    );
   },
+
+  getShieldPingsAfterTimestamp: async(driver, ts) => {
+    return module.exports.telemetry.searchSentTelemetry(driver, {
+      type: ["shield-study", "shield-study-addon"],
+      timestamp: ts,
+    });
+  },
+
+  filterPings: (conditionArray, pings) => {
+    const resultingPings = [];
+    for (const condition of conditionArray) {
+      const index = pings.findIndex(ping => condition(ping));
+      if (index === -1) {
+        throw new SearchError(condition);
+      }
+      resultingPings.push(pings[index]);
+    }
+    return resultingPings;
+  },
+
+  summarizePings: pings => {
+    return pings.map(p => [p.payload.type, p.payload.data]);
+  },
+
   pingsReport: pings => {
     if (pings.length === 0) {
       return { report: "No pings found" };

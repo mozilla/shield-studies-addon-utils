@@ -23,7 +23,7 @@
       "parent": {
         "scopes": ["addon_parent"],
         "script": "./privileged/study/api.js",
-        "paths": [["study"]]
+        "paths": [["study"], ["studyTest"]]
       }
     }
   },
