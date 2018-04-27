@@ -1,5 +1,7 @@
 /* eslint-env node */
 
+/** Execute privileged javascript in firefox */
+
 const firefox = require("selenium-webdriver/firefox");
 const Context = firefox.Context;
 
@@ -39,9 +41,10 @@ module.exports.executeJs = {
    * WebExtension APIs as the background scripts, allowing us
    * to run tests directly against those APIs.
    *
-   * @param driver
-   * @param callable
-   * @returns {Promise<*>}
+   * @param {object} driver webDriver instance
+   * @param {function} callable asyncScript to run in fx `driver.executeAsyncScript`
+   * @param {function} passedArgument If defined, pass to callable
+   * @returns {Promise<*>} result of callable(passedArgument)
    */
   executeAsyncScriptInExtensionPageForTests: async(
     driver,

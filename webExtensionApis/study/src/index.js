@@ -1,5 +1,8 @@
 /* eslint-env commonjs */
 
+/* eslint no-console: off */
+// TODO, pref controlled logger
+
 /* global ExtensionAPI */
 
 ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
@@ -31,7 +34,7 @@ this.study = class extends ExtensionAPI {
    * reasons than to clarify the class member "extension"
    * being of type Extension
    *
-   * @param extension Extension
+   * @param {object} extension Extension
    */
   constructor(extension) {
     super(extension);
@@ -47,6 +50,9 @@ this.study = class extends ExtensionAPI {
    * user interface, setting up internal event listeners, etc.) must free
    * these resources when the extension for which they are allocated is
    * shut down.
+   *
+   * @param {string} shutdownReason one of the reasons
+   * @returns {undefined} TODO TODO
    */
   onShutdown(shutdownReason) {
     console.log("onShutdown", shutdownReason);

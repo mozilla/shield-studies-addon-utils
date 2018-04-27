@@ -19,9 +19,8 @@ this.Bootstrap = function(studySetup, studyUtils) {
 
     /**
      *
-     * @param manifest
-     * @param reason
-     * @returns {Promise<void>}
+     * @param {object} extension Extension with manifest key.
+     * @returns {Promise<void>} None
      */
     async configure(extension) {
       const { manifest } = extension;
@@ -119,6 +118,11 @@ this.Bootstrap = function(studySetup, studyUtils) {
      * times that `endStudy` is called.
      *
      * studyUtils._isEnding means this is a '2nd shutdown'.
+     *
+     * @param {object} addonData data about the addon
+     * @param {reason} reason A bootstrap addon reason.
+     *
+     * @returns {Promise<void>} Nothing
      */
     async shutdown(addonData, reason) {
       this.log.debug("shutdown", studyUtils.REASONS[reason] || reason);

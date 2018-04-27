@@ -98,6 +98,9 @@ const studySetup = {
  * (Guards against Normandy or other deployment mistakes or inadequacies)
  *
  * This implementation caches in local storage to speed up second run.
+ *
+ * @returns {Promise<boolean>} answer An boolean answer about whether the user should be
+ *       allowed to enroll in the study
  */
 async function shouldAllowEnroll() {
   // Cached answer.  Used on 2nd run
@@ -118,7 +121,9 @@ async function shouldAllowEnroll() {
 }
 
 /**
- * Augment studySetup with a few async values
+ * Augment declariative studySetup with any necessary async values
+ *
+ * @return {object} studySetup A complete study setup object
  */
 async function getStudySetup() {
   const id = browser.runtime.id;

@@ -18,6 +18,8 @@ class StudyLifeCycleHandler {
    * (If you have privileged code, you might need to clean
    *  that up as well.
    * See:  https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/lifecycle.html
+   *
+   * @returns {Promise<void>} Nothing
    */
   async cleanup() {
     await browser.storage.local.clear();
@@ -26,6 +28,9 @@ class StudyLifeCycleHandler {
   /**
    * - set up expiration alarms
    * - make feature/experience/ui with the particular variation for this user.
+   *
+   * @param {object} studyInfo see Api for studyInfo()
+   * @returns {Promise<void>} Nothing
    */
   async enableFeature(studyInfo) {
     console.log("enableFeature - studyInfo", studyInfo);
@@ -54,6 +59,9 @@ class StudyLifeCycleHandler {
    *
    * - opens 'ending' urls (surveys, for example)
    * - calls cleanup
+   *
+   * @param {object} ending A study ending instruction set
+   * @returns {Promise<void>} Nothing
    */
   async handleStudyEnding(ending) {
     console.log(`study wants to end:`, ending);
@@ -69,6 +77,8 @@ class StudyLifeCycleHandler {
 
 /**
  * Run every startup to get config and instantiate the feature
+ *
+ * @returns {Promise<void>} Nothing
  */
 async function onEveryExtensionLoad() {
   new StudyLifeCycleHandler();
@@ -109,7 +119,8 @@ browser.windows.create(createData);
 /**
  * Fired when the extension is first installed, when the extension is updated
  * to a new version, and when the browser is updated to a new version.
- * @param details
+ * @param {object} details Unclear what a 'details' is TODO
+ * @returns {undefined} Nothing
  */
 function handleInstalled(details) {
   console.log(
@@ -122,6 +133,7 @@ function handleInstalled(details) {
 /**
  * Fired when a profile that has this extension installed first starts up.
  * This event is not fired when a private browsing/incognito profile is started.
+ * @returns {undefined} Nothing
  */
 async function handleStartup() {
   console.log("The 'handleStartup' event was fired.", arguments);

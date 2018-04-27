@@ -24,9 +24,9 @@ module.exports.telemetry = {
    * be used regardless of the current browser context as well as
    * after the extension has been uninstalled
    *
-   * @param driver
-   * @param searchTelemetryQuery
-   * @returns {Promise<*>}
+   * @param {object} driver Configured Firefox driver instance
+   * @param {object} searchTelemetryQuery (See `broswer.study.searchSentTelemetry`)
+   * @returns {Promise<*>} Array of Pings (See `broswer.study.searchSentTelemetry`)
    */
   searchSentTelemetry: async(driver, searchTelemetryQuery) => {
     driver.setContext(Context.CHROME);

@@ -1,5 +1,9 @@
 /* eslint-env node */
 
+/** Functions and helpers to create/get UI elements in Firefox
+ *
+ */
+
 const webdriver = require("selenium-webdriver");
 const firefox = require("selenium-webdriver/firefox");
 const Fs = require("fs-extra");
@@ -27,11 +31,14 @@ module.exports.ui = {
    *  - Browser action - {addonWidgetId}-browser-action
    *  - Page action - {addonWidgetId}-page-action
    * Search for makeWidgetId(extension.id) in the Firefox source code for more examples.
-   * @returns {Promise<*>}
+   * @returns {Promise<string>} name of the made widget
    */
   addonWidgetId: async() => {
     /**
      * From firefox/browser/components/extensions/ExtensionPopups.jsm
+     *
+     * @param {string} id Id to modify
+     * @returns {string} widgetId canonical widget id with replaced bits.
      */
     function makeWidgetId(id) {
       id = id.toLowerCase();

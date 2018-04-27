@@ -13,3 +13,6 @@ examples/test-addon/src/privileged/study/
 package.json
 # don't lint node_modules
 node_modules
+
+# re #169, skip the misc dir
+misc/

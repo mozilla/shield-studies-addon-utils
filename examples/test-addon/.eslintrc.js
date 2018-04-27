@@ -1,9 +1,14 @@
+/* eslint-env node */
+
+"use strict";
+
 module.exports = {
   env: {
     es6: true,
-    node: true,
+    webextensions: true,
   },
   rules: {
     "no-console": "off",
+    "max-len": "off",
   },
 };
