@@ -45,7 +45,7 @@ function studySetupForTests() {
   return studySetup;
 }
 
-describe("Tests for the browser.study.* API (not specific to any add-on background logic)", function() {
+describe("PUBLIC API `browser.study` (not specific to any add-on background logic)", function() {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
   this.timeout(15000);
 
@@ -391,9 +391,7 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
       });
     });
   });
-});
 
-describe("PUBLIC API", function() {
   describe("studySetup, overlaps a lot with getStudyInfo", function() {
     describe("isFirstRun:", function() {
       it("sets pref is none given");
