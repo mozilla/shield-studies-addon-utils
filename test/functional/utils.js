@@ -39,7 +39,7 @@ const FIREFOX_PREFERENCES = {
 // Re-usable test methods from shield-studies-addon-utils
 const { executeJs } = require("../../testUtils/executeJs");
 const { nav } = require("../../testUtils/nav");
-const { setup } = require("../../testUtils/setupWebDriver");
+const { setup } = require("../../testUtils/setupWebdriver");
 const { telemetry } = require("../../testUtils/telemetry");
 const { ui } = require("../../testUtils/ui");
 
