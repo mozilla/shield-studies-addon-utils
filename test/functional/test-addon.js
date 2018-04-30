@@ -6,7 +6,6 @@
  * - selenium/webdriver
  * - test-addon works as a platform
  *
- *
  */
 
 const assert = require("assert");

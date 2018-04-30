@@ -45,6 +45,8 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
 │   └── shield-study-helper-addon/
 ├── package-lock.json
 ├── package.json
+├── test/
+├── test-addon/
 ├── testUtils/
 └── webExtensionApis/
     ├── prefs/
