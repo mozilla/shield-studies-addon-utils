@@ -2,14 +2,12 @@
 /* global browser */
 
 /** Tests for
-  *
-  * - selenium/webdriver
-  * - test-addon works as a platform
-  *
-  *
-  */
-
-
+ *
+ * - selenium/webdriver
+ * - test-addon works as a platform
+ *
+ *
+ */
 
 const assert = require("assert");
 const utils = require("./utils");

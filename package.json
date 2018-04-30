@@ -84,9 +84,9 @@
     "small-study:bundle-utils": "examples/small-study/bin/bundle-shield-studies-addon-utils.sh",
     "small-study:run": "cd examples/small-study && web-ext run --no-reload",
     "test": "npm run test-only",
-    "test-addon:build": "cd examples/test-addon && web-ext build",
-    "test-addon:bundle-utils": "examples/test-addon/bin/bundle-shield-studies-addon-utils.sh",
-    "test-addon:run": "cd examples/test-addon && web-ext run --no-reload",
-    "test-only": "FIREFOX_BINARY=${FIREFOX_BINARY:-firefox} ADDON_ZIP=examples/test-addon/dist/shield_utils_test_add-on-1.0.0.zip mocha examples/test-addon/test/functional/ --bail"
+    "test-addon:build": "cd test-addon && web-ext build",
+    "test-addon:bundle-utils": "test-addon/bin/bundle-shield-studies-addon-utils.sh",
+    "test-addon:run": "cd test-addon && web-ext run --no-reload",
+    "test-only": "FIREFOX_BINARY=${FIREFOX_BINARY:-firefox} ADDON_ZIP=test-addon/dist/shield_utils_test_add-on-1.0.0.zip mocha test/functional/ --bail"
   }
 }
