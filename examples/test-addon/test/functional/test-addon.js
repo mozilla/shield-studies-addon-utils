@@ -1,6 +1,16 @@
 /* eslint-env node, mocha */
 /* global browser */
 
+/** Tests for
+  *
+  * - selenium/webdriver
+  * - test-addon works as a platform
+  *
+  *
+  */
+
+
+
 const assert = require("assert");
 const utils = require("./utils");
 
