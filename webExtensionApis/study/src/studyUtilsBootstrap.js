@@ -24,7 +24,6 @@ this.Bootstrap = function(studySetup, studyUtils) {
      */
     async configure(extension) {
       const { manifest } = extension;
-
       const addonId = manifest.applications.gecko.id;
       const addonVersion = manifest.version;
       this.initStudyUtils(addonId, addonVersion);

@@ -32,6 +32,7 @@ const { ExtensionError } = ExtensionUtils;
 
 let log;
 const studyUtilsLoggingLevel = "Trace"; // Fatal: 70, Error: 60, Warn: 50, Info: 40, Config: 30, Debug: 20, Trace: 10, All: -1,
+log = createLog("shield-study-utils", studyUtilsLoggingLevel);
 
 // telemetry utils
 const CID = Cu.import("resource://gre/modules/ClientID.jsm", null);
@@ -113,6 +114,13 @@ function mergeQueryArgs(url, ...args) {
 class StudyUtils {
   /**
    * Create a StudyUtils instance.
+   *
+   * TODO glind, ensure and cleanup
+   *
+   * Internals of interest:
+   * - _studySetup
+   * - _isEnding
+   * - _isSetup
    */
   constructor() {
     // Expose sampling methods onto the exported studyUtils singleton
@@ -142,7 +150,6 @@ class StudyUtils {
    * @returns {StudyUtils} - the StudyUtils class instance
    */
   setup(studySetup) {
-    log = createLog("shield-study-utils", studyUtilsLoggingLevel);
     log.debug("setting up!");
     this.studySetup = studySetup;
     this._isSetup = true;

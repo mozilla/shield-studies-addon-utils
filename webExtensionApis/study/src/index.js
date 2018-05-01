@@ -73,11 +73,8 @@ this.study = class extends ExtensionAPI {
    */
   getAPI(context) {
     const { studyUtils } = require("./studyUtils.js");
-    const studyUtilsBootstrap = require("./studyUtilsBootstrap.js");
     // const { PioneerUtils } = require("pioneer-utils/PioneerUtils.jsm");
     // const pioneerUtilsBootstrap = require("./pioneerUtilsBootstrap.js");
-
-    let bootstrap;
 
     const { extension } = this;
 
@@ -133,21 +130,81 @@ this.study = class extends ExtensionAPI {
          *  1. allowEnroll is ONLY used during first run (install)
          **/
         setup: async function setup(studySetup) {
+          // TODO check all return values
+
+          // TODO move more of this into utils.
+
+          // 1. augment setup with addon info
+          studySetup.addon = {
+            id: extension.manifest.applications.gecko.id,
+            version: extension.manifest.version,
+          };
+
+          studyUtils.setup(studySetup);
+
+          if (!studySetup.testing) {
+            studySetup.testing = {};
+          }
+
+          // not set variation
+          const variation =
+            studySetup.weightedVariations[studySetup.testing.variation] ||
+            (await studyUtils.deterministicVariation(
+              studySetup.weightedVariations,
+            ));
+
+          studyUtils.setVariation(variation);
+
+          // TODO move more of this into studyUtils
+          const { startupReason } = extension;
+          console.debug("startup", startupReason);
+
+          // make sure the variation name is set
+
+          // Check if the user is eligible to run this study using the |isEligible|
+          // function when the study is initialized
+          if (
+            startupReason === "ADDON_INSTALL" ||
+            startupReason === "ADDON_UPGRADE"
+          ) {
+            //  telemetry "enter" ONCE
+            studyUtils.firstSeen();
+            if (!studySetup.allowEnroll) {
+              console.debug("User is ineligible, ending study.");
+              // 1. uses studySetup.endings.ineligible.url if any,
+              // 2. sends UT for "ineligible"
+              // 3. then uninstalls addon
+              await studyUtils.endStudy({ reason: "ineligible" });
+              return;
+            }
+          }
+
+          // TODO, allow this key
+          if (studySetup.testing.expired) {
+            await studyUtils.endStudy({ reason: "expired" });
+            return;
+          }
+
+          /*
+          * Adds the study to the active list of telemetry experiments,
+          * and sends the "installed" telemetry ping if applicable
+          */
+          await studyUtils.startup({ reason: startupReason });
+
+          // log what the study variation and other info is.
+          console.debug(`info ${JSON.stringify(studyUtils.info())}`);
+
           try {
-            bootstrap = studyUtilsBootstrap.Bootstrap(studySetup, studyUtils);
-            await bootstrap.configure(extension);
-            await bootstrap.startup(extension);
             const studyInfo = studyUtils.info();
             // TODO: Only set true on first run
             // TODO: glind info should KNOW first run
             const isFirstRun = true;
             studyApiEventEmitter.emitReady(studyInfo, isFirstRun);
-            return studyInfo;
+            return;
           } catch (e) {
             console.error("browser.study.setup error");
             console.error(e);
           }
-          return null;
         },
 
         /* Signal to browser.study that it should end.
