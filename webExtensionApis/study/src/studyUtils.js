@@ -8,8 +8,8 @@ import sampling from "./sampling";
 * For an overview of what this module does, see ABOUT.md at
 * github.com/mozilla/shield-studies-addon-template
 *
-* Note: There are a number of methods that won't work if the 
-* setup method has not executed (they perform a check with the 
+* Note: There are a number of methods that won't work if the
+* setup method has not executed (they perform a check with the
 * `throwIfNotSetup` method). The setup method ensures that the
 * studySetup data passed in is valid per the studySetup schema.
 */
@@ -17,15 +17,12 @@ import sampling from "./sampling";
 /*
 * TODO glind survey / urls & query args
 */
-const EXPORTED_SYMBOLS = ["studyUtils"];
 
 const UTILS_VERSION = require("../../../package.json").version;
 const PACKET_VERSION = 3;
 
 const { utils: Cu } = Components;
-Cu.import("resource://gre/modules/AddonManager.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
-Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
 
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
@@ -67,87 +64,17 @@ const schemas = {
 };
 import jsonschema from "./jsonschema";
 
-/**
- * Note: This is the deep merge from the addon-sdk (sdk/util/object.js).
- * Probably deeper than we need. Unlike the shallow merge with the
- * spread operator (const c = {...a, ...b}), this function can be configured
- * to copy non-enumerable properties, symbols, and property descriptors.
+/**  Simple spread/rest based merge, using Object.assign.
  *
- * Merges all the properties of all arguments into first argument. If two or
- * more argument objects have own properties with the same name, the property
- * is overridden, with precedence from right to left, implying, that properties
- * of the object on the left are overridden by a same named property of the
- * object on the right.
+ * Right most wins, top level only, by replacement.
  *
- * Any argument given with "falsy" value - commonly `null` and `undefined` in
- * case of objects - are skipped.
+ * Unlike deep merges might not handle symbols and other things.
  *
- * @examples
- *    var a = { bar: 0, a: 'a' }
- *    var b = merge(a, { foo: 'foo', bar: 1 }, { foo: 'bar', name: 'b' });
- *    b === a   // true
- *    b.a       // 'a'
- *    b.foo     // 'bar'
- *    b.bar     // 1
- *    b.name    // 'b'
- *
- * @param {...Object} source - two or more object arguments
+ * @param {...Object} sources - 1 or more sources
  * @returns {Object} - the resulting merged object
  */
-function merge(source) {
-  const optionsDefault = {
-    names: true,
-    symbols: true,
-    nonEnumerables: true,
-  };
-  /**
-   * Gets object's own property symbols and/or names, including non-enumerables
-   * by default
-   * @param {Object} object - the object for which to get own property symbols
-   * and names
-   * @param {Object} options - object indicating what kinds of properties to
-   * merge
-   * @param {boolean} options.name - True if function should return object's own
-   * property names
-   * @param {boolean} options.symbols - True if function should return
-   * object's own property symbols
-   * @param {boolean} options.nonEnumerables - True if function should return
-   * object's non-enumerable own property names
-   * @returns {string[]|symbol[]} - An array of own property names and/or
-   * symbols for object
-   */
-  function getOwnPropertyIdentifiers(object, options = optionsDefault) {
-    const symbols = !options.symbols
-      ? []
-      : Object.getOwnPropertySymbols(object);
-
-    // eslint-disable-next-line
-    const names = !options.names
-      ? []
-      : options.nonEnumerables
-        ? Object.getOwnPropertyNames(object)
-        : Object.keys(object);
-    return [...names, ...symbols];
-  }
-  /*
-  * descriptor: an object whose own enumerable properties constitute descriptors
-  * for the properties from arguments[1]+ to be defined or modified in
-  * arguments[0]
-  */
-  const descriptor = {};
-  /*
-  * `Boolean` converts the first parameter to a boolean value. Any object is
-  * converted to `true` where `null` and `undefined` becames `false`. Therefore
-  * the `filter` method will keep only objects that are defined and not null.
-  */
-  Array.slice(arguments, 1)
-    .filter(Boolean)
-    .forEach(properties => {
-      getOwnPropertyIdentifiers(properties).forEach(name => {
-        descriptor[name] = Object.getOwnPropertyDescriptor(properties, name);
-      });
-    });
-  return Object.defineProperties(source, descriptor);
+function merge(...sources) {
+  return Object.assign({}, ...sources);
 }
 
 /**
@@ -155,12 +82,11 @@ function merge(source) {
  * @param {string} url - a base url to append; must be static (data) or external
  * @param {Object} args - query arguments, one or more object literal used to
  * build a query string
+ *
+ * @example
  * @returns {string} - an absolute url appended with a query string
  */
 function mergeQueryArgs(url, ...args) {
-  // currently left to right
-  // TODO, glind, decide order of merge here
-  // TODO, use Object.assign, or ES7 spread
   const U = new URL(url);
   // get the query string already attached to url, if it exists
   let q = U.search || "?";
@@ -189,72 +115,12 @@ class StudyUtils {
    * Create a StudyUtils instance.
    */
   constructor() {
-    /*
-    * TODO glind Answer: no.  see if you can merge the construtor and setup
-    * and export the class, rather than a singleton
-    */
-    /**
-     * Handles a message received by the webExtension, sending a response back.
-     * @param {Object} webExtensionMsg object, see its schema
-     * @param {boolean} webExtensionMsg.shield - Whether or not the message
-     * is a shield message (intended for StudyUtils)
-     * @param {string} webExtensionMsg.msg - StudyUtils method to be called
-     *from the webExtension
-     * @param {*} webExtensionMsg.data - Data sent from webExtension
-     * @param {Object} sender - Details about the message sender, see
-     * runtime.onMessage MDN docs
-     * @param {responseCallback} sendResponse - The callback to send a response
-     * back to the webExtension
-     * @returns {boolean|undefined} - true if the message has been processed
-     * (shield message) or ignored (non-shield message)
-     */
-    this.respondToWebExtensionMessage = function(
-      { shield, msg, data },
-      sender,
-      sendResponse,
-    ) {
-      // @TODO glind: make sure we're using the webExtensionMsg schema
-      if (!shield) return true;
-      const allowedMethods = ["endStudy", "telemetry", "info"];
-      if (!allowedMethods.includes(msg)) {
-        const errStr1 = "respondToWebExtensionMessage:";
-        const errStr2 = "is not in allowed studyUtils methods:";
-        throw new ExtensionError(
-          `${errStr1} "${msg}" ${errStr2} ${allowedMethods}`,
-        );
-      }
-      /*
-        * handle async
-        * Execute the StudyUtils method requested by the webExtension
-        * then send the webExtension a response with their return value
-        */
-      Promise.resolve(this[msg](data)).then(
-        function(ans) {
-          log.debug("respondingTo", msg, ans);
-          sendResponse(ans);
-        },
-        // function error eventually
-      );
-      return true;
-      /* Ensure this method is bound to the instance of studyUtils, see
-        * callsite in bootstrap.js
-        * TODO glind: bdanforth's claim: making this function a StudyUtils
-        * method would also do this.
-        */
-    }.bind(this);
-
-    /*
-    * Expose sampling methods onto the exported studyUtils singleton, for use
-    * by any Components.utils-importing module
-    */
+    // Expose sampling methods onto the exported studyUtils singleton
     this.sampling = sampling;
-
     // expose schemas
     this.schemas = schemas;
-
-    // expose validation methods
+    // expose jsonschema validation methods
     this.jsonschema = jsonschema;
-
     this.REASONS = REASONS;
   }
 
@@ -291,31 +157,6 @@ class StudyUtils {
     this.studySetup = {};
     delete this._variation;
     this._isSetup = false;
-  }
-
-  /**
-   * @async
-   * Opens a new tab that loads a page with the specified URL.
-   * @param {string} url - the url of a page
-   * @param {Object} params - optional, see
-   * https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XUL/Method/addTab
-   * @returns {void}
-   */
-  async openTab(url, params = {}) {
-    this.throwIfNotSetup("openTab");
-    log.debug(url, params);
-    log.debug("opening this formatted tab", url, params);
-    if (!Services.wm.getMostRecentWindow("navigator:browser").gBrowser) {
-      /*
-      * Automated tests run faster than Firefox opens windows.
-      * TODO: Find less gross way to do this
-      * Wait for the window to be opened
-      */
-      await new Promise(resolve => setTimeout(resolve, 30000));
-    }
-    Services.wm
-      .getMostRecentWindow("navigator:browser")
-      .gBrowser.addTab(url, params);
   }
 
   /**
@@ -387,6 +228,8 @@ class StudyUtils {
   info() {
     log.debug("getting info");
     this.throwIfNotSetup("info");
+    // TODO get the is first run
+    // TODO make this async
     return {
       studyName: this.studySetup.activeExperimentName,
       isFirstRun: false,
@@ -413,6 +256,7 @@ class StudyUtils {
    * @returns {void}
    */
   firstSeen() {
+    // TODO, maybe record it?  set the pref?
     log.debug(`firstSeen`);
     this.throwIfNotSetup("firstSeen uses telemetry.");
     this._telemetry({ study_state: "enter" }, "shield-study");
@@ -454,20 +298,6 @@ class StudyUtils {
   }
 
   /**
-   * Uninstalls the shield study addon, given its addon id.
-   * @param {string} id - the addon id
-   * @returns {void}
-   */
-  uninstall(id) {
-    if (!id) id = this.info().addon.id;
-    if (!id) {
-      this.throwIfNotSetup("uninstall needs addon.id as arg or from setup.");
-    }
-    log.debug(`about to uninstall ${id}`);
-    AddonManager.getAddonByID(id, addon => addon.uninstall());
-  }
-
-  /**
    * @async
    * Adds the study to the active list of telemetry experiments and sends the
    * "installed" telemetry ping if applicable
@@ -499,6 +329,8 @@ class StudyUtils {
    * @returns {void}
    */
   async endStudy({ reason, fullname }) {
+    // TODO, endStudy happens once OR WHAT?
+    // TODO, endStudy needs to mark the utils as 'ended';
     this.throwIfNotSetup("endStudy");
     if (this._isEnding) {
       log.debug("endStudy, already ending!");
@@ -550,7 +382,6 @@ class StudyUtils {
     }
     // these are all exits
     this._telemetry({ study_state: "exit" }, "shield-study");
-    this.uninstall(); // TODO glind. should be controllable by arg?
   }
 
   /**
@@ -704,6 +535,7 @@ function createLog(name, levelWord) {
   return L;
 }
 
+// TODO deal with these. Not needed, probably
 // addon state change reasons
 const REASONS = {
   APP_STARTUP: 1, // The application is starting up.
@@ -719,9 +551,7 @@ for (const r in REASONS) {
   REASONS[REASONS[r]] = r;
 }
 
+// TODO, use the usual es6 exports
 // Actually create the singleton.
 const studyUtils = new StudyUtils();
-
-// to make this work with webpack!
-this.EXPORTED_SYMBOLS = EXPORTED_SYMBOLS;
 this.studyUtils = studyUtils;

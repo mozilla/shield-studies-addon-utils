@@ -139,6 +139,7 @@ this.study = class extends ExtensionAPI {
             await bootstrap.startup(extension);
             const studyInfo = studyUtils.info();
             // TODO: Only set true on first run
+            // TODO: glind info should KNOW first run
             const isFirstRun = true;
             studyApiEventEmitter.emitReady(studyInfo, isFirstRun);
             return studyInfo;
@@ -189,6 +190,7 @@ this.study = class extends ExtensionAPI {
          *  `browser.study` will choose the
          **/
         endStudy: async function endStudy(anEndingAlias, anEndingObject) {
+          // TODO: glind handle 2nd time call
           console.log("called endStudy anEndingAlias");
           return studyUtils.endStudy({
             reason: anEndingAlias,
