@@ -9,7 +9,7 @@
  */
 require("geckodriver");
 
-// Additional preferences set during tes
+// Additional preferences set during tests
 const FIREFOX_PREFERENCES = {
   // Ensure e10s is turned on.
   "browser.tabs.remote.autostart": true,
@@ -39,7 +39,7 @@ const FIREFOX_PREFERENCES = {
 // Re-usable test methods from shield-studies-addon-utils
 const { executeJs } = require("../../testUtils/executeJs");
 const { nav } = require("../../testUtils/nav");
-const { setup } = require("../../testUtils/setupWebdriver");
+const { setupWebdriver } = require("../../testUtils/setupWebdriver");
 const { telemetry } = require("../../testUtils/telemetry");
 const { ui } = require("../../testUtils/ui");
 
@@ -48,7 +48,7 @@ module.exports = {
   FIREFOX_PREFERENCES,
   executeJs,
   nav,
-  setup,
+  setupWebdriver,
   telemetry,
   ui,
 };

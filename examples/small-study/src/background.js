@@ -107,8 +107,8 @@ class StudyLifeCycleHandler {
  * @returns {undefined}
  */
 async function onEveryExtensionLoad() {
-  const studySetup = await getStudySetup();
   new StudyLifeCycleHandler();
+  const studySetup = await getStudySetup();
   await browser.study.setup(studySetup);
 }
 onEveryExtensionLoad();

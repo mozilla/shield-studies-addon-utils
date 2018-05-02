@@ -253,6 +253,37 @@ this.study = class extends ExtensionAPI {
             reason: anEndingAlias,
             fullname: anEndingAlias,
           });
+
+          /** TODO from the bootstrap.
+           * Shutdown needs to distinguish between USER-DISABLE and other
+           * times that `endStudy` is called.
+           *
+           * studyUtils._isEnding means this is a '2nd shutdown'.
+           *
+           * @param {object} addonData data about the addon
+           * @param {reason} reason A bootstrap addon reason.
+           *
+           * @returns {Promise<void>} Nothing
+           */
+          /* async shutdown(addonData, reason) {
+            console.debug("shutdown", studyUtils.REASONS[reason] || reason);
+
+            const isUninstall =
+              reason === studyUtils.REASONS.ADDON_UNINSTALL ||
+              reason === studyUtils.REASONS.ADDON_DISABLE;
+            if (isUninstall) {
+              this.log.debug("uninstall or disable");
+            }
+
+            if (isUninstall && !studyUtils._isEnding) {
+              // we are the first 'uninstall' requestor => must be user action.
+              this.log.debug("probably: user requested shutdown");
+              studyUtils.endStudy({ reason: "user-disable" });
+            }
+
+            // normal shutdown, or 2nd uninstall request
+          */
+
           // return { urls: ["url1", "url2"], endingName: "some-reason" };
         },
 

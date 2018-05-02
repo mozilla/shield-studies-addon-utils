@@ -121,7 +121,7 @@ async function shouldAllowEnroll() {
 }
 
 /**
- * Augment declariative studySetup with any necessary async values
+ * Augment declarative studySetup with any necessary async values
  *
  * @return {object} studySetup A complete study setup object
  */

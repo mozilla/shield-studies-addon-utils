@@ -33,7 +33,7 @@ async function promiseActualBinary(binary) {
   }
 }
 
-module.exports.setup = {
+module.exports.setupWebdriver = {
   /**
    * Uses process.env.FIREFOX_BINARY
    *

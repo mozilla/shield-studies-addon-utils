@@ -52,8 +52,10 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
   let driver;
 
   before(async() => {
-    driver = await utils.setup.promiseSetupDriver(utils.FIREFOX_PREFERENCES);
-    await utils.setup.installAddon(driver);
+    driver = await utils.setupWebdriver.promiseSetupDriver(
+      utils.FIREFOX_PREFERENCES,
+    );
+    await utils.setupWebdriver.installAddon(driver);
     await utils.ui.openBrowserConsole(driver);
   });
 
