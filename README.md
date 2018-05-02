@@ -1,5 +1,5 @@
-| [`browser.study` api](./docs/api.md) | [WebExtension template](https://github.com/mozilla/shield-studies-addon-template/) | [Engineering hints](#engineering-and-process) | [Shield - Mozilla Wiki](https://wiki.mozilla.org/Firefox/Shield) |
-| ------------------------------------ | ---------------------------------------------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------- |
+| [`browser.study` api](./docs/api.md) | [small example](./examples/small-study/) | [(Full) WebExtension template](https://github.com/mozilla/shield-studies-addon-template/) | [Engineering hints](#engineering-and-process) | [Shield - Mozilla Wiki](https://wiki.mozilla.org/Firefox/Shield) |
+| ------------------------------------ | ---------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------- | ---------------------------------------------------------------- |
 
 
 # Shield Studies Addon Utils
