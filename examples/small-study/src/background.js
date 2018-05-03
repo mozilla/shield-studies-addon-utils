@@ -38,24 +38,33 @@ class StudyLifeCycleHandler {
    * call `this.enableFeature` to actually do the feature/experience/ui.
    */
   constructor() {
+    // IMPORTANT:  Listen for onEndStudy first.
     browser.study.onEndStudy.addListener(this.handleStudyEnding);
     browser.study.onReady.addListener(this.enableFeature);
   }
 
   /**
-   * do some cleanup / 'feature reset'
+   * Cleanup
    *
    * (If you have privileged code, you might need to clean
    *  that up as well.
    * See:  https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/lifecycle.html
+   *
+   * @returns {undefined}
    */
   async cleanup() {
-    await browser.storage.local.clear();
+    // do whatever work your addon needs to clean up
   }
 
   /**
+   *
+   * side effects
    * - set up expiration alarms
    * - make feature/experience/ui with the particular variation for this user.
+   *
+   * @param {object} studyInfo browser.study.studyInfo object
+   *
+   * @returns {undefined}
    */
   async enableFeature(studyInfo) {
     if (studyInfo.timeUntilExpire) {
@@ -75,6 +84,10 @@ class StudyLifeCycleHandler {
    *
    * - opens 'ending' urls (surveys, for example)
    * - calls cleanup
+   *
+   * @param {object} ending An ending result
+   *
+   * @returns {undefined}
    */
   async handleStudyEnding(ending) {
     console.log(`study wants to end:`, ending);
@@ -90,6 +103,8 @@ class StudyLifeCycleHandler {
 
 /**
  * Run every startup to get config and instantiate the feature
+ *
+ * @returns {undefined}
  */
 async function onEveryExtensionLoad() {
   new StudyLifeCycleHandler();

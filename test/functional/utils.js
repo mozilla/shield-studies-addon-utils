@@ -1,10 +1,15 @@
 /* eslint-env node */
 
-// The geckodriver package downloads and installs geckodriver for us.
-// We use it by requiring it.
+/**
+ * Geckodriver translates WebDriver calls into Firefox Marionette protocol.
+ * WebDriver allows remote protocol execution of test code.
+ * The geckodriver package downloads and installs geckodriver for us.
+ *
+ * Use it by requiring it.
+ */
 require("geckodriver");
 
-// Preferences set during testing
+// Additional preferences set during tests
 const FIREFOX_PREFERENCES = {
   // Ensure e10s is turned on.
   "browser.tabs.remote.autostart": true,
@@ -32,18 +37,18 @@ const FIREFOX_PREFERENCES = {
 };
 
 // Re-usable test methods from shield-studies-addon-utils
-const { executeJs } = require("../../../../testUtils/executeJs");
-const { nav } = require("../../../../testUtils/nav");
-const { setup } = require("../../../../testUtils/setup");
-const { telemetry } = require("../../../../testUtils/telemetry");
-const { ui } = require("../../../../testUtils/ui");
+const { executeJs } = require("../../testUtils/executeJs");
+const { nav } = require("../../testUtils/nav");
+const { setupWebdriver } = require("../../testUtils/setupWebdriver");
+const { telemetry } = require("../../testUtils/telemetry");
+const { ui } = require("../../testUtils/ui");
 
 // What we expose to our add-on-specific tests
 module.exports = {
   FIREFOX_PREFERENCES,
   executeJs,
   nav,
-  setup,
+  setupWebdriver,
   telemetry,
   ui,
 };

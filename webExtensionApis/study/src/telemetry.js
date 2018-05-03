@@ -1,5 +1,7 @@
 /* eslint-env node */
 
+// TODO, making this a seperate file means that we have to pass the error from the other compartment.
+
 /**
  * Returns array of pings of type `type` in reverse sorted order by timestamp
  * first element is most recent ping
@@ -16,6 +18,13 @@
  * TelemetryArchive.promiseArchivedPingList
  * Thus, we can currently only test that the last two pings are the
  * correct ones but not that their order is correct
+ *
+ *
+ * @param {Object} ErrorToThrow an ExceptionError from the addon
+ * @param {Object<backstagePass>} TelemetryArchive from TelemetryArchive.jsm
+ * @param {ObjectsearchTelemetryQuery} searchTelemetryQuery See searchSentTelemetry
+ *
+ * @returns {Array} Array of found Telemetry Pings
  */
 async function searchTelemetryArchive(
   ErrorToThrow,

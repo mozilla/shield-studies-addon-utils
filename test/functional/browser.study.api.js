@@ -1,6 +1,12 @@
 /* eslint-env node, mocha */
 /* global browser */
 
+/** Complete list of tests for testing
+ *
+ * - the public api
+ *
+ */
+
 const assert = require("assert");
 const utils = require("./utils");
 
@@ -39,15 +45,17 @@ function studySetupForTests() {
   return studySetup;
 }
 
-describe("Tests for the browser.study.* API (not specific to any add-on background logic)", function() {
+describe("PUBLIC API `browser.study` (not specific to any add-on background logic)", function() {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
   this.timeout(15000);
 
   let driver;
 
   before(async() => {
-    driver = await utils.setup.promiseSetupDriver(utils.FIREFOX_PREFERENCES);
-    await utils.setup.installAddon(driver);
+    driver = await utils.setupWebdriver.promiseSetupDriver(
+      utils.FIREFOX_PREFERENCES,
+    );
+    await utils.setupWebdriver.installAddon(driver);
     await utils.ui.openBrowserConsole(driver);
   });
 
@@ -384,5 +392,82 @@ describe("Tests for the browser.study.* API (not specific to any add-on backgrou
         });
       });
     });
+  });
+
+  describe("studySetup, overlaps a lot with getStudyInfo", function() {
+    describe("isFirstRun:", function() {
+      it("sets pref is none given");
+      it("if pref is given, sets pref to that?");
+    });
+    describe("variation:", function() {
+      it("if none given, chooses from weightedVariations");
+      it(
+        "if variation name isn't in weightedVariations, throw (basically, is it aliases or not?)",
+      );
+    });
+    describe("everyRun (see above)", function() {
+      it("all the every run tests");
+    });
+  });
+  describe("endStudy", function() {
+    describe("needs setup", function() {
+      it("throws StudyNotsSetupError  if not setup");
+    });
+    describe("first time called", function() {
+      it("returns an endingInstructions");
+      it("fires an onEndStudy with those instructions");
+      it("removes all listeners?");
+      it(
+        "unsets firstRun pref?  // this might be a bad idea, will break getStudyinfo ",
+      );
+      it("(see more above)");
+    });
+    describe("second time", function() {
+      it("no op, study is shut down.");
+      it("no signal fired");
+    });
+  });
+  describe("getStudyInfo", function() {
+    describe("needs setup", function() {
+      it("throws StudyNotsSetupError  if not setup");
+    });
+    describe("afterEnding", function() {
+      it("cannot call after endStudy, because study is shutdown");
+    });
+    describe("first run of addon / second run of addon", function() {
+      it("during firstRun, return isFirstRun key is true");
+      it("during second run, return isFirstRun key is false");
+    });
+    describe("correctness", function() {
+      it("has correct keys and complete list of values");
+    });
+  });
+  describe("getDataPermissions", function() {
+    it("returns correct and current list of permissions");
+  });
+  describe("sendTelemetry", function() {
+    describe("needs setup", function() {
+      it("throws StudyNotsSetupError  if not setup");
+    });
+  });
+  describe("searchSentTelemetry (light testing)", function() {
+    it("attempt a search, get some results");
+  });
+  describe("deterministicVariation", function() {
+    it("correctly selects from Array of variatons");
+  });
+  describe("surveyUrl", function() {
+    describe("needs setup", function() {
+      it("throws StudyNotsSetupError  if not setup");
+    });
+    describe("correctly constructs urls queryArgs from profile info", function() {
+      it("an example url is correct");
+    });
+  });
+  describe("validateJSON", function() {
+    it("validates json.  demonstrate");
+  });
+  describe("log  (maybe not tested)", function() {
+    it("log level works?");
   });
 });

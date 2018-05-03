@@ -53,6 +53,11 @@ const studySetup = {
       baseUrl: null,
       study_state: "ended-neutral",
     },
+    "some-study-defined-ending-with-survey-url": {
+      baseUrl:
+        "http://www.example.com/?reason=some-study-defined-ending-with-survey-url",
+      study_state: "ended-negative",
+    },
   },
 
   // logging
@@ -98,6 +103,9 @@ const studySetup = {
  * (Guards against Normandy or other deployment mistakes or inadequacies)
  *
  * This implementation caches in local storage to speed up second run.
+ *
+ * @returns {Promise} answer An boolean answer about whether the user should be
+ *       allowed to enroll in the study
  */
 async function shouldAllowEnroll() {
   // Cached answer.  Used on 2nd run
@@ -119,6 +127,8 @@ async function shouldAllowEnroll() {
 
 /**
  * Augment studySetup with a few async values
+ *
+ * @returns {Promise<object>} studySetup final study setup
  */
 async function getStudySetup() {
   const id = browser.runtime.id;

@@ -1,5 +1,8 @@
 /* eslint-env commonjs */
 
+/* eslint no-console: off */
+// TODO, pref controlled logger
+
 /* global ExtensionAPI */
 
 ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
@@ -10,6 +13,13 @@ const { EventManager } = ExtensionCommon;
 // eslint-disable-next-line no-undef
 const { EventEmitter, ExtensionError } = ExtensionUtils;
 
+/** Event emitter to handle Events defined in the API
+ *
+ * - onReady
+ * - onEndStudy
+ *
+ * onDataPermissionChange is handled more directly
+ */
 class StudyApiEventEmitter extends EventEmitter {
   emitDataPermissionsChange(updatedPermissions) {
     this.emit("dataPermissionsChange", updatedPermissions);
@@ -25,13 +35,14 @@ class StudyApiEventEmitter extends EventEmitter {
   }
 }
 
+/** Implements the study/getApi for `browser.study` API */
 this.study = class extends ExtensionAPI {
   /**
    * We don't need to override the constructor for other
    * reasons than to clarify the class member "extension"
    * being of type Extension
    *
-   * @param extension Extension
+   * @param {object} extension Extension
    */
   constructor(extension) {
     super(extension);
@@ -47,19 +58,23 @@ this.study = class extends ExtensionAPI {
    * user interface, setting up internal event listeners, etc.) must free
    * these resources when the extension for which they are allocated is
    * shut down.
+   *
+   * @param {string} shutdownReason one of the reasons
+   * @returns {undefined} TODO TODO
    */
   onShutdown(shutdownReason) {
     console.log("onShutdown", shutdownReason);
     // TODO: debootstrap study
   }
 
+  /**
+   * @param {object} context the addon context
+   * @returns {object} api with study, studyTest keys
+   */
   getAPI(context) {
     const { studyUtils } = require("./studyUtils.js");
-    const studyUtilsBootstrap = require("./studyUtilsBootstrap.js");
     // const { PioneerUtils } = require("pioneer-utils/PioneerUtils.jsm");
     // const pioneerUtilsBootstrap = require("./pioneerUtilsBootstrap.js");
-
-    let bootstrap;
 
     const { extension } = this;
 
@@ -71,125 +86,221 @@ this.study = class extends ExtensionAPI {
          * Schema.json `functions`
          */
 
-        /* Attempt an setup/enrollment, with these effects:
-
-  - sets 'studyType' as Shield or Pioneer
-    - affects telemetry
-    - watches for dataPermission changes that should *always*
-      stop that kind of study
-
-  - Use or choose variation
-    - `testing.variation` if present
-    - OR deterministicVariation
-      for the studyType using `weightedVariations`
-
-  - During firstRun[1] only:
-    - set firstRunTimestamp pref value
-    - send 'enter' ping
-    - if `allowEnroll`, send 'install' ping
-    - else endStudy("ineligible") and return
-
-  - Every Run
-    - setActiveExperiment(studySetup)
-    - monitor shield | pioneer permission endings
-    - suggests alarming if `expire` is set.
-
-  Returns:
-  - studyInfo object (see `getStudyInfo`)
-
-  Telemetry Sent (First run only)
-
-    - enter
-    - install
-
-  Fires Events
-
-  (At most one of)
-  - study:onReady  OR
-  - study:onEndStudy
-
-  Preferences set
-  - `shield.${runtime.id}.firstRunTimestamp`
-
-  Note:
-  1. allowEnroll is ONLY used during first run (install)
-   */
+        /** Attempt an setup/enrollment, with these effects:
+         *
+         *  - sets 'studyType' as Shield or Pioneer
+         *    - affects telemetry
+         *    - watches for dataPermission changes that should *always*
+         *      stop that kind of study
+         *
+         *  - Use or choose variation
+         *    - `testing.variation` if present
+         *    - OR deterministicVariation
+         *      for the studyType using `weightedVariations`
+         *
+         *  - During firstRun[1] only:
+         *    - set firstRunTimestamp pref value
+         *    - send 'enter' ping
+         *    - if `allowEnroll`, send 'install' ping
+         *    - else endStudy("ineligible") and return
+         *
+         *  - Every Run
+         *    - setActiveExperiment(studySetup)
+         *    - monitor shield | pioneer permission endings
+         *    - suggests alarming if `expire` is set.
+         *
+         *  Returns:
+         *  - studyInfo object (see `getStudyInfo`)
+         *
+         *  Telemetry Sent (First run only)
+         *
+         *    - enter
+         *    - install
+         *
+         *  Fires Events
+         *
+         *  (At most one of)
+         *  - study:onReady  OR
+         *  - study:onEndStudy
+         *
+         *  Preferences set
+         *  - `shield.${runtime.id}.firstRunTimestamp`
+         *
+         *  Note:
+         *  1. allowEnroll is ONLY used during first run (install)
+         *
+         * @param {Object<studySetup>} studySetup See API.md
+         * @returns {Object<studyInfo>} studyInfo.  See studyInfo
+         **/
         setup: async function setup(studySetup) {
+          // TODO check all return values
+
+          // TODO move more of this into utils.
+
+          // 1. augment setup with addon info
+          studySetup.addon = {
+            id: extension.manifest.applications.gecko.id,
+            version: extension.manifest.version,
+          };
+
+          studyUtils.setup(studySetup);
+
+          if (!studySetup.testing) {
+            studySetup.testing = {};
+          }
+
+          // not set variation
+          const variation =
+            studySetup.weightedVariations[studySetup.testing.variation] ||
+            (await studyUtils.deterministicVariation(
+              studySetup.weightedVariations,
+            ));
+
+          studyUtils.setVariation(variation);
+
+          // TODO move more of this into studyUtils
+          const { startupReason } = extension;
+          console.debug("startup", startupReason);
+
+          // make sure the variation name is set
+
+          // Check if the user is eligible to run this study using the |isEligible|
+          // function when the study is initialized
+          if (
+            startupReason === "ADDON_INSTALL" ||
+            startupReason === "ADDON_UPGRADE"
+          ) {
+            //  telemetry "enter" ONCE
+            studyUtils.firstSeen();
+            if (!studySetup.allowEnroll) {
+              console.debug("User is ineligible, ending study.");
+              // 1. uses studySetup.endings.ineligible.url if any,
+              // 2. sends UT for "ineligible"
+              // 3. then uninstalls addon
+              await studyUtils.endStudy({ reason: "ineligible" });
+              return;
+            }
+          }
+
+          // TODO, allow this key
+          if (studySetup.testing.expired) {
+            await studyUtils.endStudy({ reason: "expired" });
+            return;
+          }
+
+          /*
+          * Adds the study to the active list of telemetry experiments,
+          * and sends the "installed" telemetry ping if applicable
+          */
+          await studyUtils.startup({ reason: startupReason });
+
+          // log what the study variation and other info is.
+          console.debug(`info ${JSON.stringify(studyUtils.info())}`);
+
           try {
-            bootstrap = studyUtilsBootstrap.Bootstrap(studySetup, studyUtils);
-            await bootstrap.configure(extension);
-            await bootstrap.startup(extension);
             const studyInfo = studyUtils.info();
             // TODO: Only set true on first run
+            // TODO: glind info should KNOW first run
             const isFirstRun = true;
             studyApiEventEmitter.emitReady(studyInfo, isFirstRun);
-            return studyInfo;
+            return;
           } catch (e) {
             console.error("browser.study.setup error");
             console.error(e);
           }
-          return null;
         },
 
         /* Signal to browser.study that it should end.
-
-  Usage scenarios:
-  - addons defined
-    - postive endings (tried feature)
-    - negative endings (client clicked 'no thanks')
-    - expiration / timeout (feature should last for 14 days then uninstall)
-
-  Logic:
-  - If study has already ended, do nothing.
-  - Else: END
-
-  END:
-  - record internally that study is ended.
-  - disable all methods that rely on configuration / setup.
-  - clear all prefs stored by `browser.study`
-  - fire telemetry pings for:
-    - 'exit'
-    - the ending, one of:
-
-      "ineligible",
-      "expired",
-      "user-disable",
-      "ended-positive",
-      "ended-neutral",
-      "ended-negative",
-
-  - augment all ending urls with query urls
-  - fire 'study:end' event to `browser.study.onEndStudy` handlers.
-
-  Addon should then do
-  - open returned urls
-  - feature specific cleanup
-  - uninstall the addon
-
-  Note:
-  1.  calling this function multiple time is safe.
-  `browser.study` will choose the
-   */
+         *
+         *  Usage scenarios:
+         *  - addons defined
+         *    - postive endings (tried feature)
+         *    - negative endings (client clicked 'no thanks')
+         *    - expiration / timeout (feature should last for 14 days then uninstall)
+         *
+         *  Logic:
+         *  - If study has already ended, do nothing.
+         *  - Else: END
+         *
+         *  END:
+         *  - record internally that study is ended.
+         *  - disable all methods that rely on configuration / setup.
+         *  - clear all prefs stored by `browser.study`
+         *  - fire telemetry pings for:
+         *    - 'exit'
+         *    - the ending, one of:
+         *
+         *      "ineligible",
+         *      "expired",
+         *      "user-disable",
+         *      "ended-positive",
+         *      "ended-neutral",
+         *      "ended-negative",
+         *
+         *  - augment all ending urls with query urls
+         *  - fire 'study:end' event to `browser.study.onEndStudy` handlers.
+         *
+         *  Addon should then do
+         *  - open returned urls
+         *  - feature specific cleanup
+         *  - uninstall the addon
+         *
+         *  Note:
+         *  1.  calling this function multiple time is safe.
+         *  `browser.study` will choose the
+         **/
         endStudy: async function endStudy(anEndingAlias, anEndingObject) {
+          // TODO: glind handle 2nd time call
           console.log("called endStudy anEndingAlias");
           return studyUtils.endStudy({
             reason: anEndingAlias,
             fullname: anEndingAlias,
           });
+
+          /** TODO from the bootstrap.
+           * Shutdown needs to distinguish between USER-DISABLE and other
+           * times that `endStudy` is called.
+           *
+           * studyUtils._isEnding means this is a '2nd shutdown'.
+           *
+           * @param {object} addonData data about the addon
+           * @param {reason} reason A bootstrap addon reason.
+           *
+           * @returns {Promise<void>} Nothing
+           */
+          /* async shutdown(addonData, reason) {
+            console.debug("shutdown", studyUtils.REASONS[reason] || reason);
+
+            const isUninstall =
+              reason === studyUtils.REASONS.ADDON_UNINSTALL ||
+              reason === studyUtils.REASONS.ADDON_DISABLE;
+            if (isUninstall) {
+              this.log.debug("uninstall or disable");
+            }
+
+            if (isUninstall && !studyUtils._isEnding) {
+              // we are the first 'uninstall' requestor => must be user action.
+              this.log.debug("probably: user requested shutdown");
+              studyUtils.endStudy({ reason: "user-disable" });
+            }
+
+            // normal shutdown, or 2nd uninstall request
+          */
+
           // return { urls: ["url1", "url2"], endingName: "some-reason" };
         },
 
         /* current study configuration, including
-  - variation
-  - activeExperimentName
-  - timeUntilExpire
-  - firstRunTimestamp
-
-  But not:
-  - telemetry clientId
-
-  Throws ExtensionError if called before `browser.study.setup`
-   */
+         *  - variation
+         *  - activeExperimentName
+         *  - timeUntilExpire
+         *  - firstRunTimestamp
+         *
+         *  But not:
+         *  - telemetry clientId
+         *
+         *  Throws ExtensionError if called before `browser.study.setup`
+         **/
         getStudyInfo: async function getStudyInfo() {
           console.log("called getStudyInfo ");
           return studyUtils.info();
@@ -214,23 +325,26 @@ this.study = class extends ExtensionAPI {
           };
         },
 
-        /* Send Telemetry using appropriate shield or pioneer methods.
-
-  shield:
-  - `shield-study-addon` ping, requires object string keys and string values
-
-  pioneer:
-  - TBD
-
-  Note:
-  - no conversions / coercion of data happens.
-
-  Note:
-  - undefined what happens if validation fails
-  - undefined what happens when you try to send 'shield' from 'pioneer'
-
-  TBD fix the parameters here.
-   */
+        /** Send Telemetry using appropriate shield or pioneer methods.
+         *
+         *  shield:
+         *  - `shield-study-addon` ping, requires object string keys and string values
+         *
+         *  pioneer:
+         *  - TBD
+         *
+         *  Note:
+         *  - no conversions / coercion of data happens.
+         *
+         *  Note:
+         *  - undefined what happens if validation fails
+         *  - undefined what happens when you try to send 'shield' from 'pioneer'
+         *
+         *  TBD fix the parameters here.
+         *
+         * @param {Object} payload Non-nested object with key strings, and key values
+         * @returns {undefined}
+         */
         sendTelemetry: async function sendTelemetry(payload) {
           console.log("called sendTelemetry payload");
 
@@ -249,23 +363,26 @@ this.study = class extends ExtensionAPI {
           await studyUtils.telemetry(payload);
         },
 
-        /* Search locally stored telemetry pings using these fields (if set)
-
-  n:
-    if set, no more than `n` pings.
-  type:
-    Array of 'ping types' (e.g., main, crash, shield-study-addon) to filter
-  mininumTimestamp:
-    only pings after this timestamp.
-  headersOnly:
-    boolean.  If true, only the 'headers' will be returned.
-
-  Pings will be returned sorted by timestamp with most recent first.
-
-  Usage scenarios:
-  - enrollment / eligiblity using recent Telemetry behaviours or client environment
-  - addon testing scenarios
-   */
+        /** Search locally stored telemetry pings using these fields (if set)
+         *
+         *  n:
+         *    if set, no more than `n` pings.
+         *  type:
+         *    Array of 'ping types' (e.g., main, crash, shield-study-addon) to filter
+         *  mininumTimestamp:
+         *    only pings after this timestamp.
+         *  headersOnly:
+         *    boolean.  If true, only the 'headers' will be returned.
+         *
+         *  Pings will be returned sorted by timestamp with most recent first.
+         *
+         *  Usage scenarios:
+         *  - enrollment / eligiblity using recent Telemetry behaviours or client environment
+         *  - addon testing scenarios
+         *
+         * @param {Object<query>} searchTelemetryQuery see above
+         * @returns {Array<sendTelemetry>} matchingPings
+         */
         async searchSentTelemetry(searchTelemetryQuery) {
           Components.utils.import(
             "resource://gre/modules/TelemetryArchive.jsm",
@@ -279,11 +396,11 @@ this.study = class extends ExtensionAPI {
         },
 
         /* Choose a element from `weightedVariations` array
-  based on various hashes of clientId
-
-  - shield:  TBD
-  - pioneer: TBD
-   */
+         *  based on various hashes of clientId
+         *
+         *  - shield:  TBD
+         *  - pioneer: TBD
+         */
         deterministicVariation: async function deterministicVariation(
           weightedVariations,
           algorithm,
@@ -299,10 +416,14 @@ this.study = class extends ExtensionAPI {
           // return "styleA";
         },
 
-        /* Format url with study covariate queryArgs appended / mixed in.
-
-  Use this for constructing midpoint surveys.
-   */
+        /** Format url with study covariate queryArgs appended / mixed in.
+         *
+         *  Use this for constructing midpoint surveys.
+         *
+         * @param {String} baseUrl a string base url
+         * @param {Object} additionalFields to be url encodeds
+         * @returns {String} completeUrl
+         */
         surveyUrl: async function surveyUrl(baseUrl, additionalFields) {
           console.log("called surveyUrl baseUrl, additionalFields");
           return "https://example.com?version=59.0&branch=studyA";
@@ -354,12 +475,12 @@ this.study = class extends ExtensionAPI {
 
         // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
         /* Listen for when the study wants to end.
-
-  Act on it by
-  - opening surveyUrls
-  - tearing down your feature
-  - uninstalling the addon
-   */
+         *
+         *  Act on it by
+         *  - opening surveyUrls
+         *  - tearing down your feature
+         *  - uninstalling the addon
+         */
         onEndStudy: new EventManager(context, "study:onEndStudy", fire => {
           const listener = (eventReference, ending) => {
             fire.async(ending);
@@ -369,10 +490,6 @@ this.study = class extends ExtensionAPI {
             studyApiEventEmitter.off("endStudy", listener);
           };
         }).api(),
-
-        /**
-         * Schema.json `properties`
-         */
       },
       studyTest: {
         throwAnException(message) {
@@ -393,6 +510,10 @@ this.study = class extends ExtensionAPI {
 
         async startup({ reason }) {
           return studyUtils.startup({ reason });
+        },
+
+        async reset() {
+          // return studyUtils.reset();
         },
       },
     };

@@ -1,5 +1,15 @@
 /* eslint-env node */
 
+/** Create usefully configured Firefox webdriver instance.
+ *
+ *
+ * Enviroment variables used:
+ * - FIREFOX_BINARY:firefox
+ *   (can use alias or path)
+ * - ADDON_ZIP  (relative to script)
+ *
+ */
+
 const cmd = require("selenium-webdriver/lib/command");
 const firefox = require("selenium-webdriver/firefox");
 const webdriver = require("selenium-webdriver");
@@ -23,9 +33,12 @@ async function promiseActualBinary(binary) {
   }
 }
 
-module.exports.setup = {
+module.exports.setupWebdriver = {
   /**
    * Uses process.env.FIREFOX_BINARY
+   *
+   * @param {object} FIREFOX_PREFERENCES key-value of prefname value.
+   * @returns {Promise<*>} driver A configured Firefox webdriver object
    */
   promiseSetupDriver: async FIREFOX_PREFERENCES => {
     const profile = new firefox.Profile();
@@ -53,10 +66,12 @@ module.exports.setup = {
     return driver;
   },
 
-  /**
+  /** Install addon from (guessed or explicit) path
    *
-   * @param driver
-   * @param fileLocation
+   * ADDON_ZIP
+   *
+   * @param {object} driver Configured Firefox webdriver
+   * @param {string} fileLocation location for addon xpi/zip
    * @returns {Promise<void>} returns addon id)
    */
   installAddon: async(driver, fileLocation) => {

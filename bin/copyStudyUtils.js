@@ -18,9 +18,9 @@ const customHelp = `
   rm -rf <privilegedDirName>/{study,prefs}
 `;
 
-function correctOutputDir(aPath) {
-  if (path.isAbsolute(aPath)) return aPath;
-  return path.join(process.cwd(), aPath);
+function correctOutputDir(privilegedDirname) {
+  if (path.isAbsolute(privilegedDirname)) return privilegedDirname;
+  return path.join(process.cwd(), privilegedDirname);
 }
 
 function copyStudyUtilsToWebExtension(privilegedDirname, options) {
@@ -60,7 +60,7 @@ function printTemplate(dirname) {
     }
   },
 `;
-  console.log(template);
+  process.stdout.write(template);
 }
 
 const program = require("commander");
@@ -76,6 +76,6 @@ program
   )
   .action(copyStudyUtilsToWebExtension);
 program.on("--help", function() {
-  console.log(customHelp);
+  process.stdout.write(customHelp);
 });
 program.parse(process.argv);

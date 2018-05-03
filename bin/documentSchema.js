@@ -27,7 +27,15 @@ function w(...theArgs) {
   console.log("");
 }
 
-/** Attempt to doucment events and functions with the same code */
+/** Document events and functions with the same code, to stdout
+ *
+ * @param {object} thing schema.json part to document.
+ * @param {number} i which of the things
+ * @param {object} vars varargs
+ * @param {string} whichThing choice of 'fn|evt|property'
+ *
+ * @returns {undefined}
+ */
 function dEvtFn(thing, i, vars, whichThing) {
   for (const j in thing) {
     const part = thing[j];

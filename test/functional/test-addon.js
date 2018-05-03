@@ -1,6 +1,13 @@
 /* eslint-env node, mocha */
 /* global browser */
 
+/** Tests for
+ *
+ * - selenium/webdriver
+ * - test-addon works as a platform
+ *
+ */
+
 const assert = require("assert");
 const utils = require("./utils");
 
@@ -11,8 +18,10 @@ describe("Tests verifying that the test add-on works as expected", function() {
   let driver;
 
   before(async() => {
-    driver = await utils.setup.promiseSetupDriver(utils.FIREFOX_PREFERENCES);
-    await utils.setup.installAddon(driver);
+    driver = await utils.setupWebdriver.promiseSetupDriver(
+      utils.FIREFOX_PREFERENCES,
+    );
+    await utils.setupWebdriver.installAddon(driver);
     await utils.ui.openBrowserConsole(driver);
   });
 
