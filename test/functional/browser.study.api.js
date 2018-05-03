@@ -431,6 +431,21 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
     describe("needs setup", function() {
       it("throws StudyNotsSetupError  if not setup");
     });
+    describe("correctness", function() {
+      //  function assertValidStudyInfo(studyInfo) {
+      //    const v = utils.validateJSON(
+      //      studyInfo,
+      //      utils.studySchema.types.studyInfoObject,
+      //    );
+      //    assert(v.isValid, v.errors);
+      //  }
+      it("during first run, isFirstRun is true", function() {});
+      it("during second run, isFirstRun is false", function() {});
+      it("if duration.days in studySetup(), have a timeUntilExpire in studyInfo", function() {
+        // let info = await browser.study.getStudyInfo();
+        // assertValidStudyInfo(info);
+      });
+    });
     describe("afterEnding", function() {
       it("cannot call after endStudy, because study is shutdown");
     });

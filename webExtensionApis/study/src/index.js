@@ -432,7 +432,8 @@ this.study = class extends ExtensionAPI {
         /* Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client. */
         validateJSON: async function validateJSON(someJson, jsonschema) {
           console.log("called validateJSON someJson, jsonschema");
-          return { valid: true, errors: [] };
+          return studyUtils.jsonschema.validate(someJson, jsonschema);
+          // return { valid: true, errors: [] };
         },
 
         /* @TODO no description given */

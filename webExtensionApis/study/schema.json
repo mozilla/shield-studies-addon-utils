@@ -44,6 +44,57 @@
         }
       },
       {
+        "id": "onEndStudyResponse",
+        "type": "object",
+        "properties": {
+          "urls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "id": "studyInfoObject",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "variation": {
+            "type": "string"
+          },
+          "firstRunTimestamp": {
+            "type": "number"
+          },
+          "activeExperimentName": {
+            "type": "string"
+          },
+          "timeUntilExpire": {
+            "type": "number"
+          },
+          "isFirstRun": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "variation",
+          "firstRunTimestamp",
+          "activeExperimentName",
+          "isFirstRun"
+        ]
+      },
+      {
+        "id": "dataPermissionsObject",
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "shield": {
+            "type": "boolean"
+          }
+        },
+        "required": ["shield"]
+      },
+      {
         "id": "studySetup",
         "type": "object",
         "properties": {
@@ -206,7 +257,8 @@
           "activeExperimentName": "some experiment",
           "timeUntilExpire": null
         },
-        "parameters": []
+        "parameters": [],
+        "returns": "studyInfoObject"
       },
       {
         "name": "getDataPermissions",
@@ -220,7 +272,8 @@
           "telemetry": true,
           "alwaysPrivateBrowsing": false
         },
-        "parameters": []
+        "parameters": [],
+        "returns": "dataPermissionsObject"
       },
       {
         "name": "sendTelemetry",

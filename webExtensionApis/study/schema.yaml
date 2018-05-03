@@ -48,6 +48,46 @@
     additionalProperties: true
     testcase: {baseUrls: ['some.url'], endingName: 'anEnding', endingClass: 'ended-positive'}
 
+  - id: onEndStudyResponse
+    type: object
+    properties:
+      urls:
+        type: 'array'
+        items:
+          type: 'string'
+
+  - id: studyInfoObject
+    type: object
+    additionalProperties: true
+    properties:
+      variation:
+        type: 'string'
+      firstRunTimestamp:
+        type: 'number'  # 1523968204184,
+      activeExperimentName:
+        type: string    # some experiment"
+      timeUntilExpire:
+        type:  number
+      isFirstRun:
+        type: 'boolean'
+
+    required:
+    - variation
+    - firstRunTimestamp
+    - activeExperimentName
+    - isFirstRun
+
+  - id: dataPermissionsObject
+    type: object
+    additionalProperties: true
+    properties:
+      shield:
+        type:
+          boolean
+
+    required:
+    - shield
+
   - id: studySetup
     type: object
     properties:
@@ -232,6 +272,7 @@
 
     defaultReturn: {variation: "styleA", firstRunTimestamp: 1523968204184, activeExperimentName: "some experiment", timeUntilExpire: null}  # TODO add rest
     parameters: []
+    returns:  studyInfoObject
 
   - name: getDataPermissions
     type: function
@@ -239,6 +280,7 @@
     description: object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'
     defaultReturn: {shield: true, pioneer: false, telemetry: true, alwaysPrivateBrowsing: false}
     parameters: []
+    returns: dataPermissionsObject
 
   # telemetry related things
   - name: sendTelemetry

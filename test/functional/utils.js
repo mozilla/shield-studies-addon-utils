@@ -43,12 +43,32 @@ const { setupWebdriver } = require("../../testUtils/setupWebdriver");
 const { telemetry } = require("../../testUtils/telemetry");
 const { ui } = require("../../testUtils/ui");
 
+const {
+  studySchema,
+} = require("../../test-addon/src/privileged/study/schema.json");
+
+const Ajv = require("ajv/dist/ajv.min.js");
+const ajv = new Ajv();
+
+/**
+ * Validates input data based on a specified schema
+ * @param {Object} data - The data to be validated
+ * @param {Object} schema - The schema to validate against
+ * @returns {boolean} - Will return true if the data is valid
+ */
+function validateJSON(data, schema) {
+  const valid = ajv.validate(schema, data);
+  return { valid, errors: ajv.errors || [] };
+}
+
 // What we expose to our add-on-specific tests
 module.exports = {
   FIREFOX_PREFERENCES,
   executeJs,
   nav,
   setupWebdriver,
+  studySchema,
   telemetry,
   ui,
+  validateJSON,
 };

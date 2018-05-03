@@ -375,7 +375,73 @@ Act on it by
 }
 ```
 
-### [3] studySetup
+### [3] onEndStudyResponse
+
+```json
+{
+  "id": "onEndStudyResponse",
+  "type": "object",
+  "properties": {
+    "urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
+```
+
+### [4] studyInfoObject
+
+```json
+{
+  "id": "studyInfoObject",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "variation": {
+      "type": "string"
+    },
+    "firstRunTimestamp": {
+      "type": "number"
+    },
+    "activeExperimentName": {
+      "type": "string"
+    },
+    "timeUntilExpire": {
+      "type": "number"
+    },
+    "isFirstRun": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "variation",
+    "firstRunTimestamp",
+    "activeExperimentName",
+    "isFirstRun"
+  ]
+}
+```
+
+### [5] dataPermissionsObject
+
+```json
+{
+  "id": "dataPermissionsObject",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "shield": {
+      "type": "boolean"
+    }
+  },
+  "required": ["shield"]
+}
+```
+
+### [6] studySetup
 
 ```json
 {
@@ -454,7 +520,7 @@ Act on it by
 }
 ```
 
-### [4] telemetryPayload
+### [7] telemetryPayload
 
 ```json
 {
@@ -467,7 +533,7 @@ Act on it by
 }
 ```
 
-### [5] searchTelemetryQuery
+### [8] searchTelemetryQuery
 
 ```json
 {
