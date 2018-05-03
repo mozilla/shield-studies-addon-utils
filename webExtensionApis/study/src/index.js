@@ -128,6 +128,9 @@ this.study = class extends ExtensionAPI {
          *
          *  Note:
          *  1. allowEnroll is ONLY used during first run (install)
+         *
+         * @param {Object<studySetup>} studySetup See API.md
+         * @returns {Object<studyInfo>} studyInfo.  See studyInfo
          **/
         setup: async function setup(studySetup) {
           // TODO check all return values
@@ -338,6 +341,9 @@ this.study = class extends ExtensionAPI {
          *  - undefined what happens when you try to send 'shield' from 'pioneer'
          *
          *  TBD fix the parameters here.
+         *
+         * @param {Object} payload Non-nested object with key strings, and key values
+         * @returns {undefined}
          */
         sendTelemetry: async function sendTelemetry(payload) {
           console.log("called sendTelemetry payload");
@@ -373,6 +379,9 @@ this.study = class extends ExtensionAPI {
          *  Usage scenarios:
          *  - enrollment / eligiblity using recent Telemetry behaviours or client environment
          *  - addon testing scenarios
+         *
+         * @param {Object<query>} searchTelemetryQuery see above
+         * @returns {Array<sendTelemetry>} matchingPings
          */
         async searchSentTelemetry(searchTelemetryQuery) {
           Components.utils.import(
@@ -410,6 +419,10 @@ this.study = class extends ExtensionAPI {
         /** Format url with study covariate queryArgs appended / mixed in.
          *
          *  Use this for constructing midpoint surveys.
+         *
+         * @param {String} baseUrl a string base url
+         * @param {Object} additionalFields to be url encodeds
+         * @returns {String} completeUrl
          */
         surveyUrl: async function surveyUrl(baseUrl, additionalFields) {
           console.log("called surveyUrl baseUrl, additionalFields");

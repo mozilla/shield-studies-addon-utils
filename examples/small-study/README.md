@@ -20,6 +20,7 @@
 ```
 
 ## setup / install
+
 ```
 npm install -g web-ext
 
@@ -29,28 +30,29 @@ npm install -g web-ext
 ## in this directory:
 
 # uses the 'in-tree' version of the addon utils
-npm install    
-# copy in necessary files. 
+npm install
+# copy in necessary files.
 npm run studyutils  
 ```
 
 ## start the study web extension experiment (WEE)
+
 ```
-npm start    # web-ext run --no-reload    
+npm start    # web-ext run --no-reload
 ```
 
 ## short description flow and description
 
 1.  `manifest.json` maps `experiment_apis` to make lazy gettres at `browser.study`
 2.  Background loads
-    
-    - `studySetup.js`, mostly declarative config for studies.  
-    - `background.js` which runs both the feature (a button / browserAction) and the `browser.study` lifecycle events
 
-3. `background.js:StudyLifeCycleHandler` tracks a little logic.
+    * `studySetup.js`, mostly declarative config for studies.
+    * `background.js` which runs both the feature (a button / browserAction) and the `browser.study` lifecycle events
 
-    - `browser.study.onEndStudy` is watched BEFORE we setup
-    - `browser.study.setup(...)` does the setup, and handles the complex logic of startup / firstRun / shouldAllowEnroll
+3.  `background.js:StudyLifeCycleHandler` tracks a little logic.
+
+    * `browser.study.onEndStudy` is watched BEFORE we setup
+    * `browser.study.setup(...)` does the setup, and handles the complex logic of startup / firstRun / shouldAllowEnroll
 
 ## Next Steps
 

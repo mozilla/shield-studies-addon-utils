@@ -23,6 +23,7 @@ const PACKET_VERSION = 3;
 
 const { utils: Cu } = Components;
 Cu.import("resource://gre/modules/Services.jsm");
+Cu.import("resource://gre/modules/AddonManager.jsm");
 Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
 
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
@@ -30,9 +31,8 @@ ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 // eslint-disable-next-line no-undef
 const { ExtensionError } = ExtensionUtils;
 
-let log;
 const studyUtilsLoggingLevel = "Trace"; // Fatal: 70, Error: 60, Warn: 50, Info: 40, Config: 30, Debug: 20, Trace: 10, All: -1,
-log = createLog("shield-study-utils", studyUtilsLoggingLevel);
+const log = createLog("shield-study-utils", studyUtilsLoggingLevel);
 
 // telemetry utils
 const CID = Cu.import("resource://gre/modules/ClientID.jsm", null);
@@ -84,7 +84,6 @@ function merge(...sources) {
  * @param {Object} args - query arguments, one or more object literal used to
  * build a query string
  *
- * @example
  * @returns {string} - an absolute url appended with a query string
  */
 function mergeQueryArgs(url, ...args) {
@@ -517,6 +516,20 @@ class StudyUtils {
    */
   setLoggingLevel(descriptor) {
     log.level = Log.Level[descriptor];
+  }
+
+  /**
+   * Uninstalls the shield study addon, given its addon id.
+   * @param {string} id - the addon id
+   * @returns {void}
+   */
+  uninstall(id) {
+    if (!id) id = this.info().addon.id;
+    if (!id) {
+      this.throwIfNotSetup("uninstall needs addon.id as arg or from setup.");
+    }
+    log.debug(`about to uninstall ${id}`);
+    AddonManager.getAddonByID(id, addon => addon.uninstall());
   }
 }
 
