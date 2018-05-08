@@ -137,26 +137,19 @@ this.study = class extends ExtensionAPI {
 
           // TODO move more of this into utils.
 
+          // 0.  testing overrides, if any
+          if (!studySetup.testing) {
+            studySetup.testing = {};
+          }
+
           // 1. augment setup with addon info
           studySetup.addon = {
             id: extension.manifest.applications.gecko.id,
             version: extension.manifest.version,
           };
 
-          studyUtils.setup(studySetup);
-
-          if (!studySetup.testing) {
-            studySetup.testing = {};
-          }
-
-          // not set variation
-          const variation =
-            studySetup.weightedVariations[studySetup.testing.variation] ||
-            (await studyUtils.deterministicVariation(
-              studySetup.weightedVariations,
-            ));
-
-          studyUtils.setVariation(variation);
+          // sets the variation
+          await studyUtils.setup(studySetup);
 
           // TODO move more of this into studyUtils
           const { startupReason } = extension;
@@ -192,10 +185,10 @@ this.study = class extends ExtensionAPI {
           * Adds the study to the active list of telemetry experiments,
           * and sends the "installed" telemetry ping if applicable
           */
-          await studyUtils.startup({ reason: startupReason });
+          studyUtils.startup({ reason: startupReason });
 
           // log what the study variation and other info is.
-          console.debug(`info ${JSON.stringify(studyUtils.info())}`);
+          console.debug(`info: ${JSON.stringify(studyUtils.info())}`);
 
           try {
             const studyInfo = studyUtils.info();
@@ -393,27 +386,6 @@ this.study = class extends ExtensionAPI {
             TelemetryArchive,
             searchTelemetryQuery,
           );
-        },
-
-        /* Choose a element from `weightedVariations` array
-         *  based on various hashes of clientId
-         *
-         *  - shield:  TBD
-         *  - pioneer: TBD
-         */
-        deterministicVariation: async function deterministicVariation(
-          weightedVariations,
-          algorithm,
-          fraction,
-        ) {
-          console.log(
-            "called deterministicVariation weightedVariations, algorithm, fraction",
-          );
-          return await studyUtils.deterministicVariation(
-            weightedVariations,
-            fraction,
-          );
-          // return "styleA";
         },
 
         /** Format url with study covariate queryArgs appended / mixed in.

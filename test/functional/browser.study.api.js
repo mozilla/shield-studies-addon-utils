@@ -79,7 +79,7 @@ function studySetupForTests(...sources) {
   return merge(studySetup, ...sources);
 }
 
-describe("PUBLIC API `browser.study` (not specific to any add-on background logic)", function() {
+describe.skip("PUBLIC API `browser.study` (not specific to any add-on background logic)", function() {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
   this.timeout(15000);
 
@@ -198,39 +198,6 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
     assert(
       caughtError === "Error: An async exception thrown for test purposes",
     );
-  });
-
-  it("should return the correct variation based on specific weightedVariations", async() => {
-    const chosenVariation = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
-      driver,
-      async callback => {
-        const weightedVariations = [
-          {
-            name: "control",
-            weight: 1,
-          },
-          {
-            name: "kittens",
-            weight: 1.5,
-          },
-          {
-            name: "puppers",
-            weight: 2,
-          },
-        ];
-
-        const fraction = 0.3;
-        const variation = await browser.study.deterministicVariation(
-          weightedVariations,
-          "shield",
-          fraction,
-        );
-
-        callback(variation);
-      },
-    );
-    assert(chosenVariation);
-    assert(chosenVariation.name === "kittens");
   });
 
   it("should not be able to send telemetry before setup", async() => {
@@ -518,9 +485,6 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
   });
   describe("searchSentTelemetry (light testing)", function() {
     it("attempt a search, get some results");
-  });
-  describe("deterministicVariation", function() {
-    it("correctly selects from Array of variatons");
   });
   describe("surveyUrl", function() {
     describe("needs setup", function() {

@@ -4,302 +4,295 @@ Interface for Shield and Pioneer studies.
 
 ## Functions
 
-### `browser.study.setup( studySetup )` 
+### `browser.study.setup( studySetup )`
 
-  Attempt an setup/enrollment, with these effects:
-  
-  - sets 'studyType' as Shield or Pioneer
-    - affects telemetry
-    - watches for dataPermission changes that should *always*
-      stop that kind of study
-  
-  - Use or choose variation
-    - `testing.variation` if present
-    - OR deterministicVariation
-      for the studyType using `weightedVariations`
-  
-  - During firstRun[1] only:
-    - set firstRunTimestamp pref value
-    - send 'enter' ping
-    - if `allowEnroll`, send 'install' ping
-    - else endStudy("ineligible") and return
-  
-  - Every Run
-    - setActiveExperiment(studySetup)
-    - monitor shield | pioneer permission endings
-    - suggests alarming if `expire` is set.
-  
-  Returns:
-  - studyInfo object (see `getStudyInfo`)
-  
-  Telemetry Sent (First run only)
-  
+Attempt an setup/enrollment, with these effects:
+
+* sets 'studyType' as Shield or Pioneer
+
+  * affects telemetry
+  * watches for dataPermission changes that should _always_
+    stop that kind of study
+
+* Use or choose variation
+
+  * `testing.variation` if present
+  * OR (internal) deterministicVariation
+    from `weightedVariations`
+    based on hash of
+
+    * activeExperimentName
+    * clientId
+
+* During firstRun[1] only:
+
+  * set firstRunTimestamp pref value
+  * send 'enter' ping
+  * if `allowEnroll`, send 'install' ping
+  * else endStudy("ineligible") and return
+
+* Every Run
+  * setActiveExperiment(studySetup)
+  * monitor shield | pioneer permission endings
+  * suggests alarming if `expire` is set.
+
+Returns:
+
+* studyInfo object (see `getStudyInfo`)
+
+Telemetry Sent (First run only)
+
     - enter
     - install
-  
-  Fires Events
-  
-  (At most one of)
-  - study:onReady  OR
-  - study:onEndStudy
-  
-  Preferences set
-  - `shield.${runtime.id}.firstRunTimestamp`
-  
-  Note:
-  1. allowEnroll is ONLY used during first run (install)
-  
+
+Fires Events
+
+(At most one of)
+
+* study:onReady OR
+* study:onEndStudy
+
+Preferences set
+
+* `shield.${runtime.id}.firstRunTimestamp`
+
+Note:
+
+1.  allowEnroll is ONLY used during first run (install)
 
 **Parameters**
 
-- `studySetup`
-  - type: studySetup
-  - $ref: 
-  - optional: false
+* `studySetup`
+  * type: studySetup
+  * $ref:
+  * optional: false
 
-### `browser.study.endStudy( anEndingAlias, anEndingRequest )` 
+### `browser.study.endStudy( anEndingAlias, anEndingRequest )`
 
-  Signal to browser.study that it should end.
-  
-  Usage scenarios:
-  - addons defined
-    - postive endings (tried feature)
-    - negative endings (client clicked 'no thanks')
-    - expiration / timeout (feature should last for 14 days then uninstall)
-  
-  Logic:
-  - If study has already ended, do nothing.
-  - Else: END
-  
-  END:
-  - record internally that study is ended.
-  - disable all methods that rely on configuration / setup.
-  - clear all prefs stored by `browser.study`
-  - fire telemetry pings for:
-    - 'exit'
-    - the ending, one of:
-  
-      "ineligible",
-      "expired",
-      "user-disable",
-      "ended-positive",
-      "ended-neutral",
-      "ended-negative",
-  
-  - augment all ending urls with query urls
-  - fire 'study:end' event to `browser.study.onEndStudy` handlers.
-  
-  Addon should then do
-  - open returned urls
-  - feature specific cleanup
-  - uninstall the addon
-  
-  Note:
-  1.  calling this function multiple time is safe.
-  `browser.study` will choose the
-  
+Signal to browser.study that it should end.
 
-**Parameters**
+Usage scenarios:
 
-- `anEndingAlias`
-  - type: anEndingAlias
-  - $ref: 
-  - optional: false
+* addons defined
+  * postive endings (tried feature)
+  * negative endings (client clicked 'no thanks')
+  * expiration / timeout (feature should last for 14 days then uninstall)
 
-- `anEndingRequest`
-  - type: anEndingRequest
-  - $ref: 
-  - optional: true
+Logic:
 
-### `browser.study.getStudyInfo(  )` 
+* If study has already ended, do nothing.
+* Else: END
 
-  current study configuration, including
-  - variation
-  - activeExperimentName
-  - timeUntilExpire
-  - firstRunTimestamp
-  - isFirstRun
-  
-  But not:
-  - telemetry clientId
-  
-  Throws Error if called before `browser.study.setup`
-  
+END:
+
+* record internally that study is ended.
+* disable all methods that rely on configuration / setup.
+* clear all prefs stored by `browser.study`
+* fire telemetry pings for:
+
+  * 'exit'
+  * the ending, one of:
+
+    "ineligible",
+    "expired",
+    "user-disable",
+    "ended-positive",
+    "ended-neutral",
+    "ended-negative",
+
+* augment all ending urls with query urls
+* fire 'study:end' event to `browser.study.onEndStudy` handlers.
+
+Addon should then do
+
+* open returned urls
+* feature specific cleanup
+* uninstall the addon
+
+Note:
+
+1.  calling this function multiple time is safe.
+    `browser.study` will choose the
 
 **Parameters**
 
-### `browser.study.getDataPermissions(  )` 
+* `anEndingAlias`
 
-  object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'
+  * type: anEndingAlias
+  * $ref:
+  * optional: false
 
-**Parameters**
+* `anEndingRequest`
+  * type: anEndingRequest
+  * $ref:
+  * optional: true
 
-### `browser.study.sendTelemetry( payload )` 
+### `browser.study.getStudyInfo( )`
 
-  Send Telemetry using appropriate shield or pioneer methods.
-  
-  shield:
-  - `shield-study-addon` ping, requires object string keys and string values
-  
-  pioneer:
-  - TBD
-  
-  Note:
-  - no conversions / coercion of data happens.
-  
-  Note:
-  - undefined what happens if validation fails
-  - undefined what happens when you try to send 'shield' from 'pioneer'
-  
-  TBD fix the parameters here.
-  
+current study configuration, including
 
-**Parameters**
+* variation
+* activeExperimentName
+* timeUntilExpire
+* firstRunTimestamp
+* isFirstRun
 
-- `payload`
-  - type: payload
-  - $ref: 
-  - optional: false
+But not:
 
-### `browser.study.searchSentTelemetry( searchTelemetryQuery )` 
+* telemetry clientId
 
-  Search locally stored telemetry pings using these fields (if set)
-  
-  n:
-    if set, no more than `n` pings.
-  type:
-    Array of 'ping types' (e.g., main, crash, shield-study-addon) to filter
-  minimumTimestamp:
-    only pings after this timestamp.
-  headersOnly:
-    boolean.  If true, only the 'headers' will be returned.
-  
-  Pings will be returned sorted by timestamp with most recent first.
-  
-  Usage scenarios:
-  - enrollment / eligiblity using recent Telemetry behaviours or client environment
-  - addon testing scenarios
-  
+Throws Error if called before `browser.study.setup`
 
 **Parameters**
 
-- `searchTelemetryQuery`
-  - type: searchTelemetryQuery
-  - $ref: 
-  - optional: false
+### `browser.study.getDataPermissions( )`
 
-### `browser.study.deterministicVariation( weightedVariations, algorithm, fraction )` 
-
-  Choose a element from `weightedVariations` array
-  based on various hashes of clientId
-  
-  - shield:  TBD
-  - pioneer: TBD
-  
+object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'
 
 **Parameters**
 
-- `weightedVariations`
-  - type: weightedVariations
-  - $ref: 
-  - optional: false
+### `browser.study.sendTelemetry( payload )`
 
-- `algorithm`
-  - type: algorithm
-  - $ref: 
-  - optional: false
+Send Telemetry using appropriate shield or pioneer methods.
 
-- `fraction`
-  - type: fraction
-  - $ref: 
-  - optional: true
+shield:
 
-### `browser.study.surveyUrl( baseUrl, additionalFields )` 
+* `shield-study-addon` ping, requires object string keys and string values
 
-  Format url with study covariate queryArgs appended / mixed in.
-  
-  Use this for constructing midpoint surveys.
-  
+pioneer:
 
-**Parameters**
+* TBD
 
-- `baseUrl`
-  - type: baseUrl
-  - $ref: 
-  - optional: false
+Note:
 
-- `additionalFields`
-  - type: additionalFields
-  - $ref: 
-  - optional: true
+* no conversions / coercion of data happens.
 
-### `browser.study.validateJSON( someJson, jsonschema )` 
+Note:
 
-  Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client.
+* undefined what happens if validation fails
+* undefined what happens when you try to send 'shield' from 'pioneer'
+
+TBD fix the parameters here.
 
 **Parameters**
 
-- `someJson`
-  - type: someJson
-  - $ref: 
-  - optional: false
+* `payload`
+  * type: payload
+  * $ref:
+  * optional: false
 
-- `jsonschema`
-  - type: jsonschema
-  - $ref: 
-  - optional: false
+### `browser.study.searchSentTelemetry( searchTelemetryQuery )`
 
-### `browser.study.log( thingToLog )` 
+Search locally stored telemetry pings using these fields (if set)
 
-  
+n:
+if set, no more than `n` pings.
+type:
+Array of 'ping types' (e.g., main, crash, shield-study-addon) to filter
+minimumTimestamp:
+only pings after this timestamp.
+headersOnly:
+boolean. If true, only the 'headers' will be returned.
+
+Pings will be returned sorted by timestamp with most recent first.
+
+Usage scenarios:
+
+* enrollment / eligiblity using recent Telemetry behaviours or client environment
+* addon testing scenarios
 
 **Parameters**
 
-- `thingToLog`
-  - type: thingToLog
-  - $ref: 
-  - optional: false
+* `searchTelemetryQuery`
+  * type: searchTelemetryQuery
+  * $ref:
+  * optional: false
+
+### `browser.study.surveyUrl( baseUrl, additionalFields )`
+
+Format url with study covariate queryArgs appended / mixed in.
+
+Use this for constructing midpoint surveys.
+
+**Parameters**
+
+* `baseUrl`
+
+  * type: baseUrl
+  * $ref:
+  * optional: false
+
+* `additionalFields`
+  * type: additionalFields
+  * $ref:
+  * optional: true
+
+### `browser.study.validateJSON( someJson, jsonschema )`
+
+Using AJV, do jsonschema validation of an object. Can be used to validate your arguments, packets at client.
+
+**Parameters**
+
+* `someJson`
+
+  * type: someJson
+  * $ref:
+  * optional: false
+
+* `jsonschema`
+  * type: jsonschema
+  * $ref:
+  * optional: false
+
+### `browser.study.log( thingToLog )`
+
+**Parameters**
+
+* `thingToLog`
+  * type: thingToLog
+  * $ref:
+  * optional: false
 
 ## Events
 
-### `browser.study.onDataPermissionsChange () ` Event
+### `browser.study.onDataPermissionsChange ()` Event
 
-  Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation.
-
-**Parameters**
-
-- `updatedPermissions`
-  - type: updatedPermissions
-  - $ref: 
-  - optional: false
-
-### `browser.study.onReady () ` Event
-
-  Fires when the study is 'ready' for the feature to startup.
+Fires whenever any 'dataPermission' changes, with the new dataPermission object. Allows watching for shield or pioneer revocation.
 
 **Parameters**
 
-- `studyInfo`
-  - type: studyInfo
-  - $ref: 
-  - optional: false
+* `updatedPermissions`
+  * type: updatedPermissions
+  * $ref:
+  * optional: false
 
-### `browser.study.onEndStudy () ` Event
+### `browser.study.onReady ()` Event
 
-  Listen for when the study wants to end.
-  
-  Act on it by
-  - opening surveyUrls
-  - tearing down your feature
-  - uninstalling the addon
-  
+Fires when the study is 'ready' for the feature to startup.
 
 **Parameters**
 
-- `ending`
-  - type: ending
-  - $ref: 
-  - optional: false
+* `studyInfo`
+  * type: studyInfo
+  * $ref:
+  * optional: false
+
+### `browser.study.onEndStudy ()` Event
+
+Listen for when the study wants to end.
+
+Act on it by
+
+* opening surveyUrls
+* tearing down your feature
+* uninstalling the addon
+
+**Parameters**
+
+* `ending`
+  * type: ending
+  * $ref:
+  * optional: false
 
 ## Properties TBD
 
@@ -307,22 +300,16 @@ Interface for Shield and Pioneer studies.
 
 ### [0] studyTypesEnum
 
-
 ```json
 {
   "id": "studyTypesEnum",
   "type": "string",
-  "enum": [
-    "shield",
-    "pioneer"
-  ],
+  "enum": ["shield", "pioneer"],
   "testcase": "shield"
 }
 ```
 
-
 ### [1] weightedVariationObject
-
 
 ```json
 {
@@ -337,16 +324,11 @@ Interface for Shield and Pioneer studies.
       "minimum": 0
     }
   },
-  "required": [
-    "name",
-    "weight"
-  ]
+  "required": ["name", "weight"]
 }
 ```
 
-
 ### [2] weightedVariationsArray
-
 
 ```json
 {
@@ -363,10 +345,7 @@ Interface for Shield and Pioneer studies.
         "minimum": 0
       }
     },
-    "required": [
-      "name",
-      "weight"
-    ]
+    "required": ["name", "weight"]
   },
   "testcase": [
     {
@@ -377,9 +356,7 @@ Interface for Shield and Pioneer studies.
 }
 ```
 
-
 ### [3] anEndingRequest
-
 
 ```json
 {
@@ -387,18 +364,14 @@ Interface for Shield and Pioneer studies.
   "type": "object",
   "additionalProperties": true,
   "testcase": {
-    "baseUrls": [
-      "some.url"
-    ],
+    "baseUrls": ["some.url"],
     "endingName": "anEnding",
     "endingClass": "ended-positive"
   }
 }
 ```
 
-
 ### [4] onEndStudyResponse
-
 
 ```json
 {
@@ -415,9 +388,7 @@ Interface for Shield and Pioneer studies.
 }
 ```
 
-
 ### [5] studyInfoObject
-
 
 ```json
 {
@@ -450,9 +421,7 @@ Interface for Shield and Pioneer studies.
 }
 ```
 
-
 ### [6] dataPermissionsObject
-
 
 ```json
 {
@@ -464,15 +433,11 @@ Interface for Shield and Pioneer studies.
       "type": "boolean"
     }
   },
-  "required": [
-    "shield"
-  ]
+  "required": ["shield"]
 }
 ```
 
-
 ### [7] studySetup
-
 
 ```json
 {
@@ -551,9 +516,7 @@ Interface for Shield and Pioneer studies.
 }
 ```
 
-
 ### [8] telemetryPayload
-
 
 ```json
 {
@@ -566,9 +529,7 @@ Interface for Shield and Pioneer studies.
 }
 ```
 
-
 ### [9] searchTelemetryQuery
-
 
 ```json
 {
@@ -576,9 +537,7 @@ Interface for Shield and Pioneer studies.
   "type": "object",
   "properties": {
     "type": {
-      "type": [
-        "array"
-      ],
+      "type": ["array"],
       "items": {
         "type": "string"
       },
@@ -599,10 +558,7 @@ Interface for Shield and Pioneer studies.
   },
   "additionalProperties": false,
   "testcase": {
-    "type": [
-      "shield-study-addon",
-      "shield-study"
-    ],
+    "type": ["shield-study-addon", "shield-study"],
     "n": 100,
     "minimumTimestamp": 1523968204184,
     "headersOnly": false
@@ -610,9 +566,7 @@ Interface for Shield and Pioneer studies.
 }
 ```
 
-
 ### [10] anEndingAnswer
-
 
 ```json
 {
@@ -622,57 +576,50 @@ Interface for Shield and Pioneer studies.
 }
 ```
 
-
 # Namespace: `browser.studyTest`
 
 Interface for Test Utilities
 
 ## Functions
 
-### `browser.studyTest.throwAnException( message )` 
+### `browser.studyTest.throwAnException( message )`
 
-  Throws an exception from a privileged function - for making sure that we can catch these in our web extension
-
-**Parameters**
-
-- `message`
-  - type: message
-  - $ref: 
-  - optional: false
-
-### `browser.studyTest.throwAnExceptionAsync( message )` 
-
-  Throws an exception from a privileged async function - for making sure that we can catch these in our web extension
+Throws an exception from a privileged function - for making sure that we can catch these in our web extension
 
 **Parameters**
 
-- `message`
-  - type: message
-  - $ref: 
-  - optional: false
+* `message`
+  * type: message
+  * $ref:
+  * optional: false
 
-### `browser.studyTest.firstSeen(  )` 
+### `browser.studyTest.throwAnExceptionAsync( message )`
 
-  
-
-**Parameters**
-
-### `browser.studyTest.setActive(  )` 
-
-  
+Throws an exception from a privileged async function - for making sure that we can catch these in our web extension
 
 **Parameters**
 
-### `browser.studyTest.startup( details )` 
+* `message`
+  * type: message
+  * $ref:
+  * optional: false
 
-  
+### `browser.studyTest.firstSeen( )`
 
 **Parameters**
 
-- `details`
-  - type: details
-  - $ref: 
-  - optional: false
+### `browser.studyTest.setActive( )`
+
+**Parameters**
+
+### `browser.studyTest.startup( details )`
+
+**Parameters**
+
+* `details`
+  * type: details
+  * $ref:
+  * optional: false
 
 ## Events
 
@@ -687,7 +634,7 @@ Interface for Test Utilities
 # Namespace: `browser.prefs`
 
 Temporary subset of `Services.prefs` API,
-described at:  https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Services.jsm
+described at: https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Services.jsm
 
 See https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIPrefBranch
 
@@ -697,24 +644,22 @@ TODO: Convert observers to events.
 
 If a true 'prefs' api lands in tree, this module will be removed.
 
-
 ## Functions
 
-### `browser.prefs.getStringPref( aPrefName, aDefaultValue )` 
-
-  
+### `browser.prefs.getStringPref( aPrefName, aDefaultValue )`
 
 **Parameters**
 
-- `aPrefName`
-  - type: aPrefName
-  - $ref: 
-  - optional: false
+* `aPrefName`
 
-- `aDefaultValue`
-  - type: aDefaultValue
-  - $ref: 
-  - optional: true
+  * type: aPrefName
+  * $ref:
+  * optional: false
+
+* `aDefaultValue`
+  * type: aDefaultValue
+  * $ref:
+  * optional: true
 
 ## Events
 
@@ -725,4 +670,3 @@ If a true 'prefs' api lands in tree, this module will be removed.
 ## Data Types
 
 (None)
-

@@ -117,7 +117,9 @@ class Guard {
   it(schemaId, arg) {
     const valid = this.ajv.validate(schemaId, arg);
     if (!valid) {
-      throw new ExtensionError(`GuardError: ${schemaId} ${JSON.stringify(this.ajv.errors)}`);
+      throw new ExtensionError(
+        `GuardError: ${schemaId} ${JSON.stringify(this.ajv.errors)}`,
+      );
     }
   }
 }
@@ -183,9 +185,23 @@ class StudyUtils {
       throw new ExtensionError("StudyUtils is already setup");
     }
     guard.it("studySetup", studySetup);
+
+    // guess and set variation
+    const variation =
+      studySetup.weightedVariations[studySetup.testing.variation] ||
+      (await this._deterministicVariation(
+        studySetup.activeExperimentName,
+        studySetup.weightedVariations,
+      ));
+
+    log.debug(`setting up: variation ${variation.name}`);
+
+    this._internals.variation = variation;
     this._internals.studySetup = studySetup;
     this._internals.isSetup = true;
+
     // TODO, ever seen before?
+    this._internals.isFirstRun = true;
     // TODO, is allowed  to enroll?
     // TODO, check with info
     return this;
@@ -202,22 +218,12 @@ class StudyUtils {
   }
 
   /**
-   * Sets the variation for the StudyUtils instance.
-   * @param {Object} variation - the study variation for this user
-   * @returns {StudyUtils} - the StudyUtils class instance
-   */
-  setVariation(variation) {
-    this.throwIfNotSetup("setVariation");
-    this._internals.variation = variation;
-    return this;
-  }
-
-  /**
    * Gets the variation for the StudyUtils instance.
    * @returns {Object} - the study variation for this user
    */
   getVariation() {
     this.throwIfNotSetup("getvariation");
+    log.debug(`getVariation: ${JSON.stringify(this._internals.variation)}`);
     return this._internals.variation;
   }
 
@@ -236,25 +242,6 @@ class StudyUtils {
   }
 
   /**
-   * @async
-   * Deterministically selects and returns the study variation for the user.
-   * @param {Object[]} weightedVariations - see schema.weightedVariations.json
-   * @param {Number} fraction - a number (0 <= fraction < 1); can be set explicitly for testing
-   * @returns {Object} - the study variation for this user
-   */
-  async deterministicVariation(weightedVariations, fraction = null) {
-    // this is the standard arm choosing method
-    if (fraction === null) {
-      // hash the studyName and telemetryId to get the same branch every time.
-      this.throwIfNotSetup("deterministicVariation needs studyName");
-      const clientId = await this.getTelemetryId();
-      const studyName = this._internals.studySetup.activeExperimentName;
-      fraction = await this.sampling.hashFraction(studyName + clientId, 12);
-    }
-    return this.sampling.chooseWeighted(weightedVariations, fraction);
-  }
-
-  /**
    * Gets the Shield recipe client ID.
    * @returns {string} - the Shield recipe client ID.
    */
@@ -267,7 +254,7 @@ class StudyUtils {
    * Packages information about the study into an object.
    * @returns {Object} - study information, see schema.studySetup.json
    */
-  async info() {
+  info() {
     log.debug("getting info");
     this.throwIfNotSetup("info");
     // TODO get the is first run
@@ -280,6 +267,7 @@ class StudyUtils {
       timeUntilExpire: 0, // TODO
     };
     guard.it("studyInfoObject", studyInfo);
+    return studyInfo;
   }
 
   /**
@@ -293,6 +281,33 @@ class StudyUtils {
   }
 
   /**
+   * @async
+   * Deterministically selects and returns the study variation for the user.
+   * @param {string} activeExperimentName name to use as part of the hash
+   * @param {Object[]} weightedVariations - see schema.weightedVariations.json
+   * @param {Number} fraction - a number (0 <= fraction < 1); can be set explicitly for testing
+   * @returns {Object} - the study variation for this user
+   */
+  async _deterministicVariation(
+    activeExperimentName,
+    weightedVariations,
+    fraction = null,
+  ) {
+    // this is the standard arm choosing method
+    // TODO, allow 'pioneer' algorithm
+    if (fraction === null) {
+      // hash the studyName and telemetryId to get the same branch every time.
+      const clientId = await this.getTelemetryId();
+      fraction = await this.sampling.hashFraction(
+        activeExperimentName + clientId,
+        12,
+      );
+    }
+    log.debug(`_deterministicVariation`, weightedVariations);
+    return this.sampling.chooseWeighted(weightedVariations, fraction);
+  }
+
+  /**
    * Sends an 'enter' telemetry ping for the study; should be called on addon
    * startup for the reason ADDON_INSTALL. For more on study states like 'enter'
    * see ABOUT.md at github.com/mozilla/shield-studies-addon-template
@@ -300,8 +315,8 @@ class StudyUtils {
    */
   firstSeen() {
     // TODO, maybe record it?  set the pref?
-    log.debug(`firstSeen`);
     this.throwIfNotSetup("firstSeen uses telemetry.");
+    log.debug(`attempting firstSeen`);
     this._telemetry({ study_state: "enter" }, "shield-study");
   }
 
@@ -341,13 +356,12 @@ class StudyUtils {
   }
 
   /**
-   * @async
    * Adds the study to the active list of telemetry experiments and sends the
    * "installed" telemetry ping if applicable
    * @param {string} reason - The reason the addon has started up
    * @returns {void}
    */
-  async startup({ reason }) {
+  startup({ reason }) {
     this.throwIfNotSetup("startup");
     log.debug(`startup ${reason}`);
     this.setActive();
@@ -466,6 +480,8 @@ class StudyUtils {
     this.throwIfNotSetup("_telemetry");
     log.debug(`telemetry in:  ${bucket} ${JSON.stringify(data)}`);
     const info = this.info();
+    log.debug(`telemetry INFO: ${JSON.stringify(info)}`);
+
     const payload = {
       version: PACKET_VERSION,
       study_name: info.activeExperimentName,

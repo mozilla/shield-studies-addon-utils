@@ -180,8 +180,12 @@
 
       - Use or choose variation
         - `testing.variation` if present
-        - OR deterministicVariation
-          for the studyType using `weightedVariations`
+        - OR (internal) deterministicVariation
+          from `weightedVariations`
+          based on hash of
+
+          - activeExperimentName
+          - clientId
 
       - During firstRun[1] only:
         - set firstRunTimestamp pref value
@@ -363,25 +367,6 @@
       $ref: searchTelemetryQuery
 
   # utilities
-  - name: deterministicVariation
-    description: |
-      Choose a element from `weightedVariations` array
-      based on various hashes of clientId
-
-      - shield:  TBD
-      - pioneer: TBD
-
-    type: function
-    async: true
-    defaultReturn: "styleA"
-    parameters:
-    - name: weightedVariations
-      $ref: weightedVariationsArray
-    - name: algorithm
-      $ref: studyTypesEnum
-    - name: fraction
-      type: number
-      optional: true
 
   - name: surveyUrl
     type: function
