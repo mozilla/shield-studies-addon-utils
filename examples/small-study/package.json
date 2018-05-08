@@ -12,7 +12,7 @@
     "shield-studies-addon-utils": "file:../.."
   },
   "scripts": {
-    "studyutils": "copyStudyUtils src/privileged",
+    "postinstall": "copyStudyUtils src/privileged",
     "start": "web-ext run --no-reload"
   }
 }

@@ -514,7 +514,7 @@ this.study = class extends ExtensionAPI {
         },
 
         async reset() {
-          // return studyUtils.reset();
+          return studyUtils.reset();
         },
       },
     };

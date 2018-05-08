@@ -3,8 +3,34 @@
 
 /** Complete list of tests for testing
  *
- * - the public api
+ * - the public api for `browser.study`
+ */
+
+/** About webdriver extension based tests
  *
+ * (decribed in the one-time "before" function for each suite)
+ * Webdriver
+ * - `driver` created:  uses the fx profile, sets up connenction
+ *    and translation to Marionette
+ * - installs the `test-addon` extension
+ * - waits for UI
+ * - now can `await addonExec`, as short-named bound version of
+ *   "executeAsyncScriptInExtensionPageForTests",
+ *   which runs in exentension and promises values we can use in
+ *   tests in this file.
+ *
+ *
+ *  ## Creating a new test
+ *
+ *  1.  Goal, call back from the webExtension with the data you need to test
+ *  2.  Do the test in the script using npm asset
+ *
+ *  ## Tips for `addonExec`
+ *
+ *  1. If something breaks / test fails, fx will stay open (`--bail`).
+ *     Look in the BrowserConsole
+ *  2. Callback with an object if you need a lot of return values
+ *  3. Recall that `studyBackdoor` exists
  */
 
 const assert = require("assert");
@@ -13,7 +39,15 @@ const utils = require("./utils");
 // TODO create new profile per test?
 // then we can test with a clean profile every time
 
-function studySetupForTests() {
+function merge(...sources) {
+  return Object.assign({}, ...sources);
+}
+
+/** return a studySetup, shallow merged from sources
+ *
+ * @return {object} mergedStudySetup
+ */
+function studySetupForTests(...sources) {
   // Minimal configuration to pass schema validation
   const studySetup = {
     activeExperimentName: "shield-utils-test-addon@shield.mozilla.org",
@@ -42,7 +76,7 @@ function studySetupForTests() {
   // Set dynamic study configuration flags
   studySetup.allowEnroll = true;
 
-  return studySetup;
+  return merge(studySetup, ...sources);
 }
 
 describe("PUBLIC API `browser.study` (not specific to any add-on background logic)", function() {
@@ -50,6 +84,8 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
   this.timeout(15000);
 
   let driver;
+  // run in the extension page
+  let addonExec;
 
   before(async() => {
     driver = await utils.setupWebdriver.promiseSetupDriver(
@@ -57,6 +93,12 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
     );
     await utils.setupWebdriver.installAddon(driver);
     await utils.ui.openBrowserConsole(driver);
+
+    // make a shorter alias
+    addonExec = utils.executeJs.executeAsyncScriptInExtensionPageForTests.bind(
+      utils.executeJs,
+      driver,
+    );
   });
 
   // hint: skipping driver.quit() may be useful when debugging failed tests,
@@ -432,18 +474,27 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       it("throws StudyNotsSetupError  if not setup");
     });
     describe("correctness", function() {
-      //  function assertValidStudyInfo(studyInfo) {
-      //    const v = utils.validateJSON(
-      //      studyInfo,
-      //      utils.studySchema.types.studyInfoObject,
-      //    );
-      //    assert(v.isValid, v.errors);
-      //  }
+      // helper functions
+      function assertValidStudyInfo(studyInfo) {
+        const schema = utils.studySchema[0].types.filter(
+          x => x.id === "studyInfoObject",
+        )[0];
+        console.log(schema);
+        const v = utils.validateJSON(studyInfo, schema);
+        assert(v.isValid, JSON.stringify(v.errors), null, 2);
+      }
+
+      // tests
       it("during first run, isFirstRun is true", function() {});
       it("during second run, isFirstRun is false", function() {});
-      it("if duration.days in studySetup(), have a timeUntilExpire in studyInfo", function() {
-        // let info = await browser.study.getStudyInfo();
-        // assertValidStudyInfo(info);
+      it("if duration.days in studySetup(), have a timeUntilExpire in studyInfo", async function() {
+        const data = await addonExec(async callback => {
+          // await browser.study.studySetup();
+          callback(await browser.study.getStudyInfo());
+        });
+        console.log("DATA", data);
+        assert(data.timeUntilExpire, "missing timeUntilExpire");
+        assertValidStudyInfo(data);
       });
     });
     describe("afterEnding", function() {

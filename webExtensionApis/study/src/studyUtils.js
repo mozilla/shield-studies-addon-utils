@@ -21,13 +21,14 @@ import sampling from "./sampling";
 const UTILS_VERSION = require("../../../package.json").version;
 const PACKET_VERSION = 3;
 
+const Ajv = require("ajv/dist/ajv.min.js");
+
 const { utils: Cu } = Components;
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/AddonManager.jsm");
 Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
 
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
-
 // eslint-disable-next-line no-undef
 const { ExtensionError } = ExtensionUtils;
 
@@ -59,6 +60,7 @@ const { TelemetryEnvironment } = Cu.import(
 *      of errors from shield studies
 */
 const schemas = {
+  // Telemetry PingType schemas
   "shield-study": require("shield-study-schemas/schemas-client/shield-study.schema.json"), // eslint-disable-line max-len
   "shield-study-addon": require("shield-study-schemas/schemas-client/shield-study-addon.schema.json"), // eslint-disable-line max-len
   "shield-study-error": require("shield-study-schemas/schemas-client/shield-study-error.schema.json"), // eslint-disable-line max-len
@@ -107,6 +109,20 @@ function mergeQueryArgs(url, ...args) {
   return U.toString();
 }
 
+class Guard {
+  constructor(identifiedSchemas) {
+    this.ajv = new Ajv({ schemas: identifiedSchemas });
+  }
+
+  it(schemaId, arg) {
+    const valid = this.ajv.validate(schemaId, arg);
+    if (!valid) {
+      throw new ExtensionError(`GuardError: ${schemaId} ${JSON.stringify(this.ajv.errors)}`);
+    }
+  }
+}
+const guard = new Guard(require("../schema.json")[0].types);
+
 /**
  * Class representing utilities for shield studies.
  */
@@ -120,6 +136,14 @@ class StudyUtils {
    * - _studySetup
    * - _isEnding
    * - _isSetup
+   *
+   * About `this._internals`
+   * - isEnding: bool
+   * - isSetup: bool
+   * - isFirstRun: bool
+   * - studySetup: bool
+   * - variation:  ??
+   *
    */
   constructor() {
     // Expose sampling methods onto the exported studyUtils singleton
@@ -129,6 +153,11 @@ class StudyUtils {
     // expose jsonschema validation methods
     this.jsonschema = jsonschema;
     this.REASONS = REASONS;
+
+    // internals
+    this._internals = {
+      // TODO, when should we set this up?
+    };
   }
 
   /**
@@ -137,7 +166,7 @@ class StudyUtils {
    * @returns {void}
    */
   throwIfNotSetup(name = "unknown") {
-    if (!this._isSetup)
+    if (!this._internals.isSetup)
       throw new ExtensionError(
         name + ": this method can't be used until `setup` is called",
       );
@@ -148,10 +177,17 @@ class StudyUtils {
    * @param {Object} studySetup - the studySetup object, see schema.studySetup.json
    * @returns {StudyUtils} - the StudyUtils class instance
    */
-  setup(studySetup) {
+  async setup(studySetup) {
     log.debug("setting up!");
-    this.studySetup = studySetup;
-    this._isSetup = true;
+    if (this._internals.isSetup) {
+      throw new ExtensionError("StudyUtils is already setup");
+    }
+    guard.it("studySetup", studySetup);
+    this._internals.studySetup = studySetup;
+    this._internals.isSetup = true;
+    // TODO, ever seen before?
+    // TODO, is allowed  to enroll?
+    // TODO, check with info
     return this;
   }
 
@@ -160,9 +196,29 @@ class StudyUtils {
    * @returns {void}
    */
   reset() {
-    this.studySetup = {};
-    delete this._variation;
-    this._isSetup = false;
+    this._internals = {};
+    return true;
+    // TODO, is there any persistent state, like 'ended?'
+  }
+
+  /**
+   * Sets the variation for the StudyUtils instance.
+   * @param {Object} variation - the study variation for this user
+   * @returns {StudyUtils} - the StudyUtils class instance
+   */
+  setVariation(variation) {
+    this.throwIfNotSetup("setVariation");
+    this._internals.variation = variation;
+    return this;
+  }
+
+  /**
+   * Gets the variation for the StudyUtils instance.
+   * @returns {Object} - the study variation for this user
+   */
+  getVariation() {
+    this.throwIfNotSetup("getvariation");
+    return this._internals.variation;
   }
 
   /**
@@ -180,26 +236,6 @@ class StudyUtils {
   }
 
   /**
-   * Sets the variation for the StudyUtils instance.
-   * @param {Object} variation - the study variation for this user
-   * @returns {StudyUtils} - the StudyUtils class instance
-   */
-  setVariation(variation) {
-    this.throwIfNotSetup("setVariation");
-    this._variation = variation;
-    return this;
-  }
-
-  /**
-   * Gets the variation for the StudyUtils instance.
-   * @returns {Object} - the study variation for this user
-   */
-  getVariation() {
-    this.throwIfNotSetup("getvariation");
-    return this._variation;
-  }
-
-  /**
    * @async
    * Deterministically selects and returns the study variation for the user.
    * @param {Object[]} weightedVariations - see schema.weightedVariations.json
@@ -212,7 +248,7 @@ class StudyUtils {
       // hash the studyName and telemetryId to get the same branch every time.
       this.throwIfNotSetup("deterministicVariation needs studyName");
       const clientId = await this.getTelemetryId();
-      const studyName = this.studySetup.activeExperimentName;
+      const studyName = this._internals.studySetup.activeExperimentName;
       fraction = await this.sampling.hashFraction(studyName + clientId, 12);
     }
     return this.sampling.chooseWeighted(weightedVariations, fraction);
@@ -231,18 +267,19 @@ class StudyUtils {
    * Packages information about the study into an object.
    * @returns {Object} - study information, see schema.studySetup.json
    */
-  info() {
+  async info() {
     log.debug("getting info");
     this.throwIfNotSetup("info");
     // TODO get the is first run
-    // TODO make this async
-    return {
-      studyName: this.studySetup.activeExperimentName,
-      isFirstRun: false,
-      addon: this.studySetup.addon,
+    const studyInfo = {
+      activeExperimentName: this._internals.studySetup.activeExperimentName,
+      isFirstRun: this._internals.isFirstRun,
+      firstRunTimestamp: 0, // TODO
       variation: this.getVariation(),
       shieldId: this.getShieldId(),
+      timeUntilExpire: 0, // TODO
     };
+    guard.it("studyInfoObject", studyInfo);
   }
 
   /**
@@ -252,7 +289,7 @@ class StudyUtils {
   // TODO glind, maybe this is getter / setter?
   get telemetryConfig() {
     this.throwIfNotSetup("telemetryConfig");
-    return this.studySetup.telemetry;
+    return this._internals.studySetup.telemetry;
   }
 
   /**
@@ -279,11 +316,11 @@ class StudyUtils {
     const info = this.info();
     log.debug(
       "marking TelemetryEnvironment",
-      info.studyName,
+      info.activeExperimentName,
       info.variation.name,
     );
     TelemetryEnvironment.setExperimentActive(
-      info.studyName,
+      info.activeExperimentName,
       info.variation.name,
     );
   }
@@ -297,10 +334,10 @@ class StudyUtils {
     const info = this.info();
     log.debug(
       "unmarking TelemetryEnvironment",
-      info.studyName,
+      info.activeExperimentName,
       info.variation.name,
     );
-    TelemetryEnvironment.setExperimentInactive(info.studyName);
+    TelemetryEnvironment.setExperimentInactive(info.activeExperimentName);
   }
 
   /**
@@ -351,7 +388,7 @@ class StudyUtils {
     * Check if the study ending shows the user a page in a new tab
     * (ex: survey, explanation, etc.)
     */
-    const ending = this.studySetup.endings[reason];
+    const ending = this._internals.studySetup.endings[reason];
     if (ending) {
       // baseUrl: needs to be appended with query arguments before use,
       // exactUrl: used as is
@@ -403,7 +440,7 @@ class StudyUtils {
     const who = await this.getTelemetryId();
     const queryArgs = {
       shield: PACKET_VERSION,
-      study: info.studyName,
+      study: info.activeExperimentName,
       variation: info.variation.name,
       updateChannel: Services.appinfo.defaultUpdateChannel,
       fxVersion: Services.appinfo.version,
@@ -431,7 +468,7 @@ class StudyUtils {
     const info = this.info();
     const payload = {
       version: PACKET_VERSION,
-      study_name: info.studyName,
+      study_name: info.activeExperimentName,
       branch: info.variation.name,
       addon_version: info.addon.version,
       shield_version: UTILS_VERSION,
@@ -552,6 +589,9 @@ function createLog(name, levelWord) {
   // should be a config / pref
   L.level = Log.Level[levelWord] || Log.Level.Debug;
   L.debug("log made", name, levelWord, Log.Level[levelWord]);
+
+  // L.manageLevelFromPref(prefName) {
+  // https://dxr.mozilla.org/mozilla-beta/source/toolkit/modules/Log.jsm
   return L;
 }
 

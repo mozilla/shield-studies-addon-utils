@@ -26,9 +26,21 @@
     enum: ['shield', 'pioneer']
     testcase:  'shield'
 
-  - id: weightedVariations
+  - id: weightedVariationObject
+    type: 'object'
+    properties:
+      name:
+        type: "string"
+      weight:
+        type: "number"
+        minimum: 0
+    required: ["name", "weight"]
+
+  - id: weightedVariationsArray
     type: array
     items:
+      # TODO, this is a repeat of weightedVariationObject
+      # for unknown reasons probably around id, deref isn't working right
       type: 'object'
       properties:
         name:
@@ -39,7 +51,7 @@
       required: ["name", "weight"]
     testcase: [{name: feature-active, weight: 1.5}]
 
-  - id: anEndingObject
+  - id: anEndingRequest
     # TBD, this is incomplete, and seems a little rocky
     # Should endings be a list?  a map?
     # goal make endStudy and this agree :)
@@ -61,7 +73,7 @@
     additionalProperties: true
     properties:
       variation:
-        type: 'string'
+        "$ref": "weightedVariationObject"
       firstRunTimestamp:
         type: 'number'  # 1523968204184,
       activeExperimentName:
@@ -104,7 +116,7 @@
         type: object
         additionalProperties: true
       weightedVariations:
-        $ref: 'weightedVariations'
+        $ref: 'weightedVariationsArray'
       logLevel:
         type: "integer"
         minimum: 0
@@ -149,6 +161,10 @@
       headersOnly: {type: boolean, optional: true}
     additionalProperties: false
     testcase: {type: ['shield-study-addon', 'shield-study'], n: 100, minimumTimestamp: 1523968204184, headersOnly: false}
+
+  - id: anEndingAnswer
+    type: object
+    additionalProperties: true
 
   functions:
   - name: setup
@@ -202,6 +218,9 @@
     - name: studySetup
       $ref: studySetup # TODO, for now, making progress up above
 
+    returns:
+    - $ref: studyInfoObject
+
   - name: endStudy
     type: function
     async: true
@@ -249,9 +268,13 @@
     parameters:
     - name: anEndingAlias
       type: 'string'
-    - name: anEndingObject
-      $ref: anEndingObject
+    - name: anEndingRequest
+      $ref: anEndingRequest
       optional: true
+
+    returns:
+    - $ref: anEndingAnswer
+
 
   ## study / client information things
   - name: getStudyInfo
@@ -272,7 +295,8 @@
 
     defaultReturn: {variation: "styleA", firstRunTimestamp: 1523968204184, activeExperimentName: "some experiment", timeUntilExpire: null}  # TODO add rest
     parameters: []
-    returns:  studyInfoObject
+    returns:
+    - $ref: studyInfoObject
 
   - name: getDataPermissions
     type: function
@@ -280,7 +304,8 @@
     description: object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'
     defaultReturn: {shield: true, pioneer: false, telemetry: true, alwaysPrivateBrowsing: false}
     parameters: []
-    returns: dataPermissionsObject
+    returns:
+    - $ref: dataPermissionsObject
 
   # telemetry related things
   - name: sendTelemetry
@@ -309,6 +334,7 @@
       $ref: telemetryPayload
 
     defaultReturn: undefined  # exception if out of policy based on config
+    returns:
 
   - name: searchSentTelemetry
     type: function
@@ -350,7 +376,7 @@
     defaultReturn: "styleA"
     parameters:
     - name: weightedVariations
-      $ref: weightedVariations
+      $ref: weightedVariationsArray
     - name: algorithm
       $ref: studyTypesEnum
     - name: fraction
@@ -373,6 +399,9 @@
       type: object
       optional: true
 
+    returns:
+    - type: string
+
   - name: validateJSON
     type: function
     async: true
@@ -384,6 +413,15 @@
     - name: jsonschema
       type: object  # a jsonschema
       descripton: a valid jsonschema object
+
+    # aValidation
+    returns:
+    - type: object
+    - parameters:
+      valid:
+      - type: boolean
+      errors:
+      - type: array
 
   - name: log
     type: function

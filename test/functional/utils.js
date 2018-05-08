@@ -43,9 +43,7 @@ const { setupWebdriver } = require("../../testUtils/setupWebdriver");
 const { telemetry } = require("../../testUtils/telemetry");
 const { ui } = require("../../testUtils/ui");
 
-const {
-  studySchema,
-} = require("../../test-addon/src/privileged/study/schema.json");
+const studySchema = require("../../test-addon/src/privileged/study/schema.json");
 
 const Ajv = require("ajv/dist/ajv.min.js");
 const ajv = new Ajv();
