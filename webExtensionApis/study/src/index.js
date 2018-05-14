@@ -26,12 +26,11 @@ class StudyApiEventEmitter extends EventEmitter {
   }
 
   emitReady(studyInfo) {
-    studyInfo.isFirstRun = true;
     this.emit("ready", studyInfo);
   }
 
-  emitEndStudy(ending) {
-    this.emit("endStudy", ending);
+  emitEndStudy(endingResponse) {
+    this.emit("endStudy", endingResponse);
   }
 }
 
@@ -80,12 +79,12 @@ this.study = class extends ExtensionAPI {
 
     const studyApiEventEmitter = new StudyApiEventEmitter();
 
+    // once.  Used for pref naming, telemetry
+    studyUtils.setExtensionManifest(extension.manifest);
+    studyUtils.reset();
+
     return {
       study: {
-        /**
-         * Schema.json `functions`
-         */
-
         /** Attempt an setup/enrollment, with these effects:
          *
          *  - sets 'studyType' as Shield or Pioneer
@@ -133,74 +132,56 @@ this.study = class extends ExtensionAPI {
          * @returns {Object<studyInfo>} studyInfo.  See studyInfo
          **/
         setup: async function setup(studySetup) {
-          // TODO check all return values
-
-          // TODO move more of this into utils.
-
           // 0.  testing overrides, if any
           if (!studySetup.testing) {
             studySetup.testing = {};
           }
 
-          // 1. augment setup with addon info
-          studySetup.addon = {
-            id: extension.manifest.applications.gecko.id,
-            version: extension.manifest.version,
-          };
+          // 1. addon info for prefs etc.
+          studyUtils.setExtensionManifest(extension.manifest);
 
-          // sets the variation
+          // Setup and sets the variation / _internals
+          // incldues possible 'firstRun' handling.
           await studyUtils.setup(studySetup);
 
-          // TODO move more of this into studyUtils
-          const { startupReason } = extension;
-          console.debug("startup", startupReason);
-
-          // make sure the variation name is set
+          // current studyInfo.
+          let studyInfo = studyUtils.info();
 
           // Check if the user is eligible to run this study using the |isEligible|
           // function when the study is initialized
-          if (
-            startupReason === "ADDON_INSTALL" ||
-            startupReason === "ADDON_UPGRADE"
-          ) {
-            //  telemetry "enter" ONCE
-            studyUtils.firstSeen();
+          if (studyInfo.isFirstRun) {
             if (!studySetup.allowEnroll) {
               console.debug("User is ineligible, ending study.");
               // 1. uses studySetup.endings.ineligible.url if any,
               // 2. sends UT for "ineligible"
               // 3. then uninstalls addon
-              await studyUtils.endStudy({ reason: "ineligible" });
-              return;
+              await studyUtils.endStudy("ineligible");
+              return studyUtils.info();
             }
           }
 
-          // TODO, allow this key
           if (studySetup.testing.expired) {
-            await studyUtils.endStudy({ reason: "expired" });
-            return;
+            await studyUtils.endStudy("expired");
+            return studyUtils.info();
           }
 
           /*
           * Adds the study to the active list of telemetry experiments,
-          * and sends the "installed" telemetry ping if applicable
+          * and sends the "installed" telemetry ping if applicable,
+          * if it's a firstRun
           */
-          studyUtils.startup({ reason: startupReason });
+          await studyUtils.startup();
 
-          // log what the study variation and other info is.
-          console.debug(`info: ${JSON.stringify(studyUtils.info())}`);
-
+          // update what the study variation and other info is.
+          studyInfo = studyUtils.info();
+          console.debug(`api info: ${JSON.stringify(studyInfo)}`);
           try {
-            const studyInfo = studyUtils.info();
-            // TODO: Only set true on first run
-            // TODO: glind info should KNOW first run
-            const isFirstRun = true;
-            studyApiEventEmitter.emitReady(studyInfo, isFirstRun);
-            return;
+            studyApiEventEmitter.emitReady(studyInfo);
           } catch (e) {
             console.error("browser.study.setup error");
             console.error(e);
           }
+          return studyUtils.info();
         },
 
         /* Signal to browser.study that it should end.
@@ -242,13 +223,14 @@ this.study = class extends ExtensionAPI {
          *  1.  calling this function multiple time is safe.
          *  `browser.study` will choose the
          **/
-        endStudy: async function endStudy(anEndingAlias, anEndingObject) {
+        endStudy: async function endStudy(anEndingAlias) {
           // TODO: glind handle 2nd time call
           console.log("called endStudy anEndingAlias");
-          return studyUtils.endStudy({
-            reason: anEndingAlias,
-            fullname: anEndingAlias,
-          });
+
+          const endingResponse = await studyUtils.endStudy(anEndingAlias);
+          studyApiEventEmitter.emitEndStudy(endingResponse);
+
+          // TODO and also send a signal
 
           /** TODO from the bootstrap.
            * Shutdown needs to distinguish between USER-DISABLE and other
@@ -297,14 +279,6 @@ this.study = class extends ExtensionAPI {
         getStudyInfo: async function getStudyInfo() {
           console.log("called getStudyInfo ");
           return studyUtils.info();
-          /*
-          return {
-            variation: "styleA",
-            firstRunTimestamp: 1523968204184,
-            activeExperimentName: "some experiment",
-            timeUntilExpire: null,
-          };
-          */
         },
 
         /* object of current dataPermissions with keys shield, pioneer, telemetry, 'ok' */
@@ -473,8 +447,8 @@ this.study = class extends ExtensionAPI {
           throw new ExtensionError(message);
         },
 
-        async firstSeen() {
-          return studyUtils.firstSeen();
+        async setFirstRunTimestamp(timestamp) {
+          return studyUtils.setFirstRunTimestamp(timestamp);
         },
 
         async setActive() {
@@ -486,7 +460,11 @@ this.study = class extends ExtensionAPI {
         },
 
         async reset() {
-          return studyUtils.reset();
+          return await studyUtils.reset();
+        },
+
+        async getInternals() {
+          return studyUtils._internals;
         },
       },
     };

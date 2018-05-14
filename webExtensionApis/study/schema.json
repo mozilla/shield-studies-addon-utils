@@ -50,17 +50,131 @@
       {
         "id": "anEndingRequest",
         "type": "object",
+        "properties": {
+          "fullname": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "choices": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "optional": true
+          },
+          "category": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "enum": ["ended-positive", "ended-neutral", "ended-negative"]
+              }
+            ],
+            "choices": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "enum": ["ended-positive", "ended-neutral", "ended-negative"]
+              }
+            ],
+            "optional": true
+          },
+          "baseUrls": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "choices": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "optional": true,
+            "default": []
+          },
+          "exacturls": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "choices": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "optional": "true\ndefault: []"
+          }
+        },
         "additionalProperties": true,
-        "testcase": {
-          "baseUrls": ["some.url"],
-          "endingName": "anEnding",
-          "endingClass": "ended-positive"
-        }
+        "testcases": [
+          {
+            "baseUrls": ["some.url"],
+            "fullname": "anEnding",
+            "category": "ended-positive"
+          },
+          {},
+          {
+            "baseUrls": ["some.url"]
+          },
+          {
+            "baseUrls": [],
+            "fullname": null,
+            "category": null
+          }
+        ],
+        "failcases": [
+          {
+            "baseUrls": null,
+            "category": "not okay"
+          }
+        ]
       },
       {
         "id": "onEndStudyResponse",
         "type": "object",
         "properties": {
+          "fields": {
+            "type": "object",
+            "additionalProperties": true
+          },
           "urls": {
             "type": "array",
             "items": {
@@ -124,18 +238,22 @@
               "days": {
                 "type": "integer"
               }
-            }
+            },
+            "optional": true
           },
           "endings": {
             "type": "object",
-            "additionalProperties": true
+            "additionalProperties": {
+              "$ref": "anEndingRequest"
+            }
           },
           "weightedVariations": {
             "$ref": "weightedVariationsArray"
           },
           "logLevel": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "optional": true
           },
           "telemetry": {
             "type": "object",
@@ -147,6 +265,21 @@
                 "type": "boolean"
               }
             }
+          },
+          "testing": {
+            "type": "object",
+            "properties": {
+              "variationName": {
+                "type": "string",
+                "optional": true
+              },
+              "expired": {
+                "type": "boolean",
+                "optional": true
+              }
+            },
+            "additionalProperties": true,
+            "optional": true
           }
         },
         "required": [
@@ -158,29 +291,130 @@
           "telemetry"
         ],
         "additionalProperties": true,
-        "testcase": {
-          "activeExperimentName": "aStudy",
-          "studyType": "shield",
-          "expire": {
-            "days": 10
-          },
-          "endings": {
-            "anEnding": {
-              "baseUrl": "some.url"
+        "testcases": [
+          {
+            "activeExperimentName": "aStudy",
+            "studyType": "shield",
+            "expire": {
+              "days": 10
+            },
+            "endings": {
+              "anEnding": {
+                "baseUrls": ["some.url"]
+              }
+            },
+            "logLevel": 30,
+            "weightedVariations": [
+              {
+                "name": "feature-active",
+                "weight": 1.5
+              }
+            ],
+            "telemetry": {
+              "send": false,
+              "removeTestingFlag": false
             }
           },
-          "logLevel": 30,
-          "weightedVariations": [
-            {
-              "name": "feature-active",
-              "weight": 1.5
+          {
+            "activeExperimentName": "aStudy",
+            "studyType": "shield",
+            "expire": {
+              "days": 10
+            },
+            "endings": {
+              "anEnding": {
+                "baseUrls": ["some.url"]
+              }
+            },
+            "logLevel": 30,
+            "weightedVariations": [
+              {
+                "name": "feature-active",
+                "weight": 1.5
+              }
+            ],
+            "telemetry": {
+              "send": false,
+              "removeTestingFlag": false
+            },
+            "testing": {}
+          },
+          {
+            "activeExperimentName": "aStudy",
+            "studyType": "pioneer",
+            "endings": {
+              "anEnding": {
+                "baseUrls": ["some.url"]
+              }
+            },
+            "logLevel": 30,
+            "weightedVariations": [
+              {
+                "name": "feature-active",
+                "weight": 1.5
+              }
+            ],
+            "telemetry": {
+              "send": false,
+              "removeTestingFlag": true
+            },
+            "testing": {
+              "expired": true
             }
-          ],
-          "telemetry": {
-            "send": false,
-            "removeTestingFlag": false
+          },
+          {
+            "activeExperimentName":
+              "shield-utils-test-addon@shield.mozilla.org",
+            "studyType": "shield",
+            "telemetry": {
+              "send": true,
+              "removeTestingFlag": false
+            },
+            "endings": {
+              "user-disable": {
+                "baseUrls": ["http://www.example.com/?reason=user-disable"]
+              },
+              "ineligible": {
+                "baseUrls": ["http://www.example.com/?reason=ineligible"]
+              },
+              "expired": {
+                "baseUrls": ["http://www.example.com/?reason=expired"]
+              },
+              "dataPermissionsRevoked": {
+                "category": "ended-neutral"
+              },
+              "some-study-defined-ending": {
+                "category": "ended-neutral"
+              },
+              "some-study-defined-ending-with-survey-url": {
+                "baseUrls": [
+                  "http://www.example.com/?reason=some-study-defined-ending-with-survey-url"
+                ],
+                "category": "ended-negative"
+              }
+            },
+            "logLevel": 10,
+            "weightedVariations": [
+              {
+                "name": "feature-active",
+                "weight": 1.5
+              },
+              {
+                "name": "feature-passive",
+                "weight": 1.5
+              },
+              {
+                "name": "control",
+                "weight": 1
+              }
+            ],
+            "expire": {
+              "days": 14
+            },
+            "testing": {},
+            "allowEnroll": true
           }
-        }
+        ]
       },
       {
         "id": "telemetryPayload",
@@ -261,11 +495,6 @@
           {
             "name": "anEndingAlias",
             "type": "string"
-          },
-          {
-            "name": "anEndingRequest",
-            "$ref": "anEndingRequest",
-            "optional": true
           }
         ],
         "returns": [
@@ -531,6 +760,36 @@
             "additionalProperties": true
           }
         ]
+      },
+      {
+        "name": "setFirstRunTimestamp",
+        "type": "function",
+        "async": true,
+        "description":
+          "Set the pref for firstRunTimestamp, to simulate:\n- 2nd run\n- other useful tests around expiration and states.\n",
+        "parameters": [
+          {
+            "name": "timestamp",
+            "type": "number",
+            "minimum": 1
+          }
+        ]
+      },
+      {
+        "name": "reset",
+        "type": "function",
+        "async": true,
+        "description":
+          "\nReset the studyUtils _internals, for debugging purposes.\n",
+        "parameters": []
+      },
+      {
+        "name": "getInternals",
+        "type": "function",
+        "async": true,
+        "description":
+          "Return `_internals` of the studyUtils object.\n\nUse this for debugging state.\n\nAbout `this._internals`:\n- variation:  (chosen variation, `setup` )\n- isEnding: bool  `endStudy`\n- isSetup: bool   `setup`\n- isFirstRun: bool `setup`, based on pref\n- studySetup: bool  `setup` the config\n- seenTelemetry: object of lists of seen telemetry by bucket\n- prefs: object of all created prefs and their names\n",
+        "parameters": []
       }
     ]
   },

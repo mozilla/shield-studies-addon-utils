@@ -25,6 +25,8 @@ const Ajv = require("ajv/dist/ajv.min.js");
 
 const { utils: Cu } = Components;
 Cu.import("resource://gre/modules/Services.jsm");
+Cu.import("resource://gre/modules/Preferences.jsm");
+
 Cu.import("resource://gre/modules/AddonManager.jsm");
 Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
 
@@ -47,8 +49,7 @@ const { TelemetryEnvironment } = Cu.import(
 );
 
 /*
-* Set-up JSON schema validation
-* Schemas are used to validate an input (here, via AJV at runtime)
+* Telemetry Probe JSON schema validation (via AJV at runtime)
 * Schemas here are used for:
 *  - Telemetry (Ensure correct Parquet format for different types of
 *    outbound packets):
@@ -66,6 +67,31 @@ const schemas = {
   "shield-study-error": require("shield-study-schemas/schemas-client/shield-study-error.schema.json"), // eslint-disable-line max-len
 };
 import jsonschema from "./jsonschema";
+
+/**
+ * Schemas for enforcing objects relating to the public apis
+ */
+class Guard {
+  /**
+   * @param {object} identifiedSchemas a jsonschema with ids
+   *
+   */
+  constructor(identifiedSchemas) {
+    this.ajv = new Ajv({ schemas: identifiedSchemas });
+  }
+
+  it(schemaId, arg, msg = null) {
+    const valid = this.ajv.validate(schemaId, arg);
+    if (!valid) {
+      throw new ExtensionError(
+        `GuardError: ${schemaId} ${JSON.stringify(
+          this.ajv.errors,
+        )} ${JSON.stringify(arg)} ${msg}`,
+      );
+    }
+  }
+}
+const guard = new Guard(require("../schema.json")[0].types);
 
 /**  Simple spread/rest based merge, using Object.assign.
  *
@@ -109,22 +135,6 @@ function mergeQueryArgs(url, ...args) {
   return U.toString();
 }
 
-class Guard {
-  constructor(identifiedSchemas) {
-    this.ajv = new Ajv({ schemas: identifiedSchemas });
-  }
-
-  it(schemaId, arg) {
-    const valid = this.ajv.validate(schemaId, arg);
-    if (!valid) {
-      throw new ExtensionError(
-        `GuardError: ${schemaId} ${JSON.stringify(this.ajv.errors)}`,
-      );
-    }
-  }
-}
-const guard = new Guard(require("../schema.json")[0].types);
-
 /**
  * Class representing utilities for shield studies.
  */
@@ -139,13 +149,22 @@ class StudyUtils {
    * - _isEnding
    * - _isSetup
    *
-   * About `this._internals`
-   * - isEnding: bool
-   * - isSetup: bool
-   * - isFirstRun: bool
-   * - studySetup: bool
-   * - variation:  ??
+   * About `this._internals`:
+   * - variation:  (chosen variation, `setup` )
+   * - isEnding: bool  `endStudy`
+   * - isSetup: bool   `setup`
+   * - isFirstRun: bool `setup`, based on pref
+   * - studySetup: bool  `setup` the config
+   * - seenTelemetry: object of lists of seen telemetry by bucket
+   * - prefs: object of all created prefs and their names
    *
+   * Returned by `studyTest.getInternals()` for testing
+   * Reset by `studyTest.reset`  and `studyUtils.reset`
+   *
+   * `this._extensionManifest`
+   * mirrors the extensionManifest at the time of api creation
+   *
+
    */
   constructor() {
     // Expose sampling methods onto the exported studyUtils singleton
@@ -154,12 +173,51 @@ class StudyUtils {
     this.schemas = schemas;
     // expose jsonschema validation methods
     this.jsonschema = jsonschema;
-    this.REASONS = REASONS;
 
-    // internals
-    this._internals = {
-      // TODO, when should we set this up?
+    this._extensionManifest = {};
+
+    // internals, also used by `studyTest.getInternals()`
+    // either setup() or reset() will create, using extensionManifest
+    this._internals = {};
+  }
+
+  _createInternals() {
+    if (!this._extensionManifest) {
+      // the API should set this during getAPI, not the user.
+      throw new ExtensionError(
+        "_createInternals needs `setExtensionManifest`. This should be done by `getApi`.",
+      );
+    }
+    function makeWidgetId(id) {
+      id = id.toLowerCase();
+      // FIXME: This allows for collisions.
+      return id.replace(/[^a-z0-9_-]/g, "_");
+    }
+
+    const widgetId = makeWidgetId(
+      this._extensionManifest.applications.gecko.id,
+    );
+    const internals = {
+      widgetId,
+      variation: undefined,
+      studySetup: undefined,
+      isFirstRun: false,
+      isSetup: false,
+      isEnding: false,
+      isEnded: false,
+      seenTelemetry: {
+        "shield-study": [],
+        "shield-study-addon": [],
+        "shield-study-error": [],
+      },
+      prefs: {
+        firstRunTimestamp: `shield.${widgetId}.firstRunTimestamp`,
+      },
+      endingRequested: undefined,
+      endingReturned: undefined,
     };
+    Object.seal(internals);
+    return internals;
   }
 
   /**
@@ -180,41 +238,50 @@ class StudyUtils {
    * @returns {StudyUtils} - the StudyUtils class instance
    */
   async setup(studySetup) {
-    log.debug("setting up!");
+    if (!this._internals) {
+      this._internals = this._createInternals();
+    }
+
+    log.debug(`setting up!` /*  ${JSON.stringify(studySetup)}` */);
     if (this._internals.isSetup) {
       throw new ExtensionError("StudyUtils is already setup");
     }
-    guard.it("studySetup", studySetup);
+    guard.it("studySetup", studySetup, "(in studySetup)");
 
-    // guess and set variation
+    // variation:  decide and set
     const variation =
-      studySetup.weightedVariations[studySetup.testing.variation] ||
+      studySetup.weightedVariations[studySetup.testing.variationName] ||
       (await this._deterministicVariation(
         studySetup.activeExperimentName,
         studySetup.weightedVariations,
       ));
-
     log.debug(`setting up: variation ${variation.name}`);
 
     this._internals.variation = variation;
     this._internals.studySetup = studySetup;
     this._internals.isSetup = true;
 
-    // TODO, ever seen before?
-    this._internals.isFirstRun = true;
+    // isFirstRun?  ever seen before?
+    const firstRunTimestamp = this.getFirstRunTimestamp();
+    // 'firstSeen' is the first telemetry we attempt to send.  needs 'isSetup'
+    if (firstRunTimestamp) {
+      this._internals.isFirstRun = false;
+    } else {
+      // 'enter' telemetry, and firstSeen
+      await studyUtils.firstSeen();
+    }
+
     // TODO, is allowed  to enroll?
-    // TODO, check with info
     return this;
   }
 
   /**
    * Resets the state of the study. Suggested use is for testing.
-   * @returns {void}
+   * @returns {Object} internals internals
    */
   reset() {
-    this._internals = {};
-    return true;
-    // TODO, is there any persistent state, like 'ended?'
+    this._internals = this._createInternals();
+    this.resetFirstRunTimestamp();
   }
 
   /**
@@ -227,6 +294,37 @@ class StudyUtils {
     return this._internals.variation;
   }
 
+  setExtensionManifest(extensionManifest) {
+    this._extensionManifest = extensionManifest;
+  }
+
+  getFirstRunTimestamp() {
+    return Number(
+      Services.prefs.getStringPref(this._internals.prefs.firstRunTimestamp, 0),
+    );
+  }
+
+  setFirstRunTimestamp(timestamp) {
+    const pref = this._internals.prefs.firstRunTimestamp;
+    return Services.prefs.setStringPref(pref, "" + timestamp);
+  }
+
+  resetFirstRunTimestamp(timestamp) {
+    const pref = this._internals.prefs.firstRunTimestamp;
+    Preferences.reset(pref);
+  }
+
+  getTimeUntilExpire() {
+    // TODO claim always returns, just an absurd number if unset
+    const days = this._internals.studySetup.expire.days;
+    if (days) {
+      // days in ms
+      const ms = days * 86400 * 1000;
+      const firstrun = this.getFirstRunTimestamp();
+      return firstrun + ms - Date.now();
+    }
+    return Number.MAX_SAFE_INTEGER; // approx 286,000 years
+  }
   /**
    * @async
    * Gets the telemetry client ID for the user.
@@ -257,16 +355,16 @@ class StudyUtils {
   info() {
     log.debug("getting info");
     this.throwIfNotSetup("info");
-    // TODO get the is first run
+
     const studyInfo = {
       activeExperimentName: this._internals.studySetup.activeExperimentName,
       isFirstRun: this._internals.isFirstRun,
-      firstRunTimestamp: 0, // TODO
+      firstRunTimestamp: this.getFirstRunTimestamp(),
       variation: this.getVariation(),
       shieldId: this.getShieldId(),
-      timeUntilExpire: 0, // TODO
+      timeUntilExpire: this.getTimeUntilExpire(),
     };
-    guard.it("studyInfoObject", studyInfo);
+    guard.it("studyInfoObject", studyInfo, "(in studyInfo)");
     return studyInfo;
   }
 
@@ -311,13 +409,19 @@ class StudyUtils {
    * Sends an 'enter' telemetry ping for the study; should be called on addon
    * startup for the reason ADDON_INSTALL. For more on study states like 'enter'
    * see ABOUT.md at github.com/mozilla/shield-studies-addon-template
+   *
+   * Side effects:
+   * - sends 'enter'
+   * - sets this._internals.prefs.firstRunTimestamp to Date.now()
+   *
    * @returns {void}
    */
-  firstSeen() {
-    // TODO, maybe record it?  set the pref?
+  async firstSeen() {
     this.throwIfNotSetup("firstSeen uses telemetry.");
     log.debug(`attempting firstSeen`);
-    this._telemetry({ study_state: "enter" }, "shield-study");
+    this._internals.isFirstRun = true;
+    await this._telemetry({ study_state: "enter" }, "shield-study");
+    this.setFirstRunTimestamp("" + Date.now());
   }
 
   /**
@@ -361,12 +465,13 @@ class StudyUtils {
    * @param {string} reason - The reason the addon has started up
    * @returns {void}
    */
-  startup({ reason }) {
+  async startup() {
     this.throwIfNotSetup("startup");
-    log.debug(`startup ${reason}`);
+    const isFirstRun = this._internals.isFirstRun;
+    log.debug(`startup.  setting active. isFirstRun? ${isFirstRun}`);
     this.setActive();
-    if (reason === REASONS.ADDON_INSTALL) {
-      this._telemetry({ study_state: "installed" }, "shield-study");
+    if (isFirstRun) {
+      await this._telemetry({ study_state: "installed" }, "shield-study");
     }
   }
 
@@ -374,71 +479,107 @@ class StudyUtils {
    * @async
    * Ends the study:
    *  - Removes the study from the active list of telemetry experiments
-   *  - Opens a new tab at a specified URL, if present (e.g. for a survey)
    *  - Sends a telemetry ping about the nature of the ending
    *    (positive, neutral, negative)
    *  - Sends an exit telemetry ping
-   * @param {Object} param - A details object describing why the study is ending
-   * @param {string} param.reason - The reason the study is ending, see
-   * schema.studySetup.json
-   * @param {string} param.fullname -  optional, the full name of the study
-   * state, see schema.studySetup.json
-   * @returns {void}
+   * @param {string} reason - The reason the study is ending, see
+   *    schema.studySetup.json
+   * @returns {Object} whatNext
    */
-  async endStudy({ reason, fullname }) {
-    // TODO, endStudy happens once OR WHAT?
-    // TODO, endStudy needs to mark the utils as 'ended';
+  async endStudy(endingName) {
     this.throwIfNotSetup("endStudy");
-    if (this._isEnding) {
+
+    // we know what this ending is.
+    // also handle default endings.
+    const alwaysHandle = ["ineligible", "expired", "user-disable"];
+    let ending = this._internals.studySetup.endings[endingName];
+    if (!ending) {
+      // a 'no-action' ending is okay for the 'always handle'
+      if (alwaysHandle.contains(endingName)) ending = {};
+      else throw new ExtensionError(`${endingName} isn't known ending`);
+    }
+
+    // throw if already ending
+    if (this._internals.isEnding) {
       log.debug("endStudy, already ending!");
-      return;
+      throw new ExtensionError(
+        `endStudy, requested:  ${endingName}, but already ending ${
+          this._internals.endingRequested
+        }`,
+      );
     }
-    this._isEnding = true;
-    log.debug(`endStudy ${reason}`);
-    this.unsetActive();
-    // TODO glind, think about reason vs fullname
-    // TODO glind, think about race conditions for endings, ensure only one exit
-    /*
-    * Check if the study ending shows the user a page in a new tab
-    * (ex: survey, explanation, etc.)
-    */
-    const ending = this._internals.studySetup.endings[reason];
-    if (ending) {
-      // baseUrl: needs to be appended with query arguments before use,
-      // exactUrl: used as is
-      const { baseUrl, exactUrl } = ending;
-      if (exactUrl) {
-        this.openTab(exactUrl);
-      } else if (baseUrl) {
-        const qa = await this.endingQueryArgs();
-        qa.reason = reason;
-        qa.fullreason = fullname;
-        const fullUrl = mergeQueryArgs(baseUrl, qa);
-        log.debug(baseUrl, fullUrl);
-        this.openTab(fullUrl);
-      }
-    }
-    switch (reason) {
+
+    // claim it.  We are first!
+    this._internals.isEnding = true;
+    this._internals.endingRequested = endingName;
+
+    log.debug(`endStudy ${endingName}`);
+    await this.unsetActive();
+
+    // do the work to end
+
+    // 1. Telemetry for ending
+    const { fullname } = ending;
+    let finalName = endingName;
+    switch (endingName) {
+      // handle the 'formal' endings
       case "ineligible":
       case "expired":
       case "user-disable":
       case "ended-positive":
       case "ended-neutral":
       case "ended-negative":
-        this._telemetry({ study_state: reason, fullname }, "shield-study");
-        break;
-      default:
-        this._telemetry(
+        await this._telemetry(
           {
-            study_state: "ended-neutral",
-            study_state_fullname: reason,
+            study_state: endingName,
+            study_state_fullname: fullname || endingName,
           },
           "shield-study",
         );
-      // unless we know better TODO grl
+        break;
+      default:
+        (finalName = "ended-neutral" || ending.category),
+          // call all 'unknowns' as "ended-neutral"
+        await this._telemetry(
+          {
+            study_state: "ended-neutral" || ending.category,
+            study_state_fullname: endingName,
+          },
+          "shield-study",
+        );
+        break;
     }
-    // these are all exits
-    this._telemetry({ study_state: "exit" }, "shield-study");
+    await this._telemetry({ study_state: "exit" }, "shield-study");
+
+    // 2. create ending instructions for the webExt to use
+    const out = {
+      shouldUninstall: true,
+      urls: [],
+    };
+
+    // baseUrl: needs to be appended with query arguments before use,
+    // exactUrl: used as is
+    const { baseUrls, exactUrls } = ending;
+    if (exactUrls) {
+      out.urls.push(...exactUrls);
+    }
+    const qa = await this.endingQueryArgs();
+    qa.reason = finalName;
+    qa.fullreason = endingName;
+
+    if (baseUrls) {
+      for (const baseUrl of baseUrls) {
+        const fullUrl = mergeQueryArgs(baseUrl, qa);
+        out.urls.push(fullUrl);
+      }
+    }
+
+    out.queryArgs = qa;
+
+    // 3. Tidy up the internals.
+    this._internals.endingReturned = out;
+    this._internals.isEnded = true; // done!
+    return out;
   }
 
   /**
@@ -448,7 +589,9 @@ class StudyUtils {
    * @returns {Object} - the query arguments for the study
    */
   async endingQueryArgs() {
-    // TODO glind, make this back breaking!
+    // id: extension.manifest.applications.gecko.id,
+    // version: extension.manifest.version,
+
     this.throwIfNotSetup("endingQueryArgs");
     const info = this.info();
     const who = await this.getTelemetryId();
@@ -458,7 +601,7 @@ class StudyUtils {
       variation: info.variation.name,
       updateChannel: Services.appinfo.defaultUpdateChannel,
       fxVersion: Services.appinfo.version,
-      addon: info.addon.version, // addon version
+      addon: this._extensionManifest.version, // addon version
       who, // telemetry clientId
     };
     queryArgs.testing = Number(!this.telemetryConfig.removeTestingFlag);
@@ -486,7 +629,7 @@ class StudyUtils {
       version: PACKET_VERSION,
       study_name: info.activeExperimentName,
       branch: info.variation.name,
-      addon_version: info.addon.version,
+      addon_version: this._extensionManifest.version,
       shield_version: UTILS_VERSION,
       type: bucket,
       data,
@@ -523,10 +666,16 @@ class StudyUtils {
       }
       return this.telemetryError(errorReport);
     }
-    // emit(TelemetryWatcher, 'telemetry', [bucket, payload]);
     log.debug(`telemetry: ${JSON.stringify(payload)}`);
     // FIXME marcrowo: addClientId makes the ping not appear in test?
     // seems like a problem with Telemetry, not the shield-study-utils library
+
+    // IFF it's a shield-study ping, which are few in number
+    if (bucket === "shield-study" || bucket === "shield-study-error") {
+      this._internals.seenTelemetry[bucket].push(payload);
+    }
+
+    // Acutally send if wanted.
     const telOptions = { addClientId: true, addEnvironment: true };
     if (!this.telemetryConfig.send) {
       log.debug("NOT sending.  `telemetryConfig.send` is false");
@@ -609,22 +758,6 @@ function createLog(name, levelWord) {
   // L.manageLevelFromPref(prefName) {
   // https://dxr.mozilla.org/mozilla-beta/source/toolkit/modules/Log.jsm
   return L;
-}
-
-// TODO deal with these. Not needed, probably
-// addon state change reasons
-const REASONS = {
-  APP_STARTUP: 1, // The application is starting up.
-  APP_SHUTDOWN: 2, // The application is shutting down.
-  ADDON_ENABLE: 3, // The add-on is being enabled.
-  ADDON_DISABLE: 4, // The add-on is being disabled. (Also sent at uninstall)
-  ADDON_INSTALL: 5, // The add-on is being installed.
-  ADDON_UNINSTALL: 6, // The add-on is being uninstalled.
-  ADDON_UPGRADE: 7, // The add-on is being upgraded.
-  ADDON_DOWNGRADE: 8, // The add-on is being downgraded.
-};
-for (const r in REASONS) {
-  REASONS[REASONS[r]] = r;
 }
 
 // TODO, use the usual es6 exports

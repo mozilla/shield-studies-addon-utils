@@ -36,6 +36,17 @@
 const assert = require("assert");
 const utils = require("./utils");
 
+const DAYS = 86400 * 1000;
+
+// node's util
+const { inspect } = require("util");
+// for printing a deeply nested object to node console
+// eslint-disable-next-line no-unused-vars
+function full(myObject) {
+  return inspect(myObject, { showHidden: false, depth: null });
+}
+
+// alternative shortcut
 // TODO create new profile per test?
 // then we can test with a clean profile every time
 
@@ -54,11 +65,14 @@ function studySetupForTests(...sources) {
     studyType: "shield",
     endings: {
       ineligible: {
-        baseUrl: "http://www.example.com/?reason=ineligible",
+        baseUrls: ["http://www.example.com/?reason=ineligible"],
+      },
+      BrowserStudyApiEnding: {
+        baseUrls: ["http://www.example.com/?reason=BrowserStudyApiEnding"],
       },
     },
     telemetry: {
-      send: true, // assumed false. Actually send pings?
+      send: false, // assumed false. Actually send pings if true
       removeTestingFlag: false, // Marks pings to be discarded, set true for to have the pings processed in the pipeline
     },
     logLevel: 10,
@@ -79,7 +93,7 @@ function studySetupForTests(...sources) {
   return merge(studySetup, ...sources);
 }
 
-describe.skip("PUBLIC API `browser.study` (not specific to any add-on background logic)", function() {
+describe("PUBLIC API `browser.study` (not specific to any add-on background logic)", function() {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
   this.timeout(15000);
 
@@ -222,7 +236,128 @@ describe.skip("PUBLIC API `browser.study` (not specific to any add-on background
     );
   });
 
-  describe("test the browser.study.setup() side effects", function() {
+  describe("internals,studyInfo under several browser.setup() scenarios", function() {
+    async function resetStudy() {
+      console.debug("resetting");
+      const reset = await addonExec(async function(cb) {
+        await browser.studyTest.reset();
+        const internals = await browser.studyTest.getInternals();
+        return cb(internals);
+      });
+      assert(reset.isSetup === false);
+      console.debug("reset done");
+      return reset;
+    }
+    beforeEach(resetStudy);
+    // afterEach(resetStudy);
+
+    it("1.  firstRun, expire.days, allowEnroll, !testing.expired", async function() {
+      const thisSetup = studySetupForTests();
+      const data = await addonExec(async(setup, cb) => {
+        // this is what runs in the webExtension scope.
+        const info = await browser.study.setup(setup);
+        const internals = await browser.studyTest.getInternals();
+        // call back with all the data we care about to Mocha / node
+        cb({ info, internals });
+      }, thisSetup);
+      const { info, internals } = data;
+
+      // tests
+      const now = Number(Date.now());
+      const seenTelemetryStates = internals.seenTelemetry["shield-study"].map(
+        x => x.data.study_state,
+      );
+      assert(internals.isSetup, "should be isSetup");
+      assert(!internals.isEnded, "should not be ended");
+      assert(!internals.isEnding, "should not be ending");
+      assert(info.isFirstRun, "should be isFirstRun");
+      assert(info.variation, "should be a variation");
+      assert(now - info.firstRunTimestamp < 5000, "less than 5 seconds old");
+      assert(info.timeUntilExpire < 14 * DAYS, "should expire within 14 days");
+      assert.deepStrictEqual(
+        seenTelemetryStates,
+        ["enter", "installed"],
+        "incorrect study state telemetry",
+      );
+    });
+
+    it("2.  secondRun, expire.days, allowEnroll, !testing.expired", async function() {
+      const now = Number(Date.now());
+      const thisSetup = studySetupForTests({});
+      const data = await addonExec(
+        async(setup, nowTs, cb) => {
+          // this is what runs in the webExtension scope.
+          await browser.studyTest.setFirstRunTimestamp(nowTs);
+          const info = await browser.study.setup(setup);
+          const internals = await browser.studyTest.getInternals();
+          // call back with all the data we care about to Mocha / node
+          cb({ info, internals });
+        },
+        thisSetup,
+        now,
+      );
+      const { info, internals } = data;
+
+      // tests
+      const seenTelemetryStates = internals.seenTelemetry["shield-study"].map(
+        x => x.data.study_state,
+      );
+
+      assert(internals.isSetup, "should be isSetup");
+      assert(!internals.isEnded, "should not be ended");
+      assert(!internals.isEnding, "should not be ending");
+      assert(!info.isFirstRun, "should NOT be isFirstRun");
+      assert(info.variation, "should be a variation");
+      assert.equal(
+        info.firstRunTimestamp,
+        now,
+        "firstRunTimestamp should be what we set",
+      );
+      assert(now - info.firstRunTimestamp < 5000, "less than 5 seconds old");
+      assert(info.timeUntilExpire < 14 * DAYS, "should expire within 14 days");
+      assert.deepStrictEqual(
+        seenTelemetryStates,
+        [],
+        "incorrect study state telemetry",
+      );
+    });
+
+    it("3.  firstRun, expire.days, !allowEnroll, !testing.expired should end ineligible", async function() {
+      console.log("doing test 3");
+      const now = Number(Date.now());
+      const thisSetup = studySetupForTests({
+        allowEnroll: false,
+      });
+      const data = await addonExec(async(setup, cb) => {
+        // this is what runs in the webExtension scope.
+        const info = await browser.study.setup(setup);
+        const internals = await browser.studyTest.getInternals();
+        // call back with all the data we care about to Mocha / node
+        cb({ info, internals });
+      }, thisSetup);
+      const { info, internals } = data;
+      console.log(full(data));
+      // tests
+      const seenTelemetryStates = internals.seenTelemetry["shield-study"].map(
+        x => x.data.study_state,
+      );
+
+      assert(internals.isSetup, "should be isSetup");
+      assert(internals.isEnded, "should be ended");
+      assert(internals.isEnding, "should be ending");
+      assert(info.isFirstRun, "should NOT be isFirstRun");
+      assert(info.variation, "should be a variation");
+      assert(now - info.firstRunTimestamp < 5000, "less than 5 seconds old");
+      assert(info.timeUntilExpire < 14 * DAYS, "should expire within 14 days");
+      assert.deepStrictEqual(
+        seenTelemetryStates,
+        ["enter", "ineligible", "exit"],
+        "incorrect study state telemetry",
+      );
+    });
+  });
+
+  describe.skip("test the browser.study.setup() side effects", function() {
     it("should fire the onReady event upon successful setup", async() => {
       const studyInfo = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
         driver,
@@ -447,8 +582,8 @@ describe.skip("PUBLIC API `browser.study` (not specific to any add-on background
           x => x.id === "studyInfoObject",
         )[0];
         console.log(schema);
-        const v = utils.validateJSON(studyInfo, schema);
-        assert(v.isValid, JSON.stringify(v.errors), null, 2);
+        // const v = utils.validateJSON(studyInfo, schema);
+        // assert(v.isValid, JSON.stringify(v.errors), null, 2);
       }
 
       // tests

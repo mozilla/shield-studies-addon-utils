@@ -67,7 +67,7 @@ Note:
   * $ref:
   * optional: false
 
-### `browser.study.endStudy( anEndingAlias, anEndingRequest )`
+### `browser.study.endStudy( anEndingAlias )`
 
 Signal to browser.study that it should end.
 
@@ -117,15 +117,9 @@ Note:
 **Parameters**
 
 * `anEndingAlias`
-
   * type: anEndingAlias
   * $ref:
   * optional: false
-
-* `anEndingRequest`
-  * type: anEndingRequest
-  * $ref:
-  * optional: true
 
 ### `browser.study.getStudyInfo( )`
 
@@ -362,12 +356,122 @@ Act on it by
 {
   "id": "anEndingRequest",
   "type": "object",
+  "properties": {
+    "fullname": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "choices": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "optional": true
+    },
+    "category": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "enum": ["ended-positive", "ended-neutral", "ended-negative"]
+        }
+      ],
+      "choices": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "enum": ["ended-positive", "ended-neutral", "ended-negative"]
+        }
+      ],
+      "optional": true
+    },
+    "baseUrls": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ],
+      "choices": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ],
+      "optional": true,
+      "default": []
+    },
+    "exacturls": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ],
+      "choices": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ],
+      "optional": "true\ndefault: []"
+    }
+  },
   "additionalProperties": true,
-  "testcase": {
-    "baseUrls": ["some.url"],
-    "endingName": "anEnding",
-    "endingClass": "ended-positive"
-  }
+  "testcases": [
+    {
+      "baseUrls": ["some.url"],
+      "fullname": "anEnding",
+      "category": "ended-positive"
+    },
+    {},
+    {
+      "baseUrls": ["some.url"]
+    },
+    {
+      "baseUrls": [],
+      "fullname": null,
+      "category": null
+    }
+  ],
+  "failcases": [
+    {
+      "baseUrls": null,
+      "category": "not okay"
+    }
+  ]
 }
 ```
 
@@ -378,6 +482,10 @@ Act on it by
   "id": "onEndStudyResponse",
   "type": "object",
   "properties": {
+    "fields": {
+      "type": "object",
+      "additionalProperties": true
+    },
     "urls": {
       "type": "array",
       "items": {
@@ -456,18 +564,22 @@ Act on it by
         "days": {
           "type": "integer"
         }
-      }
+      },
+      "optional": true
     },
     "endings": {
       "type": "object",
-      "additionalProperties": true
+      "additionalProperties": {
+        "$ref": "anEndingRequest"
+      }
     },
     "weightedVariations": {
       "$ref": "weightedVariationsArray"
     },
     "logLevel": {
       "type": "integer",
-      "minimum": 0
+      "minimum": 0,
+      "optional": true
     },
     "telemetry": {
       "type": "object",
@@ -479,6 +591,21 @@ Act on it by
           "type": "boolean"
         }
       }
+    },
+    "testing": {
+      "type": "object",
+      "properties": {
+        "variationName": {
+          "type": "string",
+          "optional": true
+        },
+        "expired": {
+          "type": "boolean",
+          "optional": true
+        }
+      },
+      "additionalProperties": true,
+      "optional": true
     }
   },
   "required": [
@@ -490,29 +617,129 @@ Act on it by
     "telemetry"
   ],
   "additionalProperties": true,
-  "testcase": {
-    "activeExperimentName": "aStudy",
-    "studyType": "shield",
-    "expire": {
-      "days": 10
-    },
-    "endings": {
-      "anEnding": {
-        "baseUrl": "some.url"
+  "testcases": [
+    {
+      "activeExperimentName": "aStudy",
+      "studyType": "shield",
+      "expire": {
+        "days": 10
+      },
+      "endings": {
+        "anEnding": {
+          "baseUrls": ["some.url"]
+        }
+      },
+      "logLevel": 30,
+      "weightedVariations": [
+        {
+          "name": "feature-active",
+          "weight": 1.5
+        }
+      ],
+      "telemetry": {
+        "send": false,
+        "removeTestingFlag": false
       }
     },
-    "logLevel": 30,
-    "weightedVariations": [
-      {
-        "name": "feature-active",
-        "weight": 1.5
+    {
+      "activeExperimentName": "aStudy",
+      "studyType": "shield",
+      "expire": {
+        "days": 10
+      },
+      "endings": {
+        "anEnding": {
+          "baseUrls": ["some.url"]
+        }
+      },
+      "logLevel": 30,
+      "weightedVariations": [
+        {
+          "name": "feature-active",
+          "weight": 1.5
+        }
+      ],
+      "telemetry": {
+        "send": false,
+        "removeTestingFlag": false
+      },
+      "testing": {}
+    },
+    {
+      "activeExperimentName": "aStudy",
+      "studyType": "pioneer",
+      "endings": {
+        "anEnding": {
+          "baseUrls": ["some.url"]
+        }
+      },
+      "logLevel": 30,
+      "weightedVariations": [
+        {
+          "name": "feature-active",
+          "weight": 1.5
+        }
+      ],
+      "telemetry": {
+        "send": false,
+        "removeTestingFlag": true
+      },
+      "testing": {
+        "expired": true
       }
-    ],
-    "telemetry": {
-      "send": false,
-      "removeTestingFlag": false
+    },
+    {
+      "activeExperimentName": "shield-utils-test-addon@shield.mozilla.org",
+      "studyType": "shield",
+      "telemetry": {
+        "send": true,
+        "removeTestingFlag": false
+      },
+      "endings": {
+        "user-disable": {
+          "baseUrls": ["http://www.example.com/?reason=user-disable"]
+        },
+        "ineligible": {
+          "baseUrls": ["http://www.example.com/?reason=ineligible"]
+        },
+        "expired": {
+          "baseUrls": ["http://www.example.com/?reason=expired"]
+        },
+        "dataPermissionsRevoked": {
+          "category": "ended-neutral"
+        },
+        "some-study-defined-ending": {
+          "category": "ended-neutral"
+        },
+        "some-study-defined-ending-with-survey-url": {
+          "baseUrls": [
+            "http://www.example.com/?reason=some-study-defined-ending-with-survey-url"
+          ],
+          "category": "ended-negative"
+        }
+      },
+      "logLevel": 10,
+      "weightedVariations": [
+        {
+          "name": "feature-active",
+          "weight": 1.5
+        },
+        {
+          "name": "feature-passive",
+          "weight": 1.5
+        },
+        {
+          "name": "control",
+          "weight": 1
+        }
+      ],
+      "expire": {
+        "days": 14
+      },
+      "testing": {},
+      "allowEnroll": true
     }
-  }
+  ]
 }
 ```
 
@@ -620,6 +847,44 @@ Throws an exception from a privileged async function - for making sure that we c
   * type: details
   * $ref:
   * optional: false
+
+### `browser.studyTest.setFirstRunTimestamp( timestamp )`
+
+Set the pref for firstRunTimestamp, to simulate:
+
+* 2nd run
+* other useful tests around expiration and states.
+
+**Parameters**
+
+* `timestamp`
+  * type: timestamp
+  * $ref:
+  * optional: false
+
+### `browser.studyTest.reset( )`
+
+Reset the studyUtils \_internals, for debugging purposes.
+
+**Parameters**
+
+### `browser.studyTest.getInternals( )`
+
+Return `_internals` of the studyUtils object.
+
+Use this for debugging state.
+
+About `this._internals`:
+
+* variation: (chosen variation, `setup` )
+* isEnding: bool `endStudy`
+* isSetup: bool `setup`
+* isFirstRun: bool `setup`, based on pref
+* studySetup: bool `setup` the config
+* seenTelemetry: object of lists of seen telemetry by bucket
+* prefs: object of all created prefs and their names
+
+**Parameters**
 
 ## Events
 
