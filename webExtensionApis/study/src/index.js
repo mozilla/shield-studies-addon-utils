@@ -351,28 +351,15 @@ this.study = class extends ExtensionAPI {
          * @returns {Array<sendTelemetry>} matchingPings
          */
         async searchSentTelemetry(searchTelemetryQuery) {
-          Components.utils.import(
+          const { TelemetryArchive } = ChromeUtils.import(
             "resource://gre/modules/TelemetryArchive.jsm",
           );
           const { searchTelemetryArchive } = require("./telemetry.js");
-          return searchTelemetryArchive(
+          return await searchTelemetryArchive(
             ExtensionError,
             TelemetryArchive,
             searchTelemetryQuery,
           );
-        },
-
-        /** Format url with study covariate queryArgs appended / mixed in.
-         *
-         *  Use this for constructing midpoint surveys.
-         *
-         * @param {String} baseUrl a string base url
-         * @param {Object} additionalFields to be url encodeds
-         * @returns {String} completeUrl
-         */
-        surveyUrl: async function surveyUrl(baseUrl, additionalFields) {
-          console.log("called surveyUrl baseUrl, additionalFields");
-          return "https://example.com?version=59.0&branch=studyA";
         },
 
         /* Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client. */
@@ -380,12 +367,6 @@ this.study = class extends ExtensionAPI {
           console.log("called validateJSON someJson, jsonschema");
           return studyUtils.jsonschema.validate(someJson, jsonschema);
           // return { valid: true, errors: [] };
-        },
-
-        /* @TODO no description given */
-        log: async function log(thingToLog) {
-          console.log("called log thingToLog");
-          return undefined;
         },
 
         /**
@@ -438,6 +419,7 @@ this.study = class extends ExtensionAPI {
           };
         }).api(),
       },
+
       studyTest: {
         throwAnException(message) {
           throw new ExtensionError(message);

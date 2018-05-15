@@ -28,6 +28,15 @@
   description: Interface for Shield and Pioneer studies.
   apiVersion: 5  # for dev use
   types:   # TODO @glind to actually get this back out of the schemas.json
+  - id: NullableString
+    oneOf: [
+      {type: 'null'},
+      {type: 'string'}]
+    choices: [
+      {type: 'null'},
+      {type: 'string'}]
+    testcases: [null, 'a string']
+
   - id: studyTypesEnum
     type: string
     enum: ['shield', 'pioneer']
@@ -66,12 +75,7 @@
     type: object
     properties:
       fullname:
-        oneOf: [
-          {type: 'null'},
-          {type: 'string'}]
-        choices: [
-          {type: 'null'},
-          {type: 'string'}]
+        $ref: NullableString
         optional: true
       category:
         oneOf: [
@@ -126,7 +130,7 @@
     additionalProperties: true
     properties:
       variation:
-        "$ref": "weightedVariationObject"
+        $ref: "weightedVariationObject"
       firstRunTimestamp:
         type: 'number'  # 1523968204184,
       activeExperimentName:
@@ -187,10 +191,11 @@
         type: object
         properties:
           variationName:
-            type: string
+            $ref: NullableString
             optional: true
           expired:
-            type: boolean
+            choices: [{type: 'null'}, {type: 'boolean'}]
+            oneOf: [{type: 'null'}, {type: 'boolean'}]
             optional: true
         additionalProperties: true
         optional: true
@@ -485,9 +490,11 @@
     parameters:
     - name: someJson
       type: object
+      additionalProperties: true
     - name: jsonschema
       type: object  # a jsonschema
       descripton: a valid jsonschema object
+      additionalProperties: true
 
     # aValidation
     returns:
@@ -498,13 +505,13 @@
       errors:
       - type: array
 
-  - name: log
-    type: function
-    async: true
-    descripton:  Log to the browser.study.logger.  Affected by study logLevel
-    parameters:
-    - name: thingToLog
-      type: [string, array]
+  # - name: log
+  #   type: function
+  #   async: true
+  #   descripton:  Log to the browser.study.logger.  Affected by study logLevel
+  #   parameters:
+  #   - name: thingToLog
+  #     type: [string, array]
 
   # things that would be 'listeners' are 'events' in webExtensions
   # https://github.com/motin/shield-studies-addon-template/blob/convert-to-webextension-experiments/src/privileged/introductionNotificationBar/api.js#L107

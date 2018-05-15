@@ -5,6 +5,26 @@
     "apiVersion": 5,
     "types": [
       {
+        "id": "NullableString",
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "choices": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "testcases": [null, "a string"]
+      },
+      {
         "id": "studyTypesEnum",
         "type": "string",
         "enum": ["shield", "pioneer"],
@@ -52,22 +72,7 @@
         "type": "object",
         "properties": {
           "fullname": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "type": "string"
-              }
-            ],
-            "choices": [
-              {
-                "type": "null"
-              },
-              {
-                "type": "string"
-              }
-            ],
+            "$ref": "NullableString",
             "optional": true
           },
           "category": {
@@ -270,11 +275,26 @@
             "type": "object",
             "properties": {
               "variationName": {
-                "type": "string",
+                "$ref": "NullableString",
                 "optional": true
               },
               "expired": {
-                "type": "boolean",
+                "choices": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ],
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ],
                 "optional": true
               }
             },
@@ -611,12 +631,14 @@
         "parameters": [
           {
             "name": "someJson",
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
           },
           {
             "name": "jsonschema",
             "type": "object",
-            "descripton": "a valid jsonschema object"
+            "descripton": "a valid jsonschema object",
+            "additionalProperties": true
           }
         ],
         "returns": [
@@ -635,19 +657,6 @@
                 "type": "array"
               }
             ]
-          }
-        ]
-      },
-      {
-        "name": "log",
-        "type": "function",
-        "async": true,
-        "descripton":
-          "Log to the browser.study.logger.  Affected by study logLevel",
-        "parameters": [
-          {
-            "name": "thingToLog",
-            "type": ["string", "array"]
           }
         ]
       }

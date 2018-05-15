@@ -238,15 +238,6 @@ Using AJV, do jsonschema validation of an object. Can be used to validate your a
   * $ref:
   * optional: false
 
-### `browser.study.log( thingToLog )`
-
-**Parameters**
-
-* `thingToLog`
-  * type: thingToLog
-  * $ref:
-  * optional: false
-
 ## Events
 
 ### `browser.study.onDataPermissionsChange ()` Event
@@ -292,7 +283,32 @@ Act on it by
 
 ## Data Types
 
-### [0] studyTypesEnum
+### [0] NullableString
+
+```json
+{
+  "id": "NullableString",
+  "oneOf": [
+    {
+      "type": "null"
+    },
+    {
+      "type": "string"
+    }
+  ],
+  "choices": [
+    {
+      "type": "null"
+    },
+    {
+      "type": "string"
+    }
+  ],
+  "testcases": [null, "a string"]
+}
+```
+
+### [1] studyTypesEnum
 
 ```json
 {
@@ -303,7 +319,7 @@ Act on it by
 }
 ```
 
-### [1] weightedVariationObject
+### [2] weightedVariationObject
 
 ```json
 {
@@ -322,7 +338,7 @@ Act on it by
 }
 ```
 
-### [2] weightedVariationsArray
+### [3] weightedVariationsArray
 
 ```json
 {
@@ -350,7 +366,7 @@ Act on it by
 }
 ```
 
-### [3] anEndingRequest
+### [4] anEndingRequest
 
 ```json
 {
@@ -358,22 +374,7 @@ Act on it by
   "type": "object",
   "properties": {
     "fullname": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "type": "string"
-        }
-      ],
-      "choices": [
-        {
-          "type": "null"
-        },
-        {
-          "type": "string"
-        }
-      ],
+      "$ref": "NullableString",
       "optional": true
     },
     "category": {
@@ -475,7 +476,7 @@ Act on it by
 }
 ```
 
-### [4] onEndStudyResponse
+### [5] onEndStudyResponse
 
 ```json
 {
@@ -496,7 +497,7 @@ Act on it by
 }
 ```
 
-### [5] studyInfoObject
+### [6] studyInfoObject
 
 ```json
 {
@@ -529,7 +530,7 @@ Act on it by
 }
 ```
 
-### [6] dataPermissionsObject
+### [7] dataPermissionsObject
 
 ```json
 {
@@ -545,7 +546,7 @@ Act on it by
 }
 ```
 
-### [7] studySetup
+### [8] studySetup
 
 ```json
 {
@@ -596,11 +597,26 @@ Act on it by
       "type": "object",
       "properties": {
         "variationName": {
-          "type": "string",
+          "$ref": "NullableString",
           "optional": true
         },
         "expired": {
-          "type": "boolean",
+          "choices": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
           "optional": true
         }
       },
@@ -743,7 +759,7 @@ Act on it by
 }
 ```
 
-### [8] telemetryPayload
+### [9] telemetryPayload
 
 ```json
 {
@@ -756,7 +772,7 @@ Act on it by
 }
 ```
 
-### [9] searchTelemetryQuery
+### [10] searchTelemetryQuery
 
 ```json
 {
@@ -793,7 +809,7 @@ Act on it by
 }
 ```
 
-### [10] anEndingAnswer
+### [11] anEndingAnswer
 
 ```json
 {

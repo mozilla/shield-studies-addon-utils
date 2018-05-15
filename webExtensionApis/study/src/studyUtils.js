@@ -124,9 +124,6 @@ function mergeQueryArgs(url, ...args) {
   // Set each search parameter in "merged" to its value in the query string,
   // building up the query string one search parameter at a time.
   Object.keys(merged).forEach(k => {
-    // k, the search parameter (ex: fxVersion)
-    // q.get(k), returns the value of k, in query string, q (ex: 57.0.1a)
-    log.debug(q.get(k), k, merged[k]);
     q.set(k, merged[k]);
   });
   // append our new query string to the URL object made with "url"
@@ -482,9 +479,9 @@ class StudyUtils {
    *  - Sends a telemetry ping about the nature of the ending
    *    (positive, neutral, negative)
    *  - Sends an exit telemetry ping
-   * @param {string} reason - The reason the study is ending, see
+   * @param {string} endingName - The reason the study is ending, see
    *    schema.studySetup.json
-   * @returns {Object} whatNext
+   * @returns {Object} endingReturned _internals.endingReturned
    */
   async endStudy(endingName) {
     this.throwIfNotSetup("endStudy");
@@ -495,7 +492,7 @@ class StudyUtils {
     let ending = this._internals.studySetup.endings[endingName];
     if (!ending) {
       // a 'no-action' ending is okay for the 'always handle'
-      if (alwaysHandle.contains(endingName)) ending = {};
+      if (alwaysHandle.includes(endingName)) ending = {};
       else throw new ExtensionError(`${endingName} isn't known ending`);
     }
 
@@ -538,11 +535,11 @@ class StudyUtils {
         );
         break;
       default:
-        (finalName = "ended-neutral" || ending.category),
+        (finalName = ending.category || "ended-neutral"),
           // call all 'unknowns' as "ended-neutral"
         await this._telemetry(
           {
-            study_state: "ended-neutral" || ending.category,
+            study_state: finalName,
             study_state_fullname: endingName,
           },
           "shield-study",
