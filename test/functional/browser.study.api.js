@@ -239,6 +239,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         callback(_caughtError);
       },
     );
+    console.log(caughtError);
     assert(
       caughtError ===
         "Error: telemetry: this method can't be used until `setup` is called",
@@ -692,4 +693,6 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
   describe.skip("log", function() {
     it("log level works?");
   });
+
+  describe("uninstall by users?", function() {});
 });

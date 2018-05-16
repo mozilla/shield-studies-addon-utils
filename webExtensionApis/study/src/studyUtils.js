@@ -5,17 +5,17 @@
 import sampling from "./sampling";
 
 /*
-* For an overview of what this module does, see ABOUT.md at
-* github.com/mozilla/shield-studies-addon-template
+* Supports the `browser.study` webExtensionExperiment api.
+*
+* See API.md at:
+* https://github.com/mozilla/shield-studies-addon-utils/blob/develop/docs/api.md
 *
 * Note: There are a number of methods that won't work if the
 * setup method has not executed (they perform a check with the
 * `throwIfNotSetup` method). The setup method ensures that the
 * studySetup data passed in is valid per the studySetup schema.
-*/
-
-/*
-* TODO glind survey / urls & query args
+*
+* Tests for this module are at /test-addon.
 */
 
 const UTILS_VERSION = require("../../../package.json").version;
@@ -34,6 +34,7 @@ ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 // eslint-disable-next-line no-undef
 const { ExtensionError } = ExtensionUtils;
 
+// TODO, use the logLevel.
 const studyUtilsLoggingLevel = "Trace"; // Fatal: 70, Error: 60, Warn: 50, Info: 40, Config: 30, Debug: 20, Trace: 10, All: -1,
 const log = createLog("shield-study-utils", studyUtilsLoggingLevel);
 
@@ -48,18 +49,19 @@ const { TelemetryEnvironment } = Cu.import(
   null,
 );
 
-/*
-* Telemetry Probe JSON schema validation (via AJV at runtime)
-* Schemas here are used for:
-*  - Telemetry (Ensure correct Parquet format for different types of
-*    outbound packets):
-*    - "shield-study": shield study state and outcome data common to all
-*      shield studies.
-*    - "shield-study-addon": addon-specific probe data, with `attributes`
-*      (used to capture feature-specific state) sent as Map(string,string).
-*    - "shield-study-error": data used to notify, group and count some kinds
-*      of errors from shield studies
-*/
+/**
+ * Telemetry Probe JSON schema validation (via AJV at runtime)
+ *
+ * Schemas here are used for:
+ *  - Telemetry (Ensure correct Parquet format for different types of
+ *    outbound packets):
+ *    - "shield-study": shield study state and outcome data common to all
+ *      shield studies.
+ *    - "shield-study-addon": addon-specific probe data, with `attributes`
+ *      (used to capture feature-specific state) sent as Map(string,string).
+ *    - "shield-study-error": data used to notify, group and count some kinds
+ *      of errors from shield studies
+ */
 const schemas = {
   // Telemetry PingType schemas
   "shield-study": require("shield-study-schemas/schemas-client/shield-study.schema.json"), // eslint-disable-line max-len
@@ -69,7 +71,7 @@ const schemas = {
 import jsonschema from "./jsonschema";
 
 /**
- * Schemas for enforcing objects relating to the public apis
+ * Schemas for enforcing objects relating to the public `browser.study` api
  */
 class Guard {
   /**
@@ -97,7 +99,7 @@ const guard = new Guard(require("../schema.json")[0].types);
  *
  * Right most wins, top level only, by replacement.
  *
- * Unlike deep merges might not handle symbols and other things.
+ * Note: Unlike deep merges might not handle symbols and other things.
  *
  * @param {...Object} sources - 1 or more sources
  * @returns {Object} - the resulting merged object
@@ -137,14 +139,7 @@ function mergeQueryArgs(url, ...args) {
  */
 class StudyUtils {
   /**
-   * Create a StudyUtils instance.
-   *
-   * TODO glind, ensure and cleanup
-   *
-   * Internals of interest:
-   * - _studySetup
-   * - _isEnding
-   * - _isSetup
+   * Create a StudyUtils instance to power the `browser.study` API
    *
    * About `this._internals`:
    * - variation:  (chosen variation, `setup` )
@@ -154,14 +149,16 @@ class StudyUtils {
    * - studySetup: bool  `setup` the config
    * - seenTelemetry: object of lists of seen telemetry by bucket
    * - prefs: object of all created prefs and their names
+   * - endingRequested: string of ending name
+   * - endingReturns: object with useful ending instructions
    *
    * Returned by `studyTest.getInternals()` for testing
    * Reset by `studyTest.reset`  and `studyUtils.reset`
    *
-   * `this._extensionManifest`
-   * mirrors the extensionManifest at the time of api creation
+   * About: `this._extensionManifest`
+   * - mirrors the extensionManifest at the time of api creation
+   * - used by uninstall, and to name the firstRunTimestamp pref
    *
-
    */
   constructor() {
     // Expose sampling methods onto the exported studyUtils singleton
@@ -180,7 +177,6 @@ class StudyUtils {
 
   _createInternals() {
     if (!this._extensionManifest) {
-      // the API should set this during getAPI, not the user.
       throw new ExtensionError(
         "_createInternals needs `setExtensionManifest`. This should be done by `getApi`.",
       );
@@ -188,12 +184,14 @@ class StudyUtils {
     function makeWidgetId(id) {
       id = id.toLowerCase();
       // FIXME: This allows for collisions.
+      // WebExt hasn't ever had a problem.
       return id.replace(/[^a-z0-9_-]/g, "_");
     }
 
     const widgetId = makeWidgetId(
       this._extensionManifest.applications.gecko.id,
     );
+
     const internals = {
       widgetId,
       variation: undefined,
@@ -239,7 +237,8 @@ class StudyUtils {
       this._internals = this._createInternals();
     }
 
-    log.debug(`setting up!` /*  ${JSON.stringify(studySetup)}` */);
+    log.debug(`setting up! -- ${JSON.stringify(studySetup)}`);
+
     if (this._internals.isSetup) {
       throw new ExtensionError("StudyUtils is already setup");
     }
@@ -268,7 +267,8 @@ class StudyUtils {
       await studyUtils.firstSeen();
     }
 
-    // TODO, is allowed  to enroll?
+    // Note: is allowed  to enroll is handled at API.
+    // FIXME: 5.1 maybe do it here?
     return this;
   }
 
@@ -311,8 +311,11 @@ class StudyUtils {
     Preferences.reset(pref);
   }
 
+  /** Calculate time left in study given `studySetup.expire.days` and firstRunTimestamp
+   *
+   * @return {Number} timeUntilExpire Either the time left or Number.MAX_SAFE_INTEGER
+   */
   getTimeUntilExpire() {
-    // TODO claim always returns, just an absurd number if unset
     const days = this._internals.studySetup.expire.days;
     if (days) {
       // days in ms
@@ -322,6 +325,7 @@ class StudyUtils {
     }
     return Number.MAX_SAFE_INTEGER; // approx 286,000 years
   }
+
   /**
    * @async
    * Gets the telemetry client ID for the user.
@@ -342,7 +346,7 @@ class StudyUtils {
    */
   getShieldId() {
     const key = "extensions.shield-recipe-client.user_id";
-    return Services.prefs.getCharPref(key, "");
+    return Services.prefs.getStringPref(key, "");
   }
 
   /**
@@ -369,7 +373,6 @@ class StudyUtils {
    * Get the telemetry configuration for the study.
    * @returns {Object} - the telemetry cofiguration, see schema.studySetup.json
    */
-  // TODO glind, maybe this is getter / setter?
   get telemetryConfig() {
     this.throwIfNotSetup("telemetryConfig");
     return this._internals.studySetup.telemetry;
@@ -488,6 +491,7 @@ class StudyUtils {
 
     // we know what this ending is.
     // also handle default endings.
+
     const alwaysHandle = ["ineligible", "expired", "user-disable"];
     let ending = this._internals.studySetup.endings[endingName];
     if (!ending) {
@@ -634,7 +638,6 @@ class StudyUtils {
     };
 
     let validation;
-    /* istanbul ignore next */
     try {
       validation = jsonschema.validate(payload, schemas[bucket]);
     } catch (err) {
@@ -657,22 +660,19 @@ class StudyUtils {
         message: JSON.stringify(validation.errors),
       };
       if (bucket === "shield-study-error") {
-        // log: if it's a warn or error, it breaks jpm test
         log.warn("cannot validate shield-study-error", data, bucket);
         return false; // just die, maybe should have a super escape hatch?
       }
       return this.telemetryError(errorReport);
     }
     log.debug(`telemetry: ${JSON.stringify(payload)}`);
-    // FIXME marcrowo: addClientId makes the ping not appear in test?
-    // seems like a problem with Telemetry, not the shield-study-utils library
 
-    // IFF it's a shield-study ping, which are few in number
+    // IFF it's a shield-study or error ping, which are few in number
     if (bucket === "shield-study" || bucket === "shield-study-error") {
       this._internals.seenTelemetry[bucket].push(payload);
     }
 
-    // Acutally send if wanted.
+    // Acutally send only if desired.
     const telOptions = { addClientId: true, addEnvironment: true };
     if (!this.telemetryConfig.send) {
       log.debug("NOT sending.  `telemetryConfig.send` is false");
@@ -694,7 +694,6 @@ class StudyUtils {
     const toSubmit = {
       attributes: data,
     };
-    // lets check early, and respond with something useful?
     return this._telemetry(toSubmit, "shield-study-addon");
   }
 
@@ -752,6 +751,7 @@ function createLog(name, levelWord) {
   L.level = Log.Level[levelWord] || Log.Level.Debug;
   L.debug("log made", name, levelWord, Log.Level[levelWord]);
 
+  // FIXME 5.1 annoyingly, this defauls to "ALL"
   // L.manageLevelFromPref(prefName) {
   // https://dxr.mozilla.org/mozilla-beta/source/toolkit/modules/Log.jsm
   return L;

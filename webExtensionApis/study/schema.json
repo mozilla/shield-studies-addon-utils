@@ -533,7 +533,7 @@
           "variation": "styleA",
           "firstRunTimestamp": 1523968204184,
           "activeExperimentName": "some experiment",
-          "timeUntilExpire": null
+          "timeUntilExpire": 12
         },
         "parameters": [],
         "returns": [

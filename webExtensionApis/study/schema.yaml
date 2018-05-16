@@ -1,21 +1,16 @@
-# Interface schema
+# Interface schema for `study`
 # https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/schema.html
-# possible types are here
-# - https://searchfox.org/mozilla-central/source/toolkit/components/extensions/Schemas.jsm#2418-2426
 #
 # - properties
 # - functions
 # - events
 # - types
 #
+#
+# possible types are here
+# - https://searchfox.org/mozilla-central/source/toolkit/components/extensions/Schemas.jsm#2418-2426
 # - type property:
 #   boolean, integer, number, string, array, object, or any.
-#
-
-# TODO
-# - add json schema types
-# - do we want to expose any of the sampling / hashing stuff?
-# - mention / decide how to handle all
 
 #
 #  "choices" is a non-standard extension, see:
@@ -27,7 +22,7 @@
 - namespace: study
   description: Interface for Shield and Pioneer studies.
   apiVersion: 5  # for dev use
-  types:   # TODO @glind to actually get this back out of the schemas.json
+  types:
   - id: NullableString
     oneOf: [
       {type: 'null'},
@@ -55,7 +50,7 @@
   - id: weightedVariationsArray
     type: array
     items:
-      # TODO, this is a repeat of weightedVariationObject
+      # FIXME, this is a repeat of weightedVariationObject
       # for unknown reasons probably around id, deref isn't working right
       type: 'object'
       properties:
@@ -213,7 +208,6 @@
         activeExperimentName: aStudy,
         studyType: 'shield',
         expire: { "days": 10},
-        # TODO: sort out endings soon
         endings: {anEnding: {baseUrls: ['some.url']}},
         logLevel: 30,
         weightedVariations: [{name: feature-active, weight: 1.5}],
@@ -223,7 +217,6 @@
         activeExperimentName: aStudy,
         studyType: 'shield',
         expire: { "days": 10},
-        # TODO: sort out endings soon
         endings: {anEnding: {baseUrls: ['some.url']}},
         logLevel: 30,
         weightedVariations: [{name: feature-active, weight: 1.5}],
@@ -233,7 +226,6 @@
       {
         activeExperimentName: aStudy,
         studyType: 'pioneer',
-        # TODO: sort out endings soon
         endings: {anEnding: {baseUrls: ['some.url']}},
         logLevel: 30,
         weightedVariations: [{name: feature-active, weight: 1.5}],
@@ -318,7 +310,7 @@
 
     parameters:
     - name: studySetup
-      $ref: studySetup # TODO, for now, making progress up above
+      $ref: studySetup
 
     returns:
     - $ref: studyInfoObject
@@ -392,7 +384,7 @@
 
       Throws Error if called before `browser.study.setup`
 
-    defaultReturn: {variation: "styleA", firstRunTimestamp: 1523968204184, activeExperimentName: "some experiment", timeUntilExpire: null}  # TODO add rest
+    defaultReturn: {variation: "styleA", firstRunTimestamp: 1523968204184, activeExperimentName: "some experiment", timeUntilExpire: 12}
     parameters: []
     returns:
     - $ref: studyInfoObject
@@ -637,6 +629,8 @@
     parameters: []
 
 
+
+# TODO, are we doing prefs?  Move to prefs file?
 - namespace: prefs
   description: |
     Temporary subset of `Services.prefs` API,
@@ -650,7 +644,8 @@
 
     If a true 'prefs' api lands in tree, this module will be removed.
 
-  apiVersion: 5  # for dev use
+  # non-standard, for use with devs
+  apiVersion: 5
   functions:
   - name: getStringPref
     type: 'function'

@@ -13,6 +13,8 @@ const { EventManager } = ExtensionCommon;
 // eslint-disable-next-line no-undef
 const { EventEmitter, ExtensionError } = ExtensionUtils;
 
+const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+
 /** Event emitter to handle Events defined in the API
  *
  * - onReady
@@ -52,18 +54,32 @@ this.study = class extends ExtensionAPI {
   }
 
   /**
-   * Extension Shutdown
+   * Extension Uninstall
    * APIs that allocate any resources (e.g., adding elements to the browser’s
    * user interface, setting up internal event listeners, etc.) must free
    * these resources when the extension for which they are allocated is
    * shut down.
    *
+   * https://searchfox.org/mozilla-central/source/toolkit/components/extensions/parent/ext-protocolHandlers.js#46
+   *
    * @param {string} shutdownReason one of the reasons
    * @returns {undefined} TODO TODO
    */
-  onShutdown(shutdownReason) {
-    console.log("onShutdown", shutdownReason);
-    // TODO: debootstrap study
+  async onShutdown(shutdownReason) {
+    // let {extension} = this;
+    // let {manifest} = extension;
+    Services.prefs.setStringPref("a.pref", shutdownReason);
+    if (shutdownReason === "ADDON_UNINSTALL") {
+      // TODO NOT WORKING YET
+      // console.log("possible uninstalling", shutdownReason);
+      // const anEndingAlias = "user-disable";
+      // try {
+      //  const endingResponse = await this.studyUtils.endStudy(anEndingAlias);
+      //  await this.studyApiEventEmitter.emitEndStudy(endingResponse);
+      // } catch (e) {
+      //  console.debug(e);
+      // }
+    }
   }
 
   /**
@@ -71,14 +87,16 @@ this.study = class extends ExtensionAPI {
    * @returns {object} api with study, studyTest keys
    */
   getAPI(context) {
-    const { studyUtils } = require("./studyUtils.js");
     // const { PioneerUtils } = require("pioneer-utils/PioneerUtils.jsm");
     // const pioneerUtilsBootstrap = require("./pioneerUtilsBootstrap.js");
 
     const { extension } = this;
 
-    const studyApiEventEmitter = new StudyApiEventEmitter();
+    const { studyUtils } = require("./studyUtils.js");
+    // const { PioneerUtils } = require("pioneer-utils/PioneerUtils.jsm");
+    // const pioneerUtilsBootstrap = require("./pioneerUtilsBootstrap.js");
 
+    const studyApiEventEmitter = new StudyApiEventEmitter();
     // once.  Used for pref naming, telemetry
     studyUtils.setExtensionManifest(extension.manifest);
     studyUtils.reset();
@@ -221,48 +239,14 @@ this.study = class extends ExtensionAPI {
          *
          *  Note:
          *  1.  calling this function multiple time is safe.
-         *  `browser.study` will choose the
+         *  `browser.study` will choose the first in.
+         *  2.  the 'user-disable' case is handled above
+         *  3.  throws if the endStudy fails
          **/
         endStudy: async function endStudy(anEndingAlias) {
-          // TODO: glind handle 2nd time call
           console.log("called endStudy anEndingAlias");
-
           const endingResponse = await studyUtils.endStudy(anEndingAlias);
           studyApiEventEmitter.emitEndStudy(endingResponse);
-
-          // TODO and also send a signal
-
-          /** TODO from the bootstrap.
-           * Shutdown needs to distinguish between USER-DISABLE and other
-           * times that `endStudy` is called.
-           *
-           * studyUtils._isEnding means this is a '2nd shutdown'.
-           *
-           * @param {object} addonData data about the addon
-           * @param {reason} reason A bootstrap addon reason.
-           *
-           * @returns {Promise<void>} Nothing
-           */
-          /* async shutdown(addonData, reason) {
-            console.debug("shutdown", studyUtils.REASONS[reason] || reason);
-
-            const isUninstall =
-              reason === studyUtils.REASONS.ADDON_UNINSTALL ||
-              reason === studyUtils.REASONS.ADDON_DISABLE;
-            if (isUninstall) {
-              this.log.debug("uninstall or disable");
-            }
-
-            if (isUninstall && !studyUtils._isEnding) {
-              // we are the first 'uninstall' requestor => must be user action.
-              this.log.debug("probably: user requested shutdown");
-              studyUtils.endStudy({ reason: "user-disable" });
-            }
-
-            // normal shutdown, or 2nd uninstall request
-          */
-
-          // return { urls: ["url1", "url2"], endingName: "some-reason" };
         },
 
         /* current study configuration, including
@@ -356,7 +340,6 @@ this.study = class extends ExtensionAPI {
           );
           const { searchTelemetryArchive } = require("./telemetry.js");
           return await searchTelemetryArchive(
-            ExtensionError,
             TelemetryArchive,
             searchTelemetryQuery,
           );

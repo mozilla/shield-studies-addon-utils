@@ -2,7 +2,6 @@
 
 const {
   searchTelemetryArchive,
-  SearchError,
 } = require("../webExtensionApis/study/src/telemetry");
 
 const firefox = require("selenium-webdriver/firefox");
@@ -31,24 +30,14 @@ module.exports.telemetry = {
   searchSentTelemetry: async(driver, searchTelemetryQuery) => {
     driver.setContext(Context.CHROME);
     return driver.executeAsyncScript(
-      async(
-        _SearchError,
-        _searchTelemetryArchive,
-        _searchTelemetryQuery,
-        callback,
-      ) => {
+      async(_searchTelemetryArchive, _searchTelemetryQuery, callback) => {
         // eslint-disable-next-line no-eval
         eval(_searchTelemetryArchive);
         Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
         callback(
-          await searchTelemetryArchive(
-            _SearchError,
-            TelemetryArchive,
-            _searchTelemetryQuery,
-          ),
+          await searchTelemetryArchive(TelemetryArchive, _searchTelemetryQuery),
         );
       },
-      SearchError,
       searchTelemetryArchive,
       searchTelemetryQuery,
     );
@@ -66,7 +55,7 @@ module.exports.telemetry = {
     for (const condition of conditionArray) {
       const index = pings.findIndex(ping => condition(ping));
       if (index === -1) {
-        throw new SearchError(condition);
+        continue;
       }
       resultingPings.push(pings[index]);
     }

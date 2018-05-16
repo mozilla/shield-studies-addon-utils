@@ -20,17 +20,12 @@
  * correct ones but not that their order is correct
  *
  *
- * @param {Object} ErrorToThrowClass an ExceptionError from the addon
  * @param {Object<backstagePass>} TelemetryArchive from TelemetryArchive.jsm
  * @param {ObjectsearchTelemetryQuery} searchTelemetryQuery See searchSentTelemetry
  *
  * @returns {Array} Array of found Telemetry Pings
  */
-async function searchTelemetryArchive(
-  ErrorToThrowClass,
-  TelemetryArchive,
-  searchTelemetryQuery,
-) {
+async function searchTelemetryArchive(TelemetryArchive, searchTelemetryQuery) {
   let { type } = searchTelemetryQuery;
   const { n, timestamp, headersOnly } = searchTelemetryQuery;
   // {type, id, timestampCreated}
@@ -42,12 +37,11 @@ async function searchTelemetryArchive(
 
   if (timestamp) pings = pings.filter(p => p.timestampCreated > timestamp);
 
-  pings.sort((a, b) => b.timestampCreated - a.timestampCreated);
-
   if (pings.length === 0) {
     return Promise.resolve([]);
-    // throw new ErrorToThrowClass(searchTelemetryQuery);
   }
+
+  pings.sort((a, b) => b.timestampCreated - a.timestampCreated);
 
   if (n) pings = pings.slice(0, n);
   const pingData = headersOnly
@@ -57,18 +51,8 @@ async function searchTelemetryArchive(
   return Promise.all(pingData);
 }
 
-class SearchError extends Error {
-  constructor(searchTelemetryQuery) {
-    const message = `Could not find ping satisfying query: ${searchTelemetryQuery.toString()}`;
-    super(message);
-    this.message = message;
-    this.name = "SearchError";
-  }
-}
-
 // TODO pings report, from the utility addon
 
 module.exports = {
   searchTelemetryArchive,
-  SearchError,
 };
