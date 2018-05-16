@@ -13,8 +13,6 @@ const { EventManager } = ExtensionCommon;
 // eslint-disable-next-line no-undef
 const { EventEmitter, ExtensionError } = ExtensionUtils;
 
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-
 /** Event emitter to handle Events defined in the API
  *
  * - onReady
@@ -51,6 +49,7 @@ this.study = class extends ExtensionAPI {
      * @type Extension
      */
     this.extension = extension;
+    console.log("constructed!");
   }
 
   /**
@@ -68,17 +67,13 @@ this.study = class extends ExtensionAPI {
   async onShutdown(shutdownReason) {
     // let {extension} = this;
     // let {manifest} = extension;
-    Services.prefs.setStringPref("a.pref", shutdownReason);
+    console.log("possible uninstalling", shutdownReason);
     if (shutdownReason === "ADDON_UNINSTALL") {
-      // TODO NOT WORKING YET
-      // console.log("possible uninstalling", shutdownReason);
-      // const anEndingAlias = "user-disable";
-      // try {
-      //  const endingResponse = await this.studyUtils.endStudy(anEndingAlias);
-      //  await this.studyApiEventEmitter.emitEndStudy(endingResponse);
-      // } catch (e) {
-      //  console.debug(e);
-      // }
+      //TODO NOT WORKING YET
+      console.log("possible uninstalling", shutdownReason);
+      const anEndingAlias = "user-disable";
+      const endingResponse = await this.studyUtils.endStudy(anEndingAlias);
+      await this.studyApiEventEmitter.emitEndStudy(endingResponse);
     }
   }
 
