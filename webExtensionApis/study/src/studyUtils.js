@@ -722,9 +722,11 @@ class StudyUtils {
    * @returns {void}
    */
   uninstall(id) {
-    if (!id) id = this.info().addon.id;
+    if (!id) id = this._extensionManifest.applications.gecko.id;
     if (!id) {
-      this.throwIfNotSetup("uninstall needs addon.id as arg or from setup.");
+      throw new ExtensionError(
+        "uninstall needs addon.id as arg or from setup.",
+      );
     }
     log.debug(`about to uninstall ${id}`);
     AddonManager.getAddonByID(id, addon => addon.uninstall());

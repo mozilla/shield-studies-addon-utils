@@ -497,6 +497,12 @@
       errors:
       - type: array
 
+  - name: uninstall
+    type: function
+    async: true
+    descripton:  Uninstall this addon.
+    parameters: []
+
   # - name: log
   #   type: function
   #   async: true

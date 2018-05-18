@@ -239,7 +239,6 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         callback(_caughtError);
       },
     );
-    console.log(caughtError);
     assert(
       caughtError ===
         "Error: telemetry: this method can't be used until `setup` is called",

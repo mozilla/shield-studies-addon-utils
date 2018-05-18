@@ -49,6 +49,11 @@ this.study = class extends ExtensionAPI {
      * @type Extension
      */
     this.extension = extension;
+    const { studyUtils } = require("./studyUtils.js");
+    this.studyUtils = studyUtils;
+    // const { PioneerUtils } = require("pioneer-utils/PioneerUtils.jsm");
+    // const pioneerUtilsBootstrap = require("./pioneerUtilsBootstrap.js");
+    this.studyApiEventEmitter = new StudyApiEventEmitter();
     console.log("constructed!");
   }
 
@@ -69,8 +74,7 @@ this.study = class extends ExtensionAPI {
     // let {manifest} = extension;
     console.log("possible uninstalling", shutdownReason);
     if (shutdownReason === "ADDON_UNINSTALL") {
-      //TODO NOT WORKING YET
-      console.log("possible uninstalling", shutdownReason);
+      console.log("definitely uninstalling", shutdownReason);
       const anEndingAlias = "user-disable";
       const endingResponse = await this.studyUtils.endStudy(anEndingAlias);
       await this.studyApiEventEmitter.emitEndStudy(endingResponse);
@@ -82,16 +86,9 @@ this.study = class extends ExtensionAPI {
    * @returns {object} api with study, studyTest keys
    */
   getAPI(context) {
-    // const { PioneerUtils } = require("pioneer-utils/PioneerUtils.jsm");
-    // const pioneerUtilsBootstrap = require("./pioneerUtilsBootstrap.js");
-
     const { extension } = this;
+    const { studyUtils, studyApiEventEmitter } = this;
 
-    const { studyUtils } = require("./studyUtils.js");
-    // const { PioneerUtils } = require("pioneer-utils/PioneerUtils.jsm");
-    // const pioneerUtilsBootstrap = require("./pioneerUtilsBootstrap.js");
-
-    const studyApiEventEmitter = new StudyApiEventEmitter();
     // once.  Used for pref naming, telemetry
     studyUtils.setExtensionManifest(extension.manifest);
     studyUtils.reset();
@@ -353,19 +350,19 @@ this.study = class extends ExtensionAPI {
 
         // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
         /* Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation. */
-        onDataPermissionsChange: new EventManager(
-          context,
-          "study:onDataPermissionsChange",
-          fire => {
-            const listener = (eventReference, updatedPermissions) => {
-              fire.async(updatedPermissions);
-            };
-            studyApiEventEmitter.on("dataPermissionsChange", listener);
-            return () => {
-              studyApiEventEmitter.off("dataPermissionsChange", listener);
-            };
-          },
-        ).api(),
+        // onDataPermissionsChange: new EventManager(
+        //  context,
+        //  "study:onDataPermissionsChange",
+        //  fire => {
+        //    const listener = (eventReference, updatedPermissions) => {
+        //      fire.async(updatedPermissions);
+        //    };
+        //    studyApiEventEmitter.on("dataPermissionsChange", listener);
+        //    return () => {
+        //      studyApiEventEmitter.off("dataPermissionsChange", listener);
+        //    };
+        //  },
+        // ).api(),
 
         // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
         /* Fires when the study is 'ready' for the feature to startup. */
