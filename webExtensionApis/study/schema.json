@@ -543,25 +543,6 @@
         ]
       },
       {
-        "name": "getDataPermissions",
-        "type": "function",
-        "async": true,
-        "description":
-          "object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'",
-        "defaultReturn": {
-          "shield": true,
-          "pioneer": false,
-          "telemetry": true,
-          "alwaysPrivateBrowsing": false
-        },
-        "parameters": [],
-        "returns": [
-          {
-            "$ref": "dataPermissionsObject"
-          }
-        ]
-      },
-      {
         "name": "sendTelemetry",
         "type": "function",
         "description":

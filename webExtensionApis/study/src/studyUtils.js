@@ -35,8 +35,7 @@ ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 const { ExtensionError } = ExtensionUtils;
 
 // TODO, use the logLevel.
-const studyUtilsLoggingLevel = "Trace"; // Fatal: 70, Error: 60, Warn: 50, Info: 40, Config: 30, Debug: 20, Trace: 10, All: -1,
-const log = createLog("shield-study-utils", studyUtilsLoggingLevel);
+const log = createShieldStudyLogger("shield-study-utils");
 
 // telemetry utils
 const CID = Cu.import("resource://gre/modules/ClientID.jsm", null);
@@ -173,6 +172,8 @@ class StudyUtils {
     // internals, also used by `studyTest.getInternals()`
     // either setup() or reset() will create, using extensionManifest
     this._internals = {};
+
+    this._log = log;
   }
 
   _createInternals() {
@@ -707,16 +708,6 @@ class StudyUtils {
   }
 
   /**
-   * Sets the logging level. This is can be called from the addon, even
-   * after the log has been created.
-   * @param {string} descriptor - the Log level (e.g. "trace", "error", ...)
-   * @returns {void}
-   */
-  setLoggingLevel(descriptor) {
-    log.level = Log.Level[descriptor];
-  }
-
-  /**
    * Uninstalls the shield study addon, given its addon id.
    * @param {string} id - the addon id
    * @returns {void}
@@ -742,20 +733,20 @@ class StudyUtils {
  *     github.com/mozilla/shield-study-addon-template)
  *   - Console can create linting errors and warnings.
  * @param {string} name - the name of the Logger instance
- * @param {string} levelWord - the Log level (e.g. "trace", "error", ...)
  * @returns {Object} - the Logger instance, see gre/modules/Log.jsm
  */
-function createLog(name, levelWord) {
+function createShieldStudyLogger(name, level = "Warn") {
   Cu.import("resource://gre/modules/Log.jsm");
+  const prefName = "shieldStudy.logLevel";
   const L = Log.repository.getLogger(name);
   L.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
-  // should be a config / pref
-  L.level = Log.Level[levelWord] || Log.Level.Debug;
-  L.debug("log made", name, levelWord, Log.Level[levelWord]);
-
+  if (!Services.prefs.getStringPref(prefName, undefined)) {
+    Services.prefs.setStringPref(prefName, level);
+  }
   // FIXME 5.1 annoyingly, this defauls to "ALL"
-  // L.manageLevelFromPref(prefName) {
   // https://dxr.mozilla.org/mozilla-beta/source/toolkit/modules/Log.jsm
+  L.manageLevelFromPref(prefName);
+  L.debug("log made", name, L.level);
   return L;
 }
 

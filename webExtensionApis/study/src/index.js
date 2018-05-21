@@ -257,15 +257,14 @@ this.study = class extends ExtensionAPI {
           return studyUtils.info();
         },
 
-        /* object of current dataPermissions with keys shield, pioneer, telemetry, 'ok' */
-        getDataPermissions: async function getDataPermissions() {
-          console.log("called getDataPermissions ");
-          return {
-            shield: true,
-            pioneer: false,
-            telemetry: true,
-            alwaysPrivateBrowsing: false,
-          };
+        /** Uninstall the addon from the webExtension context.
+         *
+         * note: call in response to and onEndStudy.
+         *
+         * @returns {void}
+         */
+        uninstall: async function uninstall() {
+          return studyUtils.uninstall();
         },
 
         /** Send Telemetry using appropriate shield or pioneer methods.

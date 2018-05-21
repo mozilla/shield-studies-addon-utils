@@ -98,6 +98,8 @@ class StudyLifeCycleHandler {
         // uninstall the addon?
         break;
     }
+    // actually remove the addon.
+    await browser.study.uninstall();
   }
 }
 
