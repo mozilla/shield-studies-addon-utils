@@ -295,7 +295,7 @@ this.study = class extends ExtensionAPI {
           }
 
           throwIfInvalid(payload);
-          await studyUtils.telemetry(payload);
+          return studyUtils.telemetry(payload);
         },
 
         /** Search locally stored telemetry pings using these fields (if set)
@@ -320,10 +320,10 @@ this.study = class extends ExtensionAPI {
          */
         async searchSentTelemetry(searchTelemetryQuery) {
           const { TelemetryArchive } = ChromeUtils.import(
-            "resource://gre/modules/TelemetryArchive.jsm",
+            "resource://gre/modules/TelemetryArchive.jsm", {}
           );
           const { searchTelemetryArchive } = require("./telemetry.js");
-          return await searchTelemetryArchive(
+          return searchTelemetryArchive(
             TelemetryArchive,
             searchTelemetryQuery,
           );
@@ -393,7 +393,7 @@ this.study = class extends ExtensionAPI {
         },
 
         async reset() {
-          return await studyUtils.reset();
+          return studyUtils.reset();
         },
 
         async getInternals() {
