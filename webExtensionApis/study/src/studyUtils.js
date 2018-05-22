@@ -23,26 +23,25 @@ const PACKET_VERSION = 3;
 
 const Ajv = require("ajv/dist/ajv.min.js");
 
-const { utils: Cu } = Components;
-Cu.import("resource://gre/modules/Services.jsm");
-Cu.import("resource://gre/modules/Preferences.jsm");
+const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm", {});
+const { Preferences } = ChromeUtils.import("resource://gre/modules/Preferences.jsm", {});
 
-Cu.import("resource://gre/modules/AddonManager.jsm");
+const { AddonManager } = ChromeUtils.import("resource://gre/modules/AddonManager.jsm", {});
 Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
 
-ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
+const { ExtensionUtils } = ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm", {});
 // eslint-disable-next-line no-undef
 const { ExtensionError } = ExtensionUtils;
 
 const log = createShieldStudyLogger("shield-study-utils");
 
 // telemetry utils
-const CID = Cu.import("resource://gre/modules/ClientID.jsm", null);
-const { TelemetryController } = Cu.import(
+const CID = ChromeUtils.import("resource://gre/modules/ClientID.jsm", {});
+const { TelemetryController } = ChromeUtils.import(
   "resource://gre/modules/TelemetryController.jsm",
   null,
 );
-const { TelemetryEnvironment } = Cu.import(
+const { TelemetryEnvironment } = ChromeUtils.import(
   "resource://gre/modules/TelemetryEnvironment.jsm",
   null,
 );
@@ -335,7 +334,7 @@ class StudyUtils {
     const id = TelemetryController.clientID;
     /* istanbul ignore next */
     if (id === undefined) {
-      return await CID.ClientIDImpl._doLoadClientID();
+      return CID.ClientIDImpl._doLoadClientID();
     }
     return id;
   }
@@ -538,14 +537,14 @@ class StudyUtils {
         break;
       default:
         (finalName = ending.category || "ended-neutral"),
-          // call all 'unknowns' as "ended-neutral"
-          await this._telemetry(
-            {
-              study_state: finalName,
-              study_state_fullname: endingName,
-            },
-            "shield-study",
-          );
+        // call all 'unknowns' as "ended-neutral"
+        await this._telemetry(
+          {
+            study_state: finalName,
+            study_state_fullname: endingName,
+          },
+          "shield-study",
+        );
         break;
     }
     await this._telemetry({ study_state: "exit" }, "shield-study");

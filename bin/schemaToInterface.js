@@ -32,8 +32,8 @@ function schema2fakeApi(schemaApiJSON) {
       functionStrings.push(`
       /* ${elem.description || "@TODO no description given"} */
       ${elem.name}: ${["", "async "][Boolean(elem.async) * 1]}function ${
-        elem.name
-      }  ( ${args} ) {
+  elem.name
+}  ( ${args} ) {
         console.log("called ${elem.name} ${args}");
         return ${JSON.stringify(elem.defaultReturn)};
       },`);
