@@ -171,10 +171,6 @@
           $ref: anEndingRequest
       weightedVariations:
         $ref: 'weightedVariationsArray'
-      logLevel:
-        type: "integer"
-        minimum: 0
-        optional: true
       telemetry:
         type: object
         properties:
@@ -200,7 +196,6 @@
     - studyType
     - endings
     - weightedVariations
-    - logLevel
     - telemetry
     additionalProperties: true
     testcases: [
@@ -209,7 +204,6 @@
         studyType: 'shield',
         expire: { "days": 10},
         endings: {anEnding: {baseUrls: ['some.url']}},
-        logLevel: 30,
         weightedVariations: [{name: feature-active, weight: 1.5}],
         telemetry: {  send: false, removeTestingFlag: false}
       },
@@ -218,7 +212,6 @@
         studyType: 'shield',
         expire: { "days": 10},
         endings: {anEnding: {baseUrls: ['some.url']}},
-        logLevel: 30,
         weightedVariations: [{name: feature-active, weight: 1.5}],
         telemetry: {  send: false, removeTestingFlag: false},
         testing: {}
@@ -227,14 +220,13 @@
         activeExperimentName: aStudy,
         studyType: 'pioneer',
         endings: {anEnding: {baseUrls: ['some.url']}},
-        logLevel: 30,
         weightedVariations: [{name: feature-active, weight: 1.5}],
         telemetry: {  send: false, removeTestingFlag: true},
         testing: {
           expired: true,
         }
       },
-      {"activeExperimentName":"shield-utils-test-addon@shield.mozilla.org","studyType":"shield","telemetry":{"send":true,"removeTestingFlag":false},"endings":{"user-disable":{"baseUrls":["http://www.example.com/?reason=user-disable"]},"ineligible":{"baseUrls":["http://www.example.com/?reason=ineligible"]},"expired":{"baseUrls":["http://www.example.com/?reason=expired"]},"dataPermissionsRevoked":{"category":"ended-neutral"},"some-study-defined-ending":{"category":"ended-neutral"},"some-study-defined-ending-with-survey-url":{"baseUrls":["http://www.example.com/?reason=some-study-defined-ending-with-survey-url"],"category":"ended-negative"}},"logLevel":10,"weightedVariations":[{"name":"feature-active","weight":1.5},{"name":"feature-passive","weight":1.5},{"name":"control","weight":1}],"expire":{"days":14},"testing":{},"allowEnroll":true}
+      {"activeExperimentName":"shield-utils-test-addon@shield.mozilla.org","studyType":"shield","telemetry":{"send":true,"removeTestingFlag":false},"endings":{"user-disable":{"baseUrls":["http://www.example.com/?reason=user-disable"]},"ineligible":{"baseUrls":["http://www.example.com/?reason=ineligible"]},"expired":{"baseUrls":["http://www.example.com/?reason=expired"]},"dataPermissionsRevoked":{"category":"ended-neutral"},"some-study-defined-ending":{"category":"ended-neutral"},"some-study-defined-ending-with-survey-url":{"baseUrls":["http://www.example.com/?reason=some-study-defined-ending-with-survey-url"],"category":"ended-negative"}},"weightedVariations":[{"name":"feature-active","weight":1.5},{"name":"feature-passive","weight":1.5},{"name":"control","weight":1}],"expire":{"days":14},"testing":{},"allowEnroll":true}
     ]
 
   - id: telemetryPayload
@@ -502,14 +494,6 @@
     async: true
     descripton:  Uninstall this addon.
     parameters: []
-
-  # - name: log
-  #   type: function
-  #   async: true
-  #   descripton:  Log to the browser.study.logger.  Affected by study logLevel
-  #   parameters:
-  #   - name: thingToLog
-  #     type: [string, array]
 
   # things that would be 'listeners' are 'events' in webExtensions
   # https://github.com/motin/shield-studies-addon-template/blob/convert-to-webextension-experiments/src/privileged/introductionNotificationBar/api.js#L107

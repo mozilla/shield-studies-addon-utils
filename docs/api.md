@@ -575,11 +575,6 @@ Act on it by
     "weightedVariations": {
       "$ref": "weightedVariationsArray"
     },
-    "logLevel": {
-      "type": "integer",
-      "minimum": 0,
-      "optional": true
-    },
     "telemetry": {
       "type": "object",
       "properties": {
@@ -627,7 +622,6 @@ Act on it by
     "studyType",
     "endings",
     "weightedVariations",
-    "logLevel",
     "telemetry"
   ],
   "additionalProperties": true,
@@ -643,7 +637,6 @@ Act on it by
           "baseUrls": ["some.url"]
         }
       },
-      "logLevel": 30,
       "weightedVariations": [
         {
           "name": "feature-active",
@@ -666,7 +659,6 @@ Act on it by
           "baseUrls": ["some.url"]
         }
       },
-      "logLevel": 30,
       "weightedVariations": [
         {
           "name": "feature-active",
@@ -687,7 +679,6 @@ Act on it by
           "baseUrls": ["some.url"]
         }
       },
-      "logLevel": 30,
       "weightedVariations": [
         {
           "name": "feature-active",
@@ -732,7 +723,6 @@ Act on it by
           "category": "ended-negative"
         }
       },
-      "logLevel": 10,
       "weightedVariations": [
         {
           "name": "feature-active",

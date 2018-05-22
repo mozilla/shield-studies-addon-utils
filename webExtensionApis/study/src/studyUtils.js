@@ -34,7 +34,6 @@ ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 // eslint-disable-next-line no-undef
 const { ExtensionError } = ExtensionUtils;
 
-// TODO, use the logLevel.
 const log = createShieldStudyLogger("shield-study-utils");
 
 // telemetry utils

@@ -55,9 +55,6 @@ const studySetup = {
     },
   },
 
-  // logging
-  logLevel: 10,
-
   // Study branches and sample weights, overweighing feature branches
   weightedVariations: [
     {
