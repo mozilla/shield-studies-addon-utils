@@ -139,12 +139,6 @@ Throws Error if called before `browser.study.setup`
 
 **Parameters**
 
-### `browser.study.getDataPermissions( )`
-
-object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'
-
-**Parameters**
-
 ### `browser.study.sendTelemetry( payload )`
 
 Send Telemetry using appropriate shield or pioneer methods.

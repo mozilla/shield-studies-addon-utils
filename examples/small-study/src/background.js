@@ -67,11 +67,14 @@ class StudyLifeCycleHandler {
    * @returns {undefined}
    */
   async enableFeature(studyInfo) {
+    console.log("enabling feature", studyInfo);
     if (studyInfo.timeUntilExpire) {
-      browser.alarm.create(studyInfo.timeUntilExpire, () =>
+      browser.alarms.create(studyInfo.timeUntilExpire, () =>
         browser.study.endStudy("expired"),
       );
     }
+    console.log("want to set title feature", studyInfo.variation.name);
+
     browser.browserAction.setTitle({ title: studyInfo.variation.name });
     console.log(
       `Changed the browser action title to the variation name: ${
@@ -91,15 +94,17 @@ class StudyLifeCycleHandler {
    */
   async handleStudyEnding(ending) {
     console.log(`study wants to end:`, ending);
-    ending.urls.forEach(async url => await browser.tabs.create({ url }));
+    for (const url of ending.urls) {
+      await browser.tabs.create({ url });
+    }
     switch (ending.reason) {
       default:
-        this.cleanup();
+        await this.cleanup();
         // uninstall the addon?
         break;
     }
     // actually remove the addon.
-    await browser.study.uninstall();
+    return browser.study.uninstall();
   }
 }
 

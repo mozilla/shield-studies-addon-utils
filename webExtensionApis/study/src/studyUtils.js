@@ -541,7 +541,7 @@ class StudyUtils {
         break;
       default:
         (finalName = ending.category || "ended-neutral"),
-          // call all 'unknowns' as "ended-neutral"
+        // call all 'unknowns' as "ended-neutral"
         await this._telemetry(
           {
             study_state: finalName,
@@ -726,28 +726,24 @@ class StudyUtils {
 
 /**
  * Creates a log for debugging.
- * Note: Log.jsm is used over Console.log/warn/error because:
- *   - Console has limited log levels
- *   - Console is not pref-controllable. Log can be turned on and off using
- *     studySetup.log (see ./addon/Config.jsm in
- *     github.com/mozilla/shield-study-addon-template)
- *   - Console can create linting errors and warnings.
- * @param {string} name - the name of the Logger instance
- * @returns {Object} - the Logger instance, see gre/modules/Log.jsm
+ *
+ * The pref to control this is "shieldStudy.logLevel"
+ *
+ * @param {string} logPrefix - the name of the Console instance
+ * @param {string} level - level to use by default
+ * @returns {Object} - the Console instance, see gre/modules/Console.jsm
  */
-function createShieldStudyLogger(name, level = "Warn") {
-  Cu.import("resource://gre/modules/Log.jsm");
+function createShieldStudyLogger(logPrefix, level = "Warn") {
   const prefName = "shieldStudy.logLevel";
-  const L = Log.repository.getLogger(name);
-  L.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
-  if (!Services.prefs.getStringPref(prefName, undefined)) {
-    Services.prefs.setStringPref(prefName, level);
-  }
-  // FIXME 5.1 annoyingly, this defauls to "ALL"
-  // https://dxr.mozilla.org/mozilla-beta/source/toolkit/modules/Log.jsm
-  L.manageLevelFromPref(prefName);
-  L.debug("log made", name, L.level);
-  return L;
+  const ConsoleAPI = ChromeUtils.import(
+    "resource://gre/modules/Console.jsm",
+    {},
+  ).ConsoleAPI;
+  return new ConsoleAPI({
+    maxLogLevel: level,
+    maxLogLevelPref: prefName,
+    prefix: logPrefix,
+  });
 }
 
 // TODO, use the usual es6 exports

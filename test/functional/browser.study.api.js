@@ -679,7 +679,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
   });
 
   // TODO 5.1
-  describe.skip("surveyUrl: not yet implemented", function() {
+  describe.skip("5.1?:  surveyUrl: not yet implemented", function() {
     describe("needs setup", function() {
       it("throws StudyNotsSetupError  if not setup");
     });
@@ -689,7 +689,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
   });
 
   // TODO 5.1
-  describe.skip("log", function() {
+  describe.skip("5.1?:  log", function() {
     it("log level works?");
   });
 

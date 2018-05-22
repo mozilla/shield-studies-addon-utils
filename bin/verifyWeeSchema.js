@@ -12,7 +12,7 @@
 const path = require("path");
 
 const proposed = require(path.resolve(process.argv[2]));
-const ajv = new require("ajv")();
+const Ajv = require("ajv");
 
 const { inspect } = require("util");
 // for printing a deeply nested object to node console
@@ -31,6 +31,8 @@ let clean = true;
 //    do their testcase (if any) pass?
 for (const i in proposed) {
   const ns = proposed[i];
+  const ajv = new Ajv({ schemaId: "id", schemas: ns.types });
+
   for (const j in ns.types || []) {
     const type = ns.types[j];
     let valid = ajv.validateSchema(type);
@@ -86,6 +88,7 @@ ${full(tc)}
 // 2. Does every (function|event) 'parameter' have a valid jsonschema?
 for (const i in proposed) {
   const ns = proposed[i];
+  const ajv = new Ajv({ schemaId: "id", schemas: ns.types });
   for (const j in ns.functions || []) {
     const type = ns.functions[j];
     for (const k in type.parameters) {
@@ -117,8 +120,9 @@ for (const i in proposed) {
 }
 
 // 3.  Check it against our not great WEE schema for WEE schemas.
-if (!ajv.validate(wee, proposed)) {
-  console.error(ajv.errors);
+const weeAjv = new Ajv({ schemaId: "id" });
+if (!weeAjv.validate(wee, proposed)) {
+  console.error(weeAjv.errors);
 }
 
 if (clean) console.log(`OK: verifyWeeSchema ${process.argv[2]}`);

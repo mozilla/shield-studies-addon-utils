@@ -3,13 +3,7 @@
 const path = require("path");
 const fs = require("fs-extra");
 
-const files = [
-  // "testUtils",
-  "prefs/api.js",
-  "prefs/schema.json",
-  "study/api.js",
-  "study/schema.json",
-];
+const files = ["study/api.js", "study/schema.json"];
 
 const customHelp = `
   # Additional hints
@@ -46,18 +40,10 @@ function printTemplate(dirname) {
       "schema": "${dirname}/study/schema.json",
       "parent": {
         "scopes": ["addon_parent"],
-        "script": "${dirname}/study/fakeApi.js",
-        "paths": [["study"]]
+        "script": "${dirname}/study/api.js",
+        "paths": [["study", "studyTest"]]
       }
     },
-    "prefs": {
-      "schema": "${dirname}/prefs/schema.json",
-      "parent": {
-        "scopes": ["addon_parent"],
-        "script": "${dirname}/prefs/fakeApi.js",
-        "paths": [["prefs"]]
-      }
-    }
   },
 `;
   process.stdout.write(template);
