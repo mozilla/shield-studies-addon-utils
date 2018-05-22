@@ -807,13 +807,13 @@ Act on it by
 }
 ```
 
-# Namespace: `browser.studyTest`
+# Namespace: `browser.studyDebug`
 
 Interface for Test Utilities
 
 ## Functions
 
-### `browser.studyTest.throwAnException( message )`
+### `browser.studyDebug.throwAnException( message )`
 
 Throws an exception from a privileged function - for making sure that we can catch these in our web extension
 
@@ -824,7 +824,7 @@ Throws an exception from a privileged function - for making sure that we can cat
   * $ref:
   * optional: false
 
-### `browser.studyTest.throwAnExceptionAsync( message )`
+### `browser.studyDebug.throwAnExceptionAsync( message )`
 
 Throws an exception from a privileged async function - for making sure that we can catch these in our web extension
 
@@ -835,15 +835,15 @@ Throws an exception from a privileged async function - for making sure that we c
   * $ref:
   * optional: false
 
-### `browser.studyTest.firstSeen( )`
+### `browser.studyDebug.firstSeen( )`
 
 **Parameters**
 
-### `browser.studyTest.setActive( )`
+### `browser.studyDebug.setActive( )`
 
 **Parameters**
 
-### `browser.studyTest.startup( details )`
+### `browser.studyDebug.startup( details )`
 
 **Parameters**
 
@@ -852,7 +852,7 @@ Throws an exception from a privileged async function - for making sure that we c
   * $ref:
   * optional: false
 
-### `browser.studyTest.setFirstRunTimestamp( timestamp )`
+### `browser.studyDebug.setFirstRunTimestamp( timestamp )`
 
 Set the pref for firstRunTimestamp, to simulate:
 
@@ -866,13 +866,13 @@ Set the pref for firstRunTimestamp, to simulate:
   * $ref:
   * optional: false
 
-### `browser.studyTest.reset( )`
+### `browser.studyDebug.reset( )`
 
 Reset the studyUtils \_internals, for debugging purposes.
 
 **Parameters**
 
-### `browser.studyTest.getInternals( )`
+### `browser.studyDebug.getInternals( )`
 
 Return `_internals` of the studyUtils object.
 

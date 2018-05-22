@@ -161,8 +161,8 @@ class StudyUtils {
    * - endingRequested: string of ending name
    * - endingReturns: object with useful ending instructions
    *
-   * Returned by `studyTest.getInternals()` for testing
-   * Reset by `studyTest.reset`  and `studyUtils.reset`
+   * Returned by `studyDebug.getInternals()` for testing
+   * Reset by `studyDebug.reset`  and `studyUtils.reset`
    *
    * About: `this._extensionManifest`
    * - mirrors the extensionManifest at the time of api creation
@@ -179,7 +179,7 @@ class StudyUtils {
 
     this._extensionManifest = {};
 
-    // internals, also used by `studyTest.getInternals()`
+    // internals, also used by `studyDebug.getInternals()`
     // either setup() or reset() will create, using extensionManifest
     this._internals = {};
   }

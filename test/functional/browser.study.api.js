@@ -31,7 +31,7 @@ const KEEPOPEN = process.env.KEEPOPEN;
  *  1. If something breaks / test fails, fx will stay open (`--bail`).
  *     Look in the BrowserConsole
  *  2. Callback with a complex object if you need a lot of return values
- *  3. Recall that `studyTest` exists for doing resets, getting internals, etc
+ *  3. Recall that `studyDebug` exists for doing resets, getting internals, etc
  */
 
 // TODO create new profile per test?
@@ -125,8 +125,8 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
   async function resetStudy() {
     console.debug("resetting");
     const reset = await addonExec(async function(cb) {
-      await browser.studyTest.reset();
-      const internals = await browser.studyTest.getInternals();
+      await browser.studyDebug.reset();
+      const internals = await browser.studyDebug.getInternals();
       return cb(internals);
     });
     assert(reset.isSetup === false);
@@ -151,10 +151,10 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert(hasAccessToShieldUtilsWebExtensionApi);
     });
 
-    it("should be able to access studyTest WebExtensions API from the extension page for tests", async () => {
+    it("should be able to access studyDebug WebExtensions API from the extension page for tests", async () => {
       const hasAccessToShieldUtilsWebExtensionApi = await addonExec(
         async callback => {
-          callback(browser && typeof browser.studyTest === "object");
+          callback(browser && typeof browser.studyDebug === "object");
         },
       );
       assert(hasAccessToShieldUtilsWebExtensionApi);
@@ -185,7 +185,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
           let _caughtError = null;
 
           try {
-            browser.studyTest.throwAnException("An exception thrown for test purposes");
+            browser.studyDebug.throwAnException("An exception thrown for test purposes");
             callback(false);
           } catch (e) {
             // console.debug("Caught error", e);
@@ -206,7 +206,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
           let _caughtError = null;
 
           try {
-            await browser.studyTest.throwAnExceptionAsync(
+            await browser.studyDebug.throwAnExceptionAsync(
               "An async exception thrown for test purposes",
             );
             callback(false);
@@ -254,7 +254,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       const data = await addonExec(async (setup, cb) => {
         // this is what runs in the webExtension scope.
         const info = await browser.study.setup(setup);
-        const internals = await browser.studyTest.getInternals();
+        const internals = await browser.studyDebug.getInternals();
         // call back with all the data we care about to Mocha / node
         cb({ info, internals });
       }, thisSetup);
@@ -285,9 +285,9 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       const data = await addonExec(
         async (setup, nowTs, cb) => {
           // this is what runs in the webExtension scope.
-          await browser.studyTest.setFirstRunTimestamp(nowTs);
+          await browser.studyDebug.setFirstRunTimestamp(nowTs);
           const info = await browser.study.setup(setup);
-          const internals = await browser.studyTest.getInternals();
+          const internals = await browser.studyDebug.getInternals();
           // call back with all the data we care about to Mocha / node
           cb({ info, internals });
         },
@@ -329,7 +329,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       const data = await addonExec(async (setup, cb) => {
         // this is what runs in the webExtension scope.
         const info = await browser.study.setup(setup);
-        const internals = await browser.studyTest.getInternals();
+        const internals = await browser.studyDebug.getInternals();
         // call back with all the data we care about to Mocha / node
         cb({ info, internals });
       }, thisSetup);

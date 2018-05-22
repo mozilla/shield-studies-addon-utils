@@ -691,7 +691,7 @@
     ]
   },
   {
-    "namespace": "studyTest",
+    "namespace": "studyDebug",
     "description": "Interface for Test Utilities",
     "apiVersion": 5,
     "functions": [

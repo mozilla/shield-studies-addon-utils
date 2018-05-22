@@ -78,7 +78,7 @@ this.study = class extends ExtensionAPI {
 
   /**
    * @param {object} context the addon context
-   * @returns {object} api with study, studyTest keys
+   * @returns {object} api with study, studyDebug keys
    */
   getAPI(context) {
     const { extension } = this;
@@ -373,7 +373,7 @@ this.study = class extends ExtensionAPI {
         }).api(),
       },
 
-      studyTest: {
+      studyDebug: {
         throwAnException(message) {
           throw new ExtensionError(message);
         },

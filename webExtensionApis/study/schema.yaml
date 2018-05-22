@@ -536,7 +536,7 @@
       type: object
 
 
-- namespace:  studyTest
+- namespace:  studyDebug
   description: Interface for Test Utilities
   apiVersion: 5  # for dev use
   functions:
