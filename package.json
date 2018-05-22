@@ -20,7 +20,7 @@
     "doctoc": "^1.3.1",
     "eslint": "4.19.1",
     "eslint-plugin-json": "^1.2.0",
-    "eslint-plugin-mozilla": "^0.4.0",
+    "eslint-plugin-mozilla": "^0.13.0",
     "eslint-plugin-no-unsanitized": "^3.0.2",
     "fixpack": "^2.3.1",
     "fx-runner": "^1.0.7",
@@ -55,7 +55,7 @@
   "license": "MPL-2.0",
   "main": "src/index.js",
   "pre-commit": [
-    "format"
+    "# format"
   ],
   "repository": {
     "type": "git",

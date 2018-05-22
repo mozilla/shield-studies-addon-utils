@@ -135,14 +135,14 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
   }
 
   describe("testing infrastructure works", function() {
-    it("should be able to access window.browser from the extension page for tests", async() => {
+    it("should be able to access window.browser from the extension page for tests", async () => {
       const hasAccessToWebExtensionApi = await addonExec(async callback => {
         callback(typeof browser === "object");
       });
       assert(hasAccessToWebExtensionApi);
     });
 
-    it("should be able to access study WebExtensions API from the extension page for tests", async() => {
+    it("should be able to access study WebExtensions API from the extension page for tests", async () => {
       const hasAccessToShieldUtilsWebExtensionApi = await addonExec(
         async callback => {
           callback(browser && typeof browser.study === "object");
@@ -151,7 +151,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert(hasAccessToShieldUtilsWebExtensionApi);
     });
 
-    it("should be able to access studyTest WebExtensions API from the extension page for tests", async() => {
+    it("should be able to access studyTest WebExtensions API from the extension page for tests", async () => {
       const hasAccessToShieldUtilsWebExtensionApi = await addonExec(
         async callback => {
           callback(browser && typeof browser.studyTest === "object");
@@ -160,7 +160,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert(hasAccessToShieldUtilsWebExtensionApi);
     });
 
-    it("should be able to catch exceptions thrown in the WebExtension", async() => {
+    it("should be able to catch exceptions thrown in the WebExtension", async () => {
       const caughtError = await addonExec(async callback => {
         let _caughtError = null;
 
@@ -199,7 +199,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
     });
     */
 
-    it("should be able to catch exceptions thrown in an async WebExtensions API method", async() => {
+    it("should be able to catch exceptions thrown in an async WebExtensions API method", async () => {
       const caughtError = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
         driver,
         async callback => {
@@ -223,7 +223,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
     });
   });
 
-  it("should not be able to send telemetry before setup", async() => {
+  it("should not be able to send telemetry before setup", async () => {
     const caughtError = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
       driver,
       async callback => {
@@ -251,7 +251,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
 
     it("1.  firstRun, expire.days, allowEnroll, !testing.expired should: isFirstRun, should: pings enter,install", async function() {
       const thisSetup = studySetupForTests();
-      const data = await addonExec(async(setup, cb) => {
+      const data = await addonExec(async (setup, cb) => {
         // this is what runs in the webExtension scope.
         const info = await browser.study.setup(setup);
         const internals = await browser.studyTest.getInternals();
@@ -283,7 +283,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       const now = Number(Date.now());
       const thisSetup = studySetupForTests({});
       const data = await addonExec(
-        async(setup, nowTs, cb) => {
+        async (setup, nowTs, cb) => {
           // this is what runs in the webExtension scope.
           await browser.studyTest.setFirstRunTimestamp(nowTs);
           const info = await browser.study.setup(setup);
@@ -326,7 +326,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       const thisSetup = studySetupForTests({
         allowEnroll: false,
       });
-      const data = await addonExec(async(setup, cb) => {
+      const data = await addonExec(async (setup, cb) => {
         // this is what runs in the webExtension scope.
         const info = await browser.study.setup(setup);
         const internals = await browser.studyTest.getInternals();
@@ -388,7 +388,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
 
     before(async function resetSetupDoTelemetryAndWait() {
       await resetStudy();
-      studyInfo = await addonExec(async(_studySetupForTests, callback) => {
+      studyInfo = await addonExec(async (_studySetupForTests, callback) => {
         // Ensure we have a configured study and are supposed to run our feature
         browser.study.onReady.addListener(async _studyInfo => {
           await browser.study.sendTelemetry({ foo: "bar" });
@@ -399,7 +399,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       await delay(1000); // wait a second to telemetry to settle on disk.
     });
 
-    it("should fire the onReady event upon successful setup", async() => {
+    it("should fire the onReady event upon successful setup", async () => {
       console.debug(studyInfo);
       assert.equal(
         studyInfo.activeExperimentName,
@@ -409,7 +409,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
 
     describe("telemetry archive / controller effects", function() {
       let studyPings;
-      before(async() => {
+      before(async () => {
         studyPings = await addonExec(async callback => {
           const _studyPings = await browser.study.searchSentTelemetry({
             type: ["shield-study", "shield-study-addon"],
@@ -421,7 +421,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         // console.debug("Pings report: ", utils.telemetry.pingsReport(studyPings));
       });
 
-      it("should have set the experiment to active in Telemetry", async() => {
+      it("should have set the experiment to active in Telemetry", async () => {
         const activeExperiments = await utils.telemetry.getActiveExperiments(
           driver,
         );
@@ -431,7 +431,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         );
       });
 
-      it("shield-study-addon telemetry should be working (as seen by telemetry)", async() => {
+      it("shield-study-addon telemetry should be working (as seen by telemetry)", async () => {
         const shieldTelemetryPings = await addonExec(async callback => {
           const _studyPings = await browser.study.searchSentTelemetry({
             type: ["shield-study-addon"],
@@ -442,11 +442,11 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         assert(shieldTelemetryPings[0].data.attributes.foo === "bar");
       });
 
-      it("should have sent at least one shield telemetry ping", async() => {
+      it("should have sent at least one shield telemetry ping", async () => {
         assert(studyPings.length > 0, "at least one shield telemetry ping");
       });
 
-      it("should have sent one shield-study telemetry ping with study_state=enter", async() => {
+      it("should have sent one shield-study telemetry ping with study_state=enter", async () => {
         const filteredPings = utils.telemetry.filterPings(
           [
             ping =>
@@ -461,7 +461,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         );
       });
 
-      it("should have sent one shield-study telemetry ping with study_state=installed", async() => {
+      it("should have sent one shield-study telemetry ping with study_state=installed", async () => {
         const filteredPings = utils.telemetry.filterPings(
           [
             ping =>
@@ -476,7 +476,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         );
       });
 
-      it("should have sent one shield-study-addon telemetry ping with payload.data.attributes.foo=bar", async() => {
+      it("should have sent one shield-study-addon telemetry ping with payload.data.attributes.foo=bar", async () => {
         const filteredPings = utils.telemetry.filterPings(
           [
             ping =>
@@ -494,7 +494,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
 
     describe("browser.study.endStudy() side effects for first time called", function() {
       let endingResult;
-      before(async() => {
+      before(async () => {
         endingResult = await addonExec(async callback => {
           browser.study.onEndStudy.addListener(async _endingResult => {
             callback(_endingResult);
@@ -512,7 +512,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         assert.equal(endingResult.urls.length, 1);
       });
 
-      it("should have set the experiment as inactive", async() => {
+      it("should have set the experiment as inactive", async () => {
         const activeExperiments = await utils.telemetry.getActiveExperiments(
           driver,
         );
@@ -546,7 +546,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       describe("should have sent the expected exit telemetry", function() {
         let studyPings;
 
-        before(async() => {
+        before(async () => {
           studyPings = await utils.telemetry.searchSentTelemetry(driver, {
             type: ["shield-study", "shield-study-addon"],
           });
@@ -555,7 +555,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
           // console.debug("Final pings report: ", utils.telemetry.pingsReport(studyPings));
         });
 
-        it("one shield-study telemetry ping with study_state=exit", async() => {
+        it("one shield-study telemetry ping with study_state=exit", async () => {
           const filteredPings = utils.telemetry.filterPings(
             [
               ping =>
@@ -570,7 +570,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
           );
         });
 
-        it("one shield-study telemetry ping with study_state_fullname=customEnding", async() => {
+        it("one shield-study telemetry ping with study_state_fullname=customEnding", async () => {
           const filteredPings = utils.telemetry.filterPings(
             [
               ping =>

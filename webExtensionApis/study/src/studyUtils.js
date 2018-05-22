@@ -538,14 +538,14 @@ class StudyUtils {
         break;
       default:
         (finalName = ending.category || "ended-neutral"),
-        // call all 'unknowns' as "ended-neutral"
-        await this._telemetry(
-          {
-            study_state: finalName,
-            study_state_fullname: endingName,
-          },
-          "shield-study",
-        );
+          // call all 'unknowns' as "ended-neutral"
+          await this._telemetry(
+            {
+              study_state: finalName,
+              study_state_fullname: endingName,
+            },
+            "shield-study",
+          );
         break;
     }
     await this._telemetry({ study_state: "exit" }, "shield-study");

@@ -1,5 +1,7 @@
-const { utils: Cu } = Components;
-Cu.import("resource://gre/modules/Services.jsm");
+const { Services } = ChromeUtils.import(
+  "resource://gre/modules/Services.jsm",
+  {},
+);
 const { TextEncoder } = Cu.getGlobalForObject(Services);
 
 /**

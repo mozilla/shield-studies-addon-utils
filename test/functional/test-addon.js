@@ -17,7 +17,7 @@ describe("Tests verifying that the test add-on works as expected", function() {
 
   let driver;
 
-  before(async() => {
+  before(async () => {
     driver = await utils.setupWebdriver.promiseSetupDriver(
       utils.FIREFOX_PREFERENCES,
     );
@@ -29,7 +29,7 @@ describe("Tests verifying that the test add-on works as expected", function() {
   // leaving the browser open allowing inspection of the ui and browser logs
   after(() => driver.quit());
 
-  it("should be able to access window.browser from the extension page for tests", async() => {
+  it("should be able to access window.browser from the extension page for tests", async () => {
     const hasAccessToWebExtensionApi = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
       driver,
       async callback => {
@@ -39,7 +39,7 @@ describe("Tests verifying that the test add-on works as expected", function() {
     assert(hasAccessToWebExtensionApi);
   });
 
-  it("should be able to access study WebExtensions API from the extension page for tests", async() => {
+  it("should be able to access study WebExtensions API from the extension page for tests", async () => {
     const hasAccessToShieldUtilsWebExtensionApi = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
       driver,
       async callback => {
@@ -53,7 +53,7 @@ describe("Tests verifying that the test add-on works as expected", function() {
     /**
      * Before running the tests in this group, trigger onEveryExtensionLoad and wait for the study to be running
      */
-    before(async() => {
+    before(async () => {
       await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
         driver,
         async callback => {

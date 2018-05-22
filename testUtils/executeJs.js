@@ -46,14 +46,14 @@ module.exports.executeJs = {
    * @param {function} passedArgument If defined, pass to callable
    * @returns {Promise<*>} result of callable(passedArgument)
    */
-  executeAsyncScriptInExtensionPageForTests: async(
+  executeAsyncScriptInExtensionPageForTests: async (
     driver,
     callable,
     ...passedArguments
   ) => {
     driver.setContext(Context.CONTENT);
 
-    const checkIfCurrentlyInExtensionPageWindow = async() => {
+    const checkIfCurrentlyInExtensionPageWindow = async () => {
       const currentUrl = await driver.getCurrentUrl();
       return currentUrl.indexOf(extensionPagePath) > 0;
     };
