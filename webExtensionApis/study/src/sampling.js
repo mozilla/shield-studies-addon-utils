@@ -1,5 +1,7 @@
-const { utils: Cu } = Components;
-Cu.import("resource://gre/modules/Services.jsm");
+const { Services } = ChromeUtils.import(
+  "resource://gre/modules/Services.jsm",
+  {},
+);
 const { TextEncoder } = Cu.getGlobalForObject(Services);
 
 /**
@@ -11,6 +13,7 @@ const { TextEncoder } = Cu.getGlobalForObject(Services);
  * @param {Number} fraction - a number (0 <= fraction < 1)
  * @returns {Object} - the variation object in weightedVariations for the given
  * fraction
+ *
  */
 export function chooseWeighted(weightedVariations, fraction = Math.random()) {
   /*

@@ -4,15 +4,15 @@
   "description": "",
   "main": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "postinstall": "copyStudyUtils src/privileged",
+    "start": "web-ext run --no-reload"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "shield-studies-addon-utils": "file:../.."
   },
-  "scripts": {
-    "studyutils": "copyStudyUtils src/privileged",
-    "start": "web-ext run --no-reload"
+  "dependencies": {
+    "npm": "^6.0.1"
   }
 }

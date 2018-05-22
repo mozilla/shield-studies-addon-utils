@@ -7,10 +7,19 @@
  * If exist, validate all `types` against `testcase`.
  */
 
+// TODO, use assert
+
 const path = require("path");
 
 const proposed = require(path.resolve(process.argv[2]));
-const ajv = new require("ajv")();
+const Ajv = require("ajv");
+
+const { inspect } = require("util");
+// for printing a deeply nested object to node console
+// eslint-disable-next-line no-unused-vars
+function full(myObject) {
+  return inspect(myObject, { showHidden: false, depth: null });
+}
 
 const wee = require(path.resolve(
   path.join(__dirname, "wee-schema-schema.json"),
@@ -22,6 +31,8 @@ let clean = true;
 //    do their testcase (if any) pass?
 for (const i in proposed) {
   const ns = proposed[i];
+  const ajv = new Ajv({ schemaId: "id", schemas: ns.types });
+
   for (const j in ns.types || []) {
     const type = ns.types[j];
     let valid = ajv.validateSchema(type);
@@ -34,16 +45,42 @@ for (const i in proposed) {
     }
 
     // checking test cases if any
-    if (!type.testcase) continue;
-    valid = ajv.validate(type, type.testcase);
-    if (!valid) {
-      clean = false;
-      console.error(
-        `# testcase failed IN ${i}:${j} ${ns.namespace}.${type.name} "${
-          type.id
-        }"`,
-      );
-      console.error(ajv.errors);
+    const testcases = type.testcases || [];
+    if (type.testcase) testcases.push(type.testcase);
+
+    if (!testcases.length) continue;
+
+    for (const tc of testcases) {
+      valid = ajv.validate(type, tc);
+      if (!valid) {
+        clean = false;
+        console.error(
+          `# testcase failed IN ${i}:${j} ${ns.namespace}.${type.name}  "${
+            type.id
+          }"
+
+${full(tc)}
+          `,
+        );
+        console.error(ajv.errors);
+      }
+    }
+
+    // now, known failures
+    for (const tc of type.failcases || []) {
+      valid = ajv.validate(type, tc);
+      if (valid) {
+        clean = false;
+        console.error(
+          `# testcase should not validate IN ${i}:${j} ${ns.namespace}.${
+            type.name
+          }  "${type.id}"
+
+${full(tc)}
+          `,
+        );
+        console.error(ajv.errors);
+      }
     }
   }
 }
@@ -51,6 +88,7 @@ for (const i in proposed) {
 // 2. Does every (function|event) 'parameter' have a valid jsonschema?
 for (const i in proposed) {
   const ns = proposed[i];
+  const ajv = new Ajv({ schemaId: "id", schemas: ns.types });
   for (const j in ns.functions || []) {
     const type = ns.functions[j];
     for (const k in type.parameters) {
@@ -82,8 +120,9 @@ for (const i in proposed) {
 }
 
 // 3.  Check it against our not great WEE schema for WEE schemas.
-if (!ajv.validate(wee, proposed)) {
-  console.error(ajv.errors);
+const weeAjv = new Ajv({ schemaId: "id" });
+if (!weeAjv.validate(wee, proposed)) {
+  console.error(weeAjv.errors);
 }
 
 if (clean) console.log(`OK: verifyWeeSchema ${process.argv[2]}`);

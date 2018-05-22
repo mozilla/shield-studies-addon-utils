@@ -1,12 +1,12 @@
 /* eslint-env commonjs */
-
-/* eslint no-console: off */
-// TODO, pref controlled logger
-
+/* eslint no-logger: off */
 /* global ExtensionAPI */
 
 ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
+
+const { logger, studyUtils } = require("./studyUtils.js");
+logger.log("in index!");
 
 // eslint-disable-next-line no-undef
 const { EventManager } = ExtensionCommon;
@@ -26,12 +26,11 @@ class StudyApiEventEmitter extends EventEmitter {
   }
 
   emitReady(studyInfo) {
-    studyInfo.isFirstRun = true;
     this.emit("ready", studyInfo);
   }
 
-  emitEndStudy(ending) {
-    this.emit("endStudy", ending);
+  emitEndStudy(endingResponse) {
+    this.emit("endStudy", endingResponse);
   }
 }
 
@@ -50,42 +49,49 @@ this.study = class extends ExtensionAPI {
      * @type Extension
      */
     this.extension = extension;
+    this.studyUtils = studyUtils;
+    this.studyApiEventEmitter = new StudyApiEventEmitter();
+    logger.log("constructed!");
   }
 
   /**
-   * Extension Shutdown
+   * Extension Uninstall
    * APIs that allocate any resources (e.g., adding elements to the browser’s
    * user interface, setting up internal event listeners, etc.) must free
    * these resources when the extension for which they are allocated is
    * shut down.
    *
+   * https://searchfox.org/mozilla-central/source/toolkit/components/extensions/parent/ext-protocolHandlers.js#46
+   *
    * @param {string} shutdownReason one of the reasons
    * @returns {undefined} TODO TODO
    */
-  onShutdown(shutdownReason) {
-    console.log("onShutdown", shutdownReason);
-    // TODO: debootstrap study
+  async onShutdown(shutdownReason) {
+    logger.log("possible uninstalling", shutdownReason);
+    if (shutdownReason === "ADDON_UNINSTALL") {
+      logger.log("definitely uninstalling", shutdownReason);
+      const anEndingAlias = "user-disable";
+      const endingResponse = await this.studyUtils.endStudy(anEndingAlias);
+      await this.studyApiEventEmitter.emitEndStudy(endingResponse);
+    }
   }
 
   /**
    * @param {object} context the addon context
-   * @returns {object} api with study, studyTest keys
+   * @returns {object} api with study, studyDebug keys
    */
   getAPI(context) {
-    const { studyUtils } = require("./studyUtils.js");
-    // const { PioneerUtils } = require("pioneer-utils/PioneerUtils.jsm");
-    // const pioneerUtilsBootstrap = require("./pioneerUtilsBootstrap.js");
-
     const { extension } = this;
 
-    const studyApiEventEmitter = new StudyApiEventEmitter();
+    /* eslint no-shadow: off */
+    const { studyUtils, studyApiEventEmitter } = this;
+
+    // once.  Used for pref naming, telemetry
+    studyUtils.setExtensionManifest(extension.manifest);
+    studyUtils.reset();
 
     return {
       study: {
-        /**
-         * Schema.json `functions`
-         */
-
         /** Attempt an setup/enrollment, with these effects:
          *
          *  - sets 'studyType' as Shield or Pioneer
@@ -133,81 +139,56 @@ this.study = class extends ExtensionAPI {
          * @returns {Object<studyInfo>} studyInfo.  See studyInfo
          **/
         setup: async function setup(studySetup) {
-          // TODO check all return values
-
-          // TODO move more of this into utils.
-
-          // 1. augment setup with addon info
-          studySetup.addon = {
-            id: extension.manifest.applications.gecko.id,
-            version: extension.manifest.version,
-          };
-
-          studyUtils.setup(studySetup);
-
+          // 0.  testing overrides, if any
           if (!studySetup.testing) {
             studySetup.testing = {};
           }
 
-          // not set variation
-          const variation =
-            studySetup.weightedVariations[studySetup.testing.variation] ||
-            (await studyUtils.deterministicVariation(
-              studySetup.weightedVariations,
-            ));
+          // 1. addon info for prefs etc.
+          studyUtils.setExtensionManifest(extension.manifest);
 
-          studyUtils.setVariation(variation);
+          // Setup and sets the variation / _internals
+          // incldues possible 'firstRun' handling.
+          await studyUtils.setup(studySetup);
 
-          // TODO move more of this into studyUtils
-          const { startupReason } = extension;
-          console.debug("startup", startupReason);
-
-          // make sure the variation name is set
+          // current studyInfo.
+          let studyInfo = studyUtils.info();
 
           // Check if the user is eligible to run this study using the |isEligible|
           // function when the study is initialized
-          if (
-            startupReason === "ADDON_INSTALL" ||
-            startupReason === "ADDON_UPGRADE"
-          ) {
-            //  telemetry "enter" ONCE
-            studyUtils.firstSeen();
+          if (studyInfo.isFirstRun) {
             if (!studySetup.allowEnroll) {
-              console.debug("User is ineligible, ending study.");
+              logger.debug("User is ineligible, ending study.");
               // 1. uses studySetup.endings.ineligible.url if any,
               // 2. sends UT for "ineligible"
               // 3. then uninstalls addon
-              await studyUtils.endStudy({ reason: "ineligible" });
-              return;
+              await studyUtils.endStudy("ineligible");
+              return studyUtils.info();
             }
           }
 
-          // TODO, allow this key
           if (studySetup.testing.expired) {
-            await studyUtils.endStudy({ reason: "expired" });
-            return;
+            await studyUtils.endStudy("expired");
+            return studyUtils.info();
           }
 
           /*
           * Adds the study to the active list of telemetry experiments,
-          * and sends the "installed" telemetry ping if applicable
+          * and sends the "installed" telemetry ping if applicable,
+          * if it's a firstRun
           */
-          await studyUtils.startup({ reason: startupReason });
+          await studyUtils.startup();
 
-          // log what the study variation and other info is.
-          console.debug(`info ${JSON.stringify(studyUtils.info())}`);
-
+          // update what the study variation and other info is.
+          studyInfo = studyUtils.info();
+          logger.debug(`api info: ${JSON.stringify(studyInfo)}`);
           try {
-            const studyInfo = studyUtils.info();
-            // TODO: Only set true on first run
-            // TODO: glind info should KNOW first run
-            const isFirstRun = true;
-            studyApiEventEmitter.emitReady(studyInfo, isFirstRun);
-            return;
+            studyApiEventEmitter.emitReady(studyInfo);
           } catch (e) {
-            console.error("browser.study.setup error");
-            console.error(e);
+            logger.error("browser.study.setup error");
+            logger.error(e);
           }
+          return studyUtils.info();
         },
 
         /* Signal to browser.study that it should end.
@@ -247,47 +228,14 @@ this.study = class extends ExtensionAPI {
          *
          *  Note:
          *  1.  calling this function multiple time is safe.
-         *  `browser.study` will choose the
+         *  `browser.study` will choose the first in.
+         *  2.  the 'user-disable' case is handled above
+         *  3.  throws if the endStudy fails
          **/
-        endStudy: async function endStudy(anEndingAlias, anEndingObject) {
-          // TODO: glind handle 2nd time call
-          console.log("called endStudy anEndingAlias");
-          return studyUtils.endStudy({
-            reason: anEndingAlias,
-            fullname: anEndingAlias,
-          });
-
-          /** TODO from the bootstrap.
-           * Shutdown needs to distinguish between USER-DISABLE and other
-           * times that `endStudy` is called.
-           *
-           * studyUtils._isEnding means this is a '2nd shutdown'.
-           *
-           * @param {object} addonData data about the addon
-           * @param {reason} reason A bootstrap addon reason.
-           *
-           * @returns {Promise<void>} Nothing
-           */
-          /* async shutdown(addonData, reason) {
-            console.debug("shutdown", studyUtils.REASONS[reason] || reason);
-
-            const isUninstall =
-              reason === studyUtils.REASONS.ADDON_UNINSTALL ||
-              reason === studyUtils.REASONS.ADDON_DISABLE;
-            if (isUninstall) {
-              this.log.debug("uninstall or disable");
-            }
-
-            if (isUninstall && !studyUtils._isEnding) {
-              // we are the first 'uninstall' requestor => must be user action.
-              this.log.debug("probably: user requested shutdown");
-              studyUtils.endStudy({ reason: "user-disable" });
-            }
-
-            // normal shutdown, or 2nd uninstall request
-          */
-
-          // return { urls: ["url1", "url2"], endingName: "some-reason" };
+        endStudy: async function endStudy(anEndingAlias) {
+          logger.log("called endStudy anEndingAlias");
+          const endingResponse = await studyUtils.endStudy(anEndingAlias);
+          studyApiEventEmitter.emitEndStudy(endingResponse);
         },
 
         /* current study configuration, including
@@ -302,27 +250,18 @@ this.study = class extends ExtensionAPI {
          *  Throws ExtensionError if called before `browser.study.setup`
          **/
         getStudyInfo: async function getStudyInfo() {
-          console.log("called getStudyInfo ");
+          logger.log("called getStudyInfo ");
           return studyUtils.info();
-          /*
-          return {
-            variation: "styleA",
-            firstRunTimestamp: 1523968204184,
-            activeExperimentName: "some experiment",
-            timeUntilExpire: null,
-          };
-          */
         },
 
-        /* object of current dataPermissions with keys shield, pioneer, telemetry, 'ok' */
-        getDataPermissions: async function getDataPermissions() {
-          console.log("called getDataPermissions ");
-          return {
-            shield: true,
-            pioneer: false,
-            telemetry: true,
-            alwaysPrivateBrowsing: false,
-          };
+        /** Uninstall the addon from the webExtension context.
+         *
+         * note: call in response to and onEndStudy.
+         *
+         * @returns {void}
+         */
+        uninstall: async function uninstall() {
+          return studyUtils.uninstall();
         },
 
         /** Send Telemetry using appropriate shield or pioneer methods.
@@ -346,7 +285,7 @@ this.study = class extends ExtensionAPI {
          * @returns {undefined}
          */
         sendTelemetry: async function sendTelemetry(payload) {
-          console.log("called sendTelemetry payload");
+          logger.log("called sendTelemetry payload");
 
           function throwIfInvalid(obj) {
             // Check: all keys and values must be strings,
@@ -360,7 +299,7 @@ this.study = class extends ExtensionAPI {
           }
 
           throwIfInvalid(payload);
-          await studyUtils.telemetry(payload);
+          return studyUtils.telemetry(payload);
         },
 
         /** Search locally stored telemetry pings using these fields (if set)
@@ -384,84 +323,27 @@ this.study = class extends ExtensionAPI {
          * @returns {Array<sendTelemetry>} matchingPings
          */
         async searchSentTelemetry(searchTelemetryQuery) {
-          Components.utils.import(
+          const { TelemetryArchive } = ChromeUtils.import(
             "resource://gre/modules/TelemetryArchive.jsm",
+            {},
           );
           const { searchTelemetryArchive } = require("./telemetry.js");
-          return searchTelemetryArchive(
-            ExtensionError,
-            TelemetryArchive,
-            searchTelemetryQuery,
-          );
-        },
-
-        /* Choose a element from `weightedVariations` array
-         *  based on various hashes of clientId
-         *
-         *  - shield:  TBD
-         *  - pioneer: TBD
-         */
-        deterministicVariation: async function deterministicVariation(
-          weightedVariations,
-          algorithm,
-          fraction,
-        ) {
-          console.log(
-            "called deterministicVariation weightedVariations, algorithm, fraction",
-          );
-          return await studyUtils.deterministicVariation(
-            weightedVariations,
-            fraction,
-          );
-          // return "styleA";
-        },
-
-        /** Format url with study covariate queryArgs appended / mixed in.
-         *
-         *  Use this for constructing midpoint surveys.
-         *
-         * @param {String} baseUrl a string base url
-         * @param {Object} additionalFields to be url encodeds
-         * @returns {String} completeUrl
-         */
-        surveyUrl: async function surveyUrl(baseUrl, additionalFields) {
-          console.log("called surveyUrl baseUrl, additionalFields");
-          return "https://example.com?version=59.0&branch=studyA";
+          return searchTelemetryArchive(TelemetryArchive, searchTelemetryQuery);
         },
 
         /* Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client. */
         validateJSON: async function validateJSON(someJson, jsonschema) {
-          console.log("called validateJSON someJson, jsonschema");
-          return { valid: true, errors: [] };
-        },
-
-        /* @TODO no description given */
-        log: async function log(thingToLog) {
-          console.log("called log thingToLog");
-          return undefined;
+          logger.log("called validateJSON someJson, jsonschema");
+          return studyUtils.jsonschema.validate(someJson, jsonschema);
+          // return { valid: true, errors: [] };
         },
 
         /**
          * Schema.json `events`
+         *
+         * See https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
          */
 
-        // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
-        /* Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation. */
-        onDataPermissionsChange: new EventManager(
-          context,
-          "study:onDataPermissionsChange",
-          fire => {
-            const listener = (eventReference, updatedPermissions) => {
-              fire.async(updatedPermissions);
-            };
-            studyApiEventEmitter.on("dataPermissionsChange", listener);
-            return () => {
-              studyApiEventEmitter.off("dataPermissionsChange", listener);
-            };
-          },
-        ).api(),
-
-        // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
         /* Fires when the study is 'ready' for the feature to startup. */
         onReady: new EventManager(context, "study:onReady", fire => {
           const listener = (eventReference, studyInfo) => {
@@ -473,7 +355,6 @@ this.study = class extends ExtensionAPI {
           };
         }).api(),
 
-        // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
         /* Listen for when the study wants to end.
          *
          *  Act on it by
@@ -491,7 +372,8 @@ this.study = class extends ExtensionAPI {
           };
         }).api(),
       },
-      studyTest: {
+
+      studyDebug: {
         throwAnException(message) {
           throw new ExtensionError(message);
         },
@@ -500,8 +382,8 @@ this.study = class extends ExtensionAPI {
           throw new ExtensionError(message);
         },
 
-        async firstSeen() {
-          return studyUtils.firstSeen();
+        async setFirstRunTimestamp(timestamp) {
+          return studyUtils.setFirstRunTimestamp(timestamp);
         },
 
         async setActive() {
@@ -513,7 +395,11 @@ this.study = class extends ExtensionAPI {
         },
 
         async reset() {
-          // return studyUtils.reset();
+          return studyUtils.reset();
+        },
+
+        async getInternals() {
+          return studyUtils._internals;
         },
       },
     };

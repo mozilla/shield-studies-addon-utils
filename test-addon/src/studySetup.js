@@ -35,33 +35,29 @@ const studySetup = {
   endings: {
     /** standard endings */
     "user-disable": {
-      baseUrl: "http://www.example.com/?reason=user-disable",
+      baseUrls: ["http://www.example.com/?reason=user-disable"],
     },
     ineligible: {
-      baseUrl: "http://www.example.com/?reason=ineligible",
+      baseUrls: ["http://www.example.com/?reason=ineligible"],
     },
     expired: {
-      baseUrl: "http://www.example.com/?reason=expired",
+      baseUrls: ["http://www.example.com/?reason=expired"],
     },
     dataPermissionsRevoked: {
-      baseUrl: null,
-      study_state: "ended-neutral",
+      category: "ended-neutral",
     },
 
     /** User defined endings */
     "some-study-defined-ending": {
-      baseUrl: null,
-      study_state: "ended-neutral",
+      category: "ended-neutral",
     },
     "some-study-defined-ending-with-survey-url": {
-      baseUrl:
+      baseUrls: [
         "http://www.example.com/?reason=some-study-defined-ending-with-survey-url",
-      study_state: "ended-negative",
+      ],
+      category: "ended-negative",
     },
   },
-
-  // logging
-  logLevel: 10,
 
   // Study branches and sample weights, overweighing feature branches
   weightedVariations: [
@@ -87,8 +83,8 @@ const studySetup = {
   // Optional: testing overrides.
   // Set from prefs in getStudySetup
   testing: {
-    variation: null,
-    firstRunTimestamp: null,
+    variation: "feature-active",
+    expired: true,
   },
 };
 

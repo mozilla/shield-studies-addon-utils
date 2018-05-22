@@ -17,8 +17,12 @@ Attempt an setup/enrollment, with these effects:
 * Use or choose variation
 
   * `testing.variation` if present
-  * OR deterministicVariation
-    for the studyType using `weightedVariations`
+  * OR (internal) deterministicVariation
+    from `weightedVariations`
+    based on hash of
+
+    * activeExperimentName
+    * clientId
 
 * During firstRun[1] only:
 
@@ -63,7 +67,7 @@ Note:
   * $ref:
   * optional: false
 
-### `browser.study.endStudy( anEndingAlias, anEndingObject )`
+### `browser.study.endStudy( anEndingAlias )`
 
 Signal to browser.study that it should end.
 
@@ -113,15 +117,9 @@ Note:
 **Parameters**
 
 * `anEndingAlias`
-
   * type: anEndingAlias
   * $ref:
   * optional: false
-
-* `anEndingObject`
-  * type: anEndingObject
-  * $ref:
-  * optional: true
 
 ### `browser.study.getStudyInfo( )`
 
@@ -138,12 +136,6 @@ But not:
 * telemetry clientId
 
 Throws Error if called before `browser.study.setup`
-
-**Parameters**
-
-### `browser.study.getDataPermissions( )`
-
-object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'
 
 **Parameters**
 
@@ -204,33 +196,6 @@ Usage scenarios:
   * $ref:
   * optional: false
 
-### `browser.study.deterministicVariation( weightedVariations, algorithm, fraction )`
-
-Choose a element from `weightedVariations` array
-based on various hashes of clientId
-
-* shield: TBD
-* pioneer: TBD
-
-**Parameters**
-
-* `weightedVariations`
-
-  * type: weightedVariations
-  * $ref:
-  * optional: false
-
-* `algorithm`
-
-  * type: algorithm
-  * $ref:
-  * optional: false
-
-* `fraction`
-  * type: fraction
-  * $ref:
-  * optional: true
-
 ### `browser.study.surveyUrl( baseUrl, additionalFields )`
 
 Format url with study covariate queryArgs appended / mixed in.
@@ -267,14 +232,9 @@ Using AJV, do jsonschema validation of an object. Can be used to validate your a
   * $ref:
   * optional: false
 
-### `browser.study.log( thingToLog )`
+### `browser.study.uninstall( )`
 
 **Parameters**
-
-* `thingToLog`
-  * type: thingToLog
-  * $ref:
-  * optional: false
 
 ## Events
 
@@ -321,7 +281,32 @@ Act on it by
 
 ## Data Types
 
-### [0] studyTypesEnum
+### [0] NullableString
+
+```json
+{
+  "id": "NullableString",
+  "oneOf": [
+    {
+      "type": "null"
+    },
+    {
+      "type": "string"
+    }
+  ],
+  "choices": [
+    {
+      "type": "null"
+    },
+    {
+      "type": "string"
+    }
+  ],
+  "testcases": [null, "a string"]
+}
+```
+
+### [1] studyTypesEnum
 
 ```json
 {
@@ -332,11 +317,30 @@ Act on it by
 }
 ```
 
-### [1] weightedVariations
+### [2] weightedVariationObject
 
 ```json
 {
-  "id": "weightedVariations",
+  "id": "weightedVariationObject",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "weight": {
+      "type": "number",
+      "minimum": 0
+    }
+  },
+  "required": ["name", "weight"]
+}
+```
+
+### [3] weightedVariationsArray
+
+```json
+{
+  "id": "weightedVariationsArray",
   "type": "array",
   "items": {
     "type": "object",
@@ -360,22 +364,187 @@ Act on it by
 }
 ```
 
-### [2] anEndingObject
+### [4] anEndingRequest
 
 ```json
 {
-  "id": "anEndingObject",
+  "id": "anEndingRequest",
   "type": "object",
+  "properties": {
+    "fullname": {
+      "$ref": "NullableString",
+      "optional": true
+    },
+    "category": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "enum": ["ended-positive", "ended-neutral", "ended-negative"]
+        }
+      ],
+      "choices": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "enum": ["ended-positive", "ended-neutral", "ended-negative"]
+        }
+      ],
+      "optional": true
+    },
+    "baseUrls": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ],
+      "choices": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ],
+      "optional": true,
+      "default": []
+    },
+    "exacturls": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ],
+      "choices": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ],
+      "optional": "true\ndefault: []"
+    }
+  },
   "additionalProperties": true,
-  "testcase": {
-    "baseUrls": ["some.url"],
-    "endingName": "anEnding",
-    "endingClass": "ended-positive"
+  "testcases": [
+    {
+      "baseUrls": ["some.url"],
+      "fullname": "anEnding",
+      "category": "ended-positive"
+    },
+    {},
+    {
+      "baseUrls": ["some.url"]
+    },
+    {
+      "baseUrls": [],
+      "fullname": null,
+      "category": null
+    }
+  ],
+  "failcases": [
+    {
+      "baseUrls": null,
+      "category": "not okay"
+    }
+  ]
+}
+```
+
+### [5] onEndStudyResponse
+
+```json
+{
+  "id": "onEndStudyResponse",
+  "type": "object",
+  "properties": {
+    "fields": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
   }
 }
 ```
 
-### [3] studySetup
+### [6] studyInfoObject
+
+```json
+{
+  "id": "studyInfoObject",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "variation": {
+      "$ref": "weightedVariationObject"
+    },
+    "firstRunTimestamp": {
+      "type": "number"
+    },
+    "activeExperimentName": {
+      "type": "string"
+    },
+    "timeUntilExpire": {
+      "type": "number"
+    },
+    "isFirstRun": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "variation",
+    "firstRunTimestamp",
+    "activeExperimentName",
+    "isFirstRun"
+  ]
+}
+```
+
+### [7] dataPermissionsObject
+
+```json
+{
+  "id": "dataPermissionsObject",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "shield": {
+      "type": "boolean"
+    }
+  },
+  "required": ["shield"]
+}
+```
+
+### [8] studySetup
 
 ```json
 {
@@ -394,18 +563,17 @@ Act on it by
         "days": {
           "type": "integer"
         }
-      }
+      },
+      "optional": true
     },
     "endings": {
       "type": "object",
-      "additionalProperties": true
+      "additionalProperties": {
+        "$ref": "anEndingRequest"
+      }
     },
     "weightedVariations": {
-      "$ref": "weightedVariations"
-    },
-    "logLevel": {
-      "type": "integer",
-      "minimum": 0
+      "$ref": "weightedVariationsArray"
     },
     "telemetry": {
       "type": "object",
@@ -417,6 +585,36 @@ Act on it by
           "type": "boolean"
         }
       }
+    },
+    "testing": {
+      "type": "object",
+      "properties": {
+        "variationName": {
+          "$ref": "NullableString",
+          "optional": true
+        },
+        "expired": {
+          "choices": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "optional": true
+        }
+      },
+      "additionalProperties": true,
+      "optional": true
     }
   },
   "required": [
@@ -424,37 +622,132 @@ Act on it by
     "studyType",
     "endings",
     "weightedVariations",
-    "logLevel",
     "telemetry"
   ],
   "additionalProperties": true,
-  "testcase": {
-    "activeExperimentName": "aStudy",
-    "studyType": "shield",
-    "expire": {
-      "days": 10
-    },
-    "endings": {
-      "anEnding": {
-        "baseUrl": "some.url"
+  "testcases": [
+    {
+      "activeExperimentName": "aStudy",
+      "studyType": "shield",
+      "expire": {
+        "days": 10
+      },
+      "endings": {
+        "anEnding": {
+          "baseUrls": ["some.url"]
+        }
+      },
+      "weightedVariations": [
+        {
+          "name": "feature-active",
+          "weight": 1.5
+        }
+      ],
+      "telemetry": {
+        "send": false,
+        "removeTestingFlag": false
       }
     },
-    "logLevel": 30,
-    "weightedVariations": [
-      {
-        "name": "feature-active",
-        "weight": 1.5
+    {
+      "activeExperimentName": "aStudy",
+      "studyType": "shield",
+      "expire": {
+        "days": 10
+      },
+      "endings": {
+        "anEnding": {
+          "baseUrls": ["some.url"]
+        }
+      },
+      "weightedVariations": [
+        {
+          "name": "feature-active",
+          "weight": 1.5
+        }
+      ],
+      "telemetry": {
+        "send": false,
+        "removeTestingFlag": false
+      },
+      "testing": {}
+    },
+    {
+      "activeExperimentName": "aStudy",
+      "studyType": "pioneer",
+      "endings": {
+        "anEnding": {
+          "baseUrls": ["some.url"]
+        }
+      },
+      "weightedVariations": [
+        {
+          "name": "feature-active",
+          "weight": 1.5
+        }
+      ],
+      "telemetry": {
+        "send": false,
+        "removeTestingFlag": true
+      },
+      "testing": {
+        "expired": true
       }
-    ],
-    "telemetry": {
-      "send": false,
-      "removeTestingFlag": false
+    },
+    {
+      "activeExperimentName": "shield-utils-test-addon@shield.mozilla.org",
+      "studyType": "shield",
+      "telemetry": {
+        "send": true,
+        "removeTestingFlag": false
+      },
+      "endings": {
+        "user-disable": {
+          "baseUrls": ["http://www.example.com/?reason=user-disable"]
+        },
+        "ineligible": {
+          "baseUrls": ["http://www.example.com/?reason=ineligible"]
+        },
+        "expired": {
+          "baseUrls": ["http://www.example.com/?reason=expired"]
+        },
+        "dataPermissionsRevoked": {
+          "category": "ended-neutral"
+        },
+        "some-study-defined-ending": {
+          "category": "ended-neutral"
+        },
+        "some-study-defined-ending-with-survey-url": {
+          "baseUrls": [
+            "http://www.example.com/?reason=some-study-defined-ending-with-survey-url"
+          ],
+          "category": "ended-negative"
+        }
+      },
+      "weightedVariations": [
+        {
+          "name": "feature-active",
+          "weight": 1.5
+        },
+        {
+          "name": "feature-passive",
+          "weight": 1.5
+        },
+        {
+          "name": "control",
+          "weight": 1
+        }
+      ],
+      "expire": {
+        "days": 14
+      },
+      "testing": {},
+      "allowEnroll": true
     }
-  }
+  ]
 }
 ```
 
-### [4] telemetryPayload
+### [9] telemetryPayload
 
 ```json
 {
@@ -467,7 +760,7 @@ Act on it by
 }
 ```
 
-### [5] searchTelemetryQuery
+### [10] searchTelemetryQuery
 
 ```json
 {
@@ -504,13 +797,23 @@ Act on it by
 }
 ```
 
-# Namespace: `browser.studyTest`
+### [11] anEndingAnswer
+
+```json
+{
+  "id": "anEndingAnswer",
+  "type": "object",
+  "additionalProperties": true
+}
+```
+
+# Namespace: `browser.studyDebug`
 
 Interface for Test Utilities
 
 ## Functions
 
-### `browser.studyTest.throwAnException( message )`
+### `browser.studyDebug.throwAnException( message )`
 
 Throws an exception from a privileged function - for making sure that we can catch these in our web extension
 
@@ -521,7 +824,7 @@ Throws an exception from a privileged function - for making sure that we can cat
   * $ref:
   * optional: false
 
-### `browser.studyTest.throwAnExceptionAsync( message )`
+### `browser.studyDebug.throwAnExceptionAsync( message )`
 
 Throws an exception from a privileged async function - for making sure that we can catch these in our web extension
 
@@ -532,15 +835,15 @@ Throws an exception from a privileged async function - for making sure that we c
   * $ref:
   * optional: false
 
-### `browser.studyTest.firstSeen( )`
+### `browser.studyDebug.firstSeen( )`
 
 **Parameters**
 
-### `browser.studyTest.setActive( )`
+### `browser.studyDebug.setActive( )`
 
 **Parameters**
 
-### `browser.studyTest.startup( details )`
+### `browser.studyDebug.startup( details )`
 
 **Parameters**
 
@@ -548,6 +851,44 @@ Throws an exception from a privileged async function - for making sure that we c
   * type: details
   * $ref:
   * optional: false
+
+### `browser.studyDebug.setFirstRunTimestamp( timestamp )`
+
+Set the pref for firstRunTimestamp, to simulate:
+
+* 2nd run
+* other useful tests around expiration and states.
+
+**Parameters**
+
+* `timestamp`
+  * type: timestamp
+  * $ref:
+  * optional: false
+
+### `browser.studyDebug.reset( )`
+
+Reset the studyUtils \_internals, for debugging purposes.
+
+**Parameters**
+
+### `browser.studyDebug.getInternals( )`
+
+Return `_internals` of the studyUtils object.
+
+Use this for debugging state.
+
+About `this._internals`:
+
+* variation: (chosen variation, `setup` )
+* isEnding: bool `endStudy`
+* isSetup: bool `setup`
+* isFirstRun: bool `setup`, based on pref
+* studySetup: bool `setup` the config
+* seenTelemetry: object of lists of seen telemetry by bucket
+* prefs: object of all created prefs and their names
+
+**Parameters**
 
 ## Events
 

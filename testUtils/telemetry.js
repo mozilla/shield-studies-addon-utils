@@ -2,7 +2,6 @@
 
 const {
   searchTelemetryArchive,
-  SearchError,
 } = require("../webExtensionApis/study/src/telemetry");
 
 const firefox = require("selenium-webdriver/firefox");
@@ -12,9 +11,7 @@ module.exports.telemetry = {
   getActiveExperiments: async driver => {
     driver.setContext(Context.CHROME);
     return driver.executeAsyncScript(async callback => {
-      Components.utils.import(
-        "resource://gre/modules/TelemetryEnvironment.jsm",
-      );
+      ChromeUtils.import("resource://gre/modules/TelemetryEnvironment.jsm");
       callback(TelemetryEnvironment.getActiveExperiments());
     });
   },
@@ -28,33 +25,23 @@ module.exports.telemetry = {
    * @param {object} searchTelemetryQuery (See `broswer.study.searchSentTelemetry`)
    * @returns {Promise<*>} Array of Pings (See `broswer.study.searchSentTelemetry`)
    */
-  searchSentTelemetry: async(driver, searchTelemetryQuery) => {
+  searchSentTelemetry: async (driver, searchTelemetryQuery) => {
     driver.setContext(Context.CHROME);
     return driver.executeAsyncScript(
-      async(
-        _SearchError,
-        _searchTelemetryArchive,
-        _searchTelemetryQuery,
-        callback,
-      ) => {
+      async (_searchTelemetryArchive, _searchTelemetryQuery, callback) => {
         // eslint-disable-next-line no-eval
         eval(_searchTelemetryArchive);
-        Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
+        ChromeUtils.import("resource://gre/modules/TelemetryArchive.jsm");
         callback(
-          await searchTelemetryArchive(
-            _SearchError,
-            TelemetryArchive,
-            _searchTelemetryQuery,
-          ),
+          await searchTelemetryArchive(TelemetryArchive, _searchTelemetryQuery),
         );
       },
-      SearchError,
       searchTelemetryArchive,
       searchTelemetryQuery,
     );
   },
 
-  getShieldPingsAfterTimestamp: async(driver, ts) => {
+  getShieldPingsAfterTimestamp: async (driver, ts) => {
     return module.exports.telemetry.searchSentTelemetry(driver, {
       type: ["shield-study", "shield-study-addon"],
       timestamp: ts,
@@ -66,7 +53,7 @@ module.exports.telemetry = {
     for (const condition of conditionArray) {
       const index = pings.findIndex(ping => condition(ping));
       if (index === -1) {
-        throw new SearchError(condition);
+        continue;
       }
       resultingPings.push(pings[index]);
     }

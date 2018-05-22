@@ -10,20 +10,12 @@
     }
   },
   "experiment_apis": {
-    "prefs": {
-      "schema": "./privileged/prefs/schema.json",
-      "parent": {
-        "scopes": ["addon_parent"],
-        "script": "./privileged/prefs/api.js",
-        "paths": [["prefs"]]
-      }
-    },
     "study": {
       "schema": "./privileged/study/schema.json",
       "parent": {
         "scopes": ["addon_parent"],
         "script": "./privileged/study/api.js",
-        "paths": [["study"], ["studyTest"]]
+        "paths": [["study"], ["studyDebug"]]
       }
     }
   },

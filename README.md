@@ -12,15 +12,18 @@ This is the home of the [`shield-studies-addon-utils` npm package](https://www.n
 
 * WebExtensionExperiment API's
   * `browser.study`
-  * `browser.prefs`
+  * `browser.prefs` (TBD)
 * Additional useful testing utilities
-* `copyStudyUtils` command for using these in your study addon
+
+  * `browser.studyDebug`
+
+* `copyStudyUtils` shell command for using these in your study addon
 
 Allows writing [Shield/Pioneer](https://wiki.mozilla.org/Firefox/Shield/Shield_Studies) ([Normandy](https://wiki.mozilla.org/Firefox/Shield#Normandy_-_User_Profile_Matching_and_Recipe_Deployment)) study WebExension Experiments efficiently.
 
 ## Directory Hightlights
 
-* `webExtensionApis/`
+* `webExtensionApis/study`
 
 Firefox WebExtension Experiments APIs providing capabilities for study add-ons that are yet not available in the built-in WebExtension APIs
 
@@ -39,8 +42,7 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
 ├── bin/
 ├── docs/
 ├── examples/
-│   ├── small-study/
-│   └── test-addon/
+│   └── small-study/
 ├── misc/
 │   └── shield-study-helper-addon/
 ├── package-lock.json
@@ -49,10 +51,7 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
 ├── test-addon/
 ├── testUtils/
 └── webExtensionApis/
-    ├── prefs/
-    │   ├── api.js
-    │   └── schema.json
-    └── study/
+   └── study/
         ├── api.js
         ├── schema.json
         ├── schema.yaml
@@ -62,11 +61,11 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
 
 ## Learn
 
-0.  Read the API: [study api.md](./docs/study/api.md)
+0.  **Read** the API: [study api.md](./docs/study/api.md)
 
-    Documentation of the API. Notice that there are `functions` and `events`.
+    Documentation of the API. Notice that there are `functions`, `events`, `types`.
 
-1.  Explore [`examples/small-study`](./examples/small-study/):
+1.  **Explore** [`examples/small-study`](./examples/small-study/):
 
     * [`manifest.json`](./examples/small-study/src/manifest.json)
 
@@ -80,7 +79,7 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
 
       Using the `browser.study` api within a small instrumented feature.
 
-1.  **Go Bigger**. Check out [mozilla/shield-studies-addon-template/](https://github.com/mozilla/shield-studies-addon-template/) to get started with an example study where `shield-studies-addon-utils` is already installed and configured.
+1.  **Create magic** using [mozilla/shield-studies-addon-template/](https://github.com/mozilla/shield-studies-addon-template/) to get started with an example study where `shield-studies-addon-utils` is already installed and configured.
 
 ## Installing the utils in your add-on
 
@@ -104,14 +103,24 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
     ./node_modules/.bin/copyStudyUtilsToWebExtension ./privileged --example
     ```
 
+    (Suggestion: make this part of your `package.json:scripts.postinstall` script.)
+
+3.  Set logging in `about:config`
+
+    ```
+    shieldStudy.logLevel
+
+    - Trace|Debug|Info|Warn|Error
+    ```
+
 ## Engineering and Process
 
+* Come to Slack: #shield
 * [Shield article on Mozilla Wiki](https://wiki.mozilla.org/Firefox/Shield)
 * [Shield Studies article on Mozilla Wiki](https://wiki.mozilla.org/Firefox/Shield/Shield_Studies)
 * [mozilla/shield-studies-addon-template/](https://github.com/mozilla/shield-studies-addon-template/)
 * [Current work-in-progress docs and launch process](https://github.com/mozilla/shield-studies-addon-utils/issues/93)
 * [Long, rambling engineering docs](./docs/engineering.md)
-* Come to slack: #shield
 
 ## WebExtension APIs
 
@@ -126,7 +135,7 @@ Provides these capabilities:
 3.  **Report feature interaction and success data** using Telemetry
 4.  **Registers/unregisters the study as an active experiment** (By annotating the Telemetry Environment, marking the user as special in the `main` ping).
 5.  **Validates schema for study config**
-6.  **Handles study endings** (endStudy method bundles lots of tasks in one, including appending survey URLs specified in Config.jsm with query strings/sending the user to a survey and uninstalling the add-on)
+6.  **Handles study endings** (`endStudy` method bundles lots of tasks in one, including appending survey URLs specified in Config.jsm with query strings/sending the user to a survey and uninstalling the add-on)
 
 To use, copy `webExtensionApis/study/api.js` and `webExtensionApis/study/schema.json` to your add-on's source directory under `privileged/study`, then add-the following to your add-on's manifest.json:
 
@@ -148,8 +157,14 @@ To use, copy `webExtensionApis/study/api.js` and `webExtensionApis/study/schema.
 Depending on which data processing pipeline the study add-on is configured to use, the pings end up in different destinations:
 
 * `shield` - The pings end up in the `shield-study` and `shield-study-addon` Telemetry buckets for faster analysis.
-* `pioneer` - The pings are encrypted and end up in the Pioneer processing pipeline
-* `custom-telemetry-events` - The pings end up in the ordinary destination for custom telemetry events (Not Yet Implemented)
+* TBD: `pioneer` - The pings are encrypted and end up in the Pioneer processing pipeline
+* TBD: `custom-telemetry-events` - The pings end up in the ordinary destination for custom telemetry events (Not Yet Implemented)
+
+### `browser.studyDebug.*`
+
+[`browser.studyDebug` API documentation](./docs/study/api.md)
+
+Tools for writing tests, getting and resetting StudyUtils iternals.
 
 ### `browser.prefs.*`
 

@@ -1,34 +1,57 @@
-# Interface schema
+# Interface schema for `study`
 # https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/schema.html
-# possible types are here
-# - https://searchfox.org/mozilla-central/source/toolkit/components/extensions/Schemas.jsm#2418-2426
 #
 # - properties
 # - functions
 # - events
 # - types
 #
+#
+# possible types are here
+# - https://searchfox.org/mozilla-central/source/toolkit/components/extensions/Schemas.jsm#2418-2426
 # - type property:
 #   boolean, integer, number, string, array, object, or any.
+
+#
+#  "choices" is a non-standard extension, see:
+#  https://searchfox.org/mozilla-central/source/toolkit/components/extensions/Schemas.jsm
 #
 
-# TODO
-# - add json schema types
-# - do we want to expose any of the sampling / hashing stuff?
-# - mention / decide how to handle all
+
 ---
 - namespace: study
   description: Interface for Shield and Pioneer studies.
   apiVersion: 5  # for dev use
-  types:   # TODO @glind to actually get this back out of the schemas.json
+  types:
+  - id: NullableString
+    oneOf: [
+      {type: 'null'},
+      {type: 'string'}]
+    choices: [
+      {type: 'null'},
+      {type: 'string'}]
+    testcases: [null, 'a string']
+
   - id: studyTypesEnum
     type: string
     enum: ['shield', 'pioneer']
     testcase:  'shield'
 
-  - id: weightedVariations
+  - id: weightedVariationObject
+    type: 'object'
+    properties:
+      name:
+        type: "string"
+      weight:
+        type: "number"
+        minimum: 0
+    required: ["name", "weight"]
+
+  - id: weightedVariationsArray
     type: array
     items:
+      # FIXME, this is a repeat of weightedVariationObject
+      # for unknown reasons probably around id, deref isn't working right
       type: 'object'
       properties:
         name:
@@ -39,14 +62,95 @@
       required: ["name", "weight"]
     testcase: [{name: feature-active, weight: 1.5}]
 
-  - id: anEndingObject
+  - id: anEndingRequest
     # TBD, this is incomplete, and seems a little rocky
     # Should endings be a list?  a map?
     # goal make endStudy and this agree :)
     # what to name the 'return' from endStudy?  EndingInstructions
     type: object
+    properties:
+      fullname:
+        $ref: NullableString
+        optional: true
+      category:
+        oneOf: [
+          {type: 'null'},
+          {type: 'string', enum: ['ended-positive', 'ended-neutral', 'ended-negative']}]
+        choices: [
+          {type: 'null'},
+          {type: 'string', enum: ['ended-positive', 'ended-neutral', 'ended-negative']}]
+        optional: true
+      baseUrls:
+        oneOf: [
+          {type: 'null'},
+          {type: array, items: {type: 'string'}}]
+        choices: [
+          {type: 'null'},
+          {type: array, items: {type: 'string'}}]
+        optional: true
+        default: []
+      exacturls:
+        oneOf: [
+          {type: 'null'},
+          {type: array, items: {type: 'string'}}]
+        choices: [
+          {type: 'null'},
+          {type: array, items: {type: 'string'}}]
+        optional: true
+         default: []
     additionalProperties: true
-    testcase: {baseUrls: ['some.url'], endingName: 'anEnding', endingClass: 'ended-positive'}
+    testcases: [
+      {baseUrls: ['some.url'], fullname: 'anEnding', category: 'ended-positive'},
+      {},
+      {baseUrls: ['some.url']},
+      {baseUrls: [], fullname: null, category: null},
+    ]
+    failcases: [
+      {baseUrls: null, category: "not okay"},
+    ]
+
+  - id: onEndStudyResponse
+    type: object
+    properties:
+      fields:
+        type: object
+        additionalProperties: true
+      urls:
+        type: 'array'
+        items:
+          type: 'string'
+
+  - id: studyInfoObject
+    type: object
+    additionalProperties: true
+    properties:
+      variation:
+        $ref: "weightedVariationObject"
+      firstRunTimestamp:
+        type: 'number'  # 1523968204184,
+      activeExperimentName:
+        type: string    # some experiment"
+      timeUntilExpire:
+        type:  number
+      isFirstRun:
+        type: 'boolean'
+
+    required:
+    - variation
+    - firstRunTimestamp
+    - activeExperimentName
+    - isFirstRun
+
+  - id: dataPermissionsObject
+    type: object
+    additionalProperties: true
+    properties:
+      shield:
+        type:
+          boolean
+
+    required:
+    - shield
 
   - id: studySetup
     type: object
@@ -60,14 +164,13 @@
         properties:
           days:
             type: 'integer'
+        optional: true
       endings:
         type: object
-        additionalProperties: true
+        additionalProperties:
+          $ref: anEndingRequest
       weightedVariations:
-        $ref: 'weightedVariations'
-      logLevel:
-        type: "integer"
-        minimum: 0
+        $ref: 'weightedVariationsArray'
       telemetry:
         type: object
         properties:
@@ -75,25 +178,56 @@
             type: boolean
           removeTestingFlag:
             type: boolean
+      testing:
+        type: object
+        properties:
+          variationName:
+            $ref: NullableString
+            optional: true
+          expired:
+            choices: [{type: 'null'}, {type: 'boolean'}]
+            oneOf: [{type: 'null'}, {type: 'boolean'}]
+            optional: true
+        additionalProperties: true
+        optional: true
 
     required:
     - activeExperimentName
     - studyType
     - endings
     - weightedVariations
-    - logLevel
     - telemetry
     additionalProperties: true
-    testcase: {
-      activeExperimentName: aStudy,
-      studyType: 'shield',
-      expire: { "days": 10},
-      # TODO: sort out endings soon
-      endings: {anEnding: {baseUrl: 'some.url'}},
-      logLevel: 30,
-      weightedVariations: [{name: feature-active, weight: 1.5}],
-      telemetry: {  send: false, removeTestingFlag: false}
-    }
+    testcases: [
+      {
+        activeExperimentName: aStudy,
+        studyType: 'shield',
+        expire: { "days": 10},
+        endings: {anEnding: {baseUrls: ['some.url']}},
+        weightedVariations: [{name: feature-active, weight: 1.5}],
+        telemetry: {  send: false, removeTestingFlag: false}
+      },
+      {
+        activeExperimentName: aStudy,
+        studyType: 'shield',
+        expire: { "days": 10},
+        endings: {anEnding: {baseUrls: ['some.url']}},
+        weightedVariations: [{name: feature-active, weight: 1.5}],
+        telemetry: {  send: false, removeTestingFlag: false},
+        testing: {}
+      },
+      {
+        activeExperimentName: aStudy,
+        studyType: 'pioneer',
+        endings: {anEnding: {baseUrls: ['some.url']}},
+        weightedVariations: [{name: feature-active, weight: 1.5}],
+        telemetry: {  send: false, removeTestingFlag: true},
+        testing: {
+          expired: true,
+        }
+      },
+      {"activeExperimentName":"shield-utils-test-addon@shield.mozilla.org","studyType":"shield","telemetry":{"send":true,"removeTestingFlag":false},"endings":{"user-disable":{"baseUrls":["http://www.example.com/?reason=user-disable"]},"ineligible":{"baseUrls":["http://www.example.com/?reason=ineligible"]},"expired":{"baseUrls":["http://www.example.com/?reason=expired"]},"dataPermissionsRevoked":{"category":"ended-neutral"},"some-study-defined-ending":{"category":"ended-neutral"},"some-study-defined-ending-with-survey-url":{"baseUrls":["http://www.example.com/?reason=some-study-defined-ending-with-survey-url"],"category":"ended-negative"}},"weightedVariations":[{"name":"feature-active","weight":1.5},{"name":"feature-passive","weight":1.5},{"name":"control","weight":1}],"expire":{"days":14},"testing":{},"allowEnroll":true}
+    ]
 
   - id: telemetryPayload
     type: object
@@ -110,6 +244,10 @@
     additionalProperties: false
     testcase: {type: ['shield-study-addon', 'shield-study'], n: 100, minimumTimestamp: 1523968204184, headersOnly: false}
 
+  - id: anEndingAnswer
+    type: object
+    additionalProperties: true
+
   functions:
   - name: setup
     type: function
@@ -124,8 +262,12 @@
 
       - Use or choose variation
         - `testing.variation` if present
-        - OR deterministicVariation
-          for the studyType using `weightedVariations`
+        - OR (internal) deterministicVariation
+          from `weightedVariations`
+          based on hash of
+
+          - activeExperimentName
+          - clientId
 
       - During firstRun[1] only:
         - set firstRunTimestamp pref value
@@ -160,7 +302,10 @@
 
     parameters:
     - name: studySetup
-      $ref: studySetup # TODO, for now, making progress up above
+      $ref: studySetup
+
+    returns:
+    - $ref: studyInfoObject
 
   - name: endStudy
     type: function
@@ -209,9 +354,10 @@
     parameters:
     - name: anEndingAlias
       type: 'string'
-    - name: anEndingObject
-      $ref: anEndingObject
-      optional: true
+
+    returns:
+    - $ref: anEndingAnswer
+
 
   ## study / client information things
   - name: getStudyInfo
@@ -230,15 +376,19 @@
 
       Throws Error if called before `browser.study.setup`
 
-    defaultReturn: {variation: "styleA", firstRunTimestamp: 1523968204184, activeExperimentName: "some experiment", timeUntilExpire: null}  # TODO add rest
+    defaultReturn: {variation: "styleA", firstRunTimestamp: 1523968204184, activeExperimentName: "some experiment", timeUntilExpire: 12}
     parameters: []
+    returns:
+    - $ref: studyInfoObject
 
-  - name: getDataPermissions
-    type: function
-    async: true
-    description: object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'
-    defaultReturn: {shield: true, pioneer: false, telemetry: true, alwaysPrivateBrowsing: false}
-    parameters: []
+  # - name: getDataPermissions
+  #   type: function
+  #   async: true
+  #   description: object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'
+  #   defaultReturn: {shield: true, pioneer: false, telemetry: true, alwaysPrivateBrowsing: false}
+  #   parameters: []
+  #   returns:
+  #   - $ref: dataPermissionsObject
 
   # telemetry related things
   - name: sendTelemetry
@@ -267,6 +417,7 @@
       $ref: telemetryPayload
 
     defaultReturn: undefined  # exception if out of policy based on config
+    returns:
 
   - name: searchSentTelemetry
     type: function
@@ -295,25 +446,6 @@
       $ref: searchTelemetryQuery
 
   # utilities
-  - name: deterministicVariation
-    description: |
-      Choose a element from `weightedVariations` array
-      based on various hashes of clientId
-
-      - shield:  TBD
-      - pioneer: TBD
-
-    type: function
-    async: true
-    defaultReturn: "styleA"
-    parameters:
-    - name: weightedVariations
-      $ref: weightedVariations
-    - name: algorithm
-      $ref: studyTypesEnum
-    - name: fraction
-      type: number
-      optional: true
 
   - name: surveyUrl
     type: function
@@ -331,6 +463,9 @@
       type: object
       optional: true
 
+    returns:
+    - type: string
+
   - name: validateJSON
     type: function
     async: true
@@ -339,17 +474,26 @@
     parameters:
     - name: someJson
       type: object
+      additionalProperties: true
     - name: jsonschema
       type: object  # a jsonschema
       descripton: a valid jsonschema object
+      additionalProperties: true
 
-  - name: log
+    # aValidation
+    returns:
+    - type: object
+    - parameters:
+      valid:
+      - type: boolean
+      errors:
+      - type: array
+
+  - name: uninstall
     type: function
     async: true
-    descripton:  Log to the browser.study.logger.  Affected by study logLevel
-    parameters:
-    - name: thingToLog
-      type: [string, array]
+    descripton:  Uninstall this addon.
+    parameters: []
 
   # things that would be 'listeners' are 'events' in webExtensions
   # https://github.com/motin/shield-studies-addon-template/blob/convert-to-webextension-experiments/src/privileged/introductionNotificationBar/api.js#L107
@@ -392,7 +536,7 @@
       type: object
 
 
-- namespace:  studyTest
+- namespace:  studyDebug
   description: Interface for Test Utilities
   apiVersion: 5  # for dev use
   functions:
@@ -433,6 +577,50 @@
       type: object
       additionalProperties: true
 
+  - name: setFirstRunTimestamp
+    type: function
+    async: true
+    description: |
+      Set the pref for firstRunTimestamp, to simulate:
+      - 2nd run
+      - other useful tests around expiration and states.
+
+    parameters:
+    - name: timestamp
+      type: number
+      minimum: 1
+
+  - name: reset
+    type: function
+    async: true
+    description: |
+
+      Reset the studyUtils _internals, for debugging purposes.
+
+    parameters: []
+
+  - name: getInternals
+    type: function
+    async: true
+    description: |
+      Return `_internals` of the studyUtils object.
+
+      Use this for debugging state.
+
+      About `this._internals`:
+      - variation:  (chosen variation, `setup` )
+      - isEnding: bool  `endStudy`
+      - isSetup: bool   `setup`
+      - isFirstRun: bool `setup`, based on pref
+      - studySetup: bool  `setup` the config
+      - seenTelemetry: object of lists of seen telemetry by bucket
+      - prefs: object of all created prefs and their names
+
+    parameters: []
+
+
+
+# TODO, are we doing prefs?  Move to prefs file?
 - namespace: prefs
   description: |
     Temporary subset of `Services.prefs` API,
@@ -446,7 +634,8 @@
 
     If a true 'prefs' api lands in tree, this module will be removed.
 
-  apiVersion: 5  # for dev use
+  # non-standard, for use with devs
+  apiVersion: 5
   functions:
   - name: getStringPref
     type: 'function'

@@ -35,28 +35,25 @@ const studySetup = {
   endings: {
     /** standard endings */
     "user-disable": {
-      baseUrl: "http://www.example.com/?reason=user-disable",
+      baseUrls: ["http://www.example.com/?reason=user-disable"],
     },
     ineligible: {
-      baseUrl: "http://www.example.com/?reason=ineligible",
+      baseUrls: ["http://www.example.com/?reason=ineligible"],
     },
     expired: {
-      baseUrl: "http://www.example.com/?reason=expired",
+      baseUrls: ["http://www.example.com/?reason=expired"],
     },
     dataPermissionsRevoked: {
-      baseUrl: null,
-      study_state: "ended-neutral",
+      baseUrls: [],
+      category: "ended-neutral",
     },
 
     /** User defined endings */
     "some-study-defined-ending": {
-      baseUrl: null,
-      study_state: "ended-neutral",
+      baseUrls: [],
+      category: "ended-neutral",
     },
   },
-
-  // logging
-  logLevel: 10,
 
   // Study branches and sample weights, overweighing feature branches
   weightedVariations: [
@@ -112,8 +109,7 @@ async function shouldAllowEnroll() {
   If false, the study will endStudy with 'ineligible' during `setup`
   */
   // could have other reasons to be eligible, such add-ons, prefs
-  const dataPermissions = await browser.study.dataPermissions();
-  allowed = dataPermissions.shield;
+  allowed = true;
 
   // cache the answer
   await browser.storage.local.set({ allowedToEnroll: allowed });
