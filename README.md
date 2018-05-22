@@ -12,15 +12,18 @@ This is the home of the [`shield-studies-addon-utils` npm package](https://www.n
 
 * WebExtensionExperiment API's
   * `browser.study`
-  * `browser.prefs`
+  * `browser.prefs` (TBD)
 * Additional useful testing utilities
-* `copyStudyUtils` command for using these in your study addon
+
+  * `browser.studyDebug`
+
+* `copyStudyUtils` shell command for using these in your study addon
 
 Allows writing [Shield/Pioneer](https://wiki.mozilla.org/Firefox/Shield/Shield_Studies) ([Normandy](https://wiki.mozilla.org/Firefox/Shield#Normandy_-_User_Profile_Matching_and_Recipe_Deployment)) study WebExension Experiments efficiently.
 
 ## Directory Hightlights
 
-* `webExtensionApis/`
+* `webExtensionApis/study`
 
 Firefox WebExtension Experiments APIs providing capabilities for study add-ons that are yet not available in the built-in WebExtension APIs
 
@@ -39,8 +42,7 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
 ├── bin/
 ├── docs/
 ├── examples/
-│   ├── small-study/
-│   └── test-addon/
+│   └── small-study/
 ├── misc/
 │   └── shield-study-helper-addon/
 ├── package-lock.json
@@ -64,7 +66,7 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
 
 0.  Read the API: [study api.md](./docs/study/api.md)
 
-    Documentation of the API. Notice that there are `functions` and `events`.
+    Documentation of the API. Notice that there are `functions`, `events`, `types`.
 
 1.  Explore [`examples/small-study`](./examples/small-study/):
 
@@ -103,6 +105,8 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
     ```
     ./node_modules/.bin/copyStudyUtilsToWebExtension ./privileged --example
     ```
+
+    (Suggestion: make this part of your `package.json:scripts.postinstall` script.)
 
 ## Engineering and Process
 
@@ -148,8 +152,14 @@ To use, copy `webExtensionApis/study/api.js` and `webExtensionApis/study/schema.
 Depending on which data processing pipeline the study add-on is configured to use, the pings end up in different destinations:
 
 * `shield` - The pings end up in the `shield-study` and `shield-study-addon` Telemetry buckets for faster analysis.
-* `pioneer` - The pings are encrypted and end up in the Pioneer processing pipeline
-* `custom-telemetry-events` - The pings end up in the ordinary destination for custom telemetry events (Not Yet Implemented)
+* TBD: `pioneer` - The pings are encrypted and end up in the Pioneer processing pipeline
+* TBD: `custom-telemetry-events` - The pings end up in the ordinary destination for custom telemetry events (Not Yet Implemented)
+
+### `browser.studyDebug.*`
+
+[`browser.studyDebug` API documentation](./docs/study/api.md)
+
+Tools for writing tests, getting and resetting StudyUtils iternals.d
 
 ### `browser.prefs.*`
 

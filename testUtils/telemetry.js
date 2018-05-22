@@ -11,9 +11,7 @@ module.exports.telemetry = {
   getActiveExperiments: async driver => {
     driver.setContext(Context.CHROME);
     return driver.executeAsyncScript(async callback => {
-      ChromeUtils.import(
-        "resource://gre/modules/TelemetryEnvironment.jsm",
-      );
+      ChromeUtils.import("resource://gre/modules/TelemetryEnvironment.jsm");
       callback(TelemetryEnvironment.getActiveExperiments());
     });
   },

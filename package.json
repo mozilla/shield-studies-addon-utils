@@ -55,7 +55,7 @@
   "license": "MPL-2.0",
   "main": "src/index.js",
   "pre-commit": [
-    "# format"
+    "format"
   ],
   "repository": {
     "type": "git",

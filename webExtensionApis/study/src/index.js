@@ -1,5 +1,5 @@
 /* eslint-env commonjs */
-/* eslint no-console: off */
+/* eslint no-logger: off */
 /* global ExtensionAPI */
 
 ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
@@ -51,7 +51,7 @@ this.study = class extends ExtensionAPI {
     this.extension = extension;
     this.studyUtils = studyUtils;
     this.studyApiEventEmitter = new StudyApiEventEmitter();
-    console.log("constructed!");
+    logger.log("constructed!");
   }
 
   /**
@@ -67,9 +67,9 @@ this.study = class extends ExtensionAPI {
    * @returns {undefined} TODO TODO
    */
   async onShutdown(shutdownReason) {
-    console.log("possible uninstalling", shutdownReason);
+    logger.log("possible uninstalling", shutdownReason);
     if (shutdownReason === "ADDON_UNINSTALL") {
-      console.log("definitely uninstalling", shutdownReason);
+      logger.log("definitely uninstalling", shutdownReason);
       const anEndingAlias = "user-disable";
       const endingResponse = await this.studyUtils.endStudy(anEndingAlias);
       await this.studyApiEventEmitter.emitEndStudy(endingResponse);
@@ -82,6 +82,8 @@ this.study = class extends ExtensionAPI {
    */
   getAPI(context) {
     const { extension } = this;
+
+    /* eslint no-shadow: off */
     const { studyUtils, studyApiEventEmitter } = this;
 
     // once.  Used for pref naming, telemetry
@@ -156,7 +158,7 @@ this.study = class extends ExtensionAPI {
           // function when the study is initialized
           if (studyInfo.isFirstRun) {
             if (!studySetup.allowEnroll) {
-              console.debug("User is ineligible, ending study.");
+              logger.debug("User is ineligible, ending study.");
               // 1. uses studySetup.endings.ineligible.url if any,
               // 2. sends UT for "ineligible"
               // 3. then uninstalls addon
@@ -179,12 +181,12 @@ this.study = class extends ExtensionAPI {
 
           // update what the study variation and other info is.
           studyInfo = studyUtils.info();
-          console.debug(`api info: ${JSON.stringify(studyInfo)}`);
+          logger.debug(`api info: ${JSON.stringify(studyInfo)}`);
           try {
             studyApiEventEmitter.emitReady(studyInfo);
           } catch (e) {
-            console.error("browser.study.setup error");
-            console.error(e);
+            logger.error("browser.study.setup error");
+            logger.error(e);
           }
           return studyUtils.info();
         },
@@ -231,7 +233,7 @@ this.study = class extends ExtensionAPI {
          *  3.  throws if the endStudy fails
          **/
         endStudy: async function endStudy(anEndingAlias) {
-          console.log("called endStudy anEndingAlias");
+          logger.log("called endStudy anEndingAlias");
           const endingResponse = await studyUtils.endStudy(anEndingAlias);
           studyApiEventEmitter.emitEndStudy(endingResponse);
         },
@@ -248,7 +250,7 @@ this.study = class extends ExtensionAPI {
          *  Throws ExtensionError if called before `browser.study.setup`
          **/
         getStudyInfo: async function getStudyInfo() {
-          console.log("called getStudyInfo ");
+          logger.log("called getStudyInfo ");
           return studyUtils.info();
         },
 
@@ -283,7 +285,7 @@ this.study = class extends ExtensionAPI {
          * @returns {undefined}
          */
         sendTelemetry: async function sendTelemetry(payload) {
-          console.log("called sendTelemetry payload");
+          logger.log("called sendTelemetry payload");
 
           function throwIfInvalid(obj) {
             // Check: all keys and values must be strings,
@@ -322,18 +324,16 @@ this.study = class extends ExtensionAPI {
          */
         async searchSentTelemetry(searchTelemetryQuery) {
           const { TelemetryArchive } = ChromeUtils.import(
-            "resource://gre/modules/TelemetryArchive.jsm", {}
+            "resource://gre/modules/TelemetryArchive.jsm",
+            {},
           );
           const { searchTelemetryArchive } = require("./telemetry.js");
-          return searchTelemetryArchive(
-            TelemetryArchive,
-            searchTelemetryQuery,
-          );
+          return searchTelemetryArchive(TelemetryArchive, searchTelemetryQuery);
         },
 
         /* Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client. */
         validateJSON: async function validateJSON(someJson, jsonschema) {
-          console.log("called validateJSON someJson, jsonschema");
+          logger.log("called validateJSON someJson, jsonschema");
           return studyUtils.jsonschema.validate(someJson, jsonschema);
           // return { valid: true, errors: [] };
         },

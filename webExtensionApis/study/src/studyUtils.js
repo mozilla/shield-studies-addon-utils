@@ -23,17 +23,29 @@ const PACKET_VERSION = 3;
 
 const Ajv = require("ajv/dist/ajv.min.js");
 
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm", {});
-const { Preferences } = ChromeUtils.import("resource://gre/modules/Preferences.jsm", {});
+const { Services } = ChromeUtils.import(
+  "resource://gre/modules/Services.jsm",
+  {},
+);
+const { Preferences } = ChromeUtils.import(
+  "resource://gre/modules/Preferences.jsm",
+  {},
+);
 
-const { AddonManager } = ChromeUtils.import("resource://gre/modules/AddonManager.jsm", {});
+const { AddonManager } = ChromeUtils.import(
+  "resource://gre/modules/AddonManager.jsm",
+  {},
+);
 Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
 
-const { ExtensionUtils } = ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm", {});
+const { ExtensionUtils } = ChromeUtils.import(
+  "resource://gre/modules/ExtensionUtils.jsm",
+  {},
+);
 // eslint-disable-next-line no-undef
 const { ExtensionError } = ExtensionUtils;
 
-const logger = this.logger = createShieldStudyLogger("shield-study-utils");
+const logger = (this.logger = createShieldStudyLogger("shield-study-utils"));
 
 // telemetry utils
 const CID = ChromeUtils.import("resource://gre/modules/ClientID.jsm", {});
