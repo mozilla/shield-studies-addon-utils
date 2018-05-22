@@ -1,8 +1,5 @@
 /* eslint-env commonjs */
-
 /* eslint no-console: off */
-// TODO, pref controlled logger
-
 /* global ExtensionAPI */
 
 ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
@@ -51,8 +48,6 @@ this.study = class extends ExtensionAPI {
     this.extension = extension;
     const { studyUtils } = require("./studyUtils.js");
     this.studyUtils = studyUtils;
-    // const { PioneerUtils } = require("pioneer-utils/PioneerUtils.jsm");
-    // const pioneerUtilsBootstrap = require("./pioneerUtilsBootstrap.js");
     this.studyApiEventEmitter = new StudyApiEventEmitter();
     console.log("constructed!");
   }
@@ -70,8 +65,6 @@ this.study = class extends ExtensionAPI {
    * @returns {undefined} TODO TODO
    */
   async onShutdown(shutdownReason) {
-    // let {extension} = this;
-    // let {manifest} = extension;
     console.log("possible uninstalling", shutdownReason);
     if (shutdownReason === "ADDON_UNINSTALL") {
       console.log("definitely uninstalling", shutdownReason);
@@ -345,25 +338,10 @@ this.study = class extends ExtensionAPI {
 
         /**
          * Schema.json `events`
+         *
+         * See https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
          */
 
-        // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
-        /* Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation. */
-        // onDataPermissionsChange: new EventManager(
-        //  context,
-        //  "study:onDataPermissionsChange",
-        //  fire => {
-        //    const listener = (eventReference, updatedPermissions) => {
-        //      fire.async(updatedPermissions);
-        //    };
-        //    studyApiEventEmitter.on("dataPermissionsChange", listener);
-        //    return () => {
-        //      studyApiEventEmitter.off("dataPermissionsChange", listener);
-        //    };
-        //  },
-        // ).api(),
-
-        // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
         /* Fires when the study is 'ready' for the feature to startup. */
         onReady: new EventManager(context, "study:onReady", fire => {
           const listener = (eventReference, studyInfo) => {
@@ -375,7 +353,6 @@ this.study = class extends ExtensionAPI {
           };
         }).api(),
 
-        // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
         /* Listen for when the study wants to end.
          *
          *  Act on it by

@@ -95,7 +95,7 @@ const guard = new Guard(require("../schema.json")[0].types);
 
 /**  Simple spread/rest based merge, using Object.assign.
  *
- * Right most wins, top level only, by replacement.
+ * Right-most overrides, top level only, by full value replacement.
  *
  * Note: Unlike deep merges might not handle symbols and other things.
  *
@@ -489,9 +489,7 @@ class StudyUtils {
   async endStudy(endingName) {
     this.throwIfNotSetup("endStudy");
 
-    // we know what this ending is.
     // also handle default endings.
-
     const alwaysHandle = ["ineligible", "expired", "user-disable"];
     let ending = this._internals.studySetup.endings[endingName];
     if (!ending) {
@@ -510,20 +508,20 @@ class StudyUtils {
       );
     }
 
-    // claim it.  We are first!
+    // if not already ending, claim it.  We are first!
     this._internals.isEnding = true;
     this._internals.endingRequested = endingName;
 
     log.debug(`endStudy ${endingName}`);
     await this.unsetActive();
 
-    // do the work to end
+    // do the work to end the studyUtils involvement
 
     // 1. Telemetry for ending
     const { fullname } = ending;
     let finalName = endingName;
     switch (endingName) {
-      // handle the 'formal' endings
+      // handle the 'formal' endings (defined in parquet)
       case "ineligible":
       case "expired":
       case "user-disable":
@@ -558,8 +556,8 @@ class StudyUtils {
       urls: [],
     };
 
-    // baseUrl: needs to be appended with query arguments before use,
-    // exactUrl: used as is
+    // baseUrls: needs to be appended with query arguments before use,
+    // exactUrls: used as is
     const { baseUrls, exactUrls } = ending;
     if (exactUrls) {
       out.urls.push(...exactUrls);
@@ -590,9 +588,6 @@ class StudyUtils {
    * @returns {Object} - the query arguments for the study
    */
   async endingQueryArgs() {
-    // id: extension.manifest.applications.gecko.id,
-    // version: extension.manifest.version,
-
     this.throwIfNotSetup("endingQueryArgs");
     const info = this.info();
     const who = await this.getTelemetryId();
@@ -672,12 +667,13 @@ class StudyUtils {
       this._internals.seenTelemetry[bucket].push(payload);
     }
 
-    // Acutally send only if desired.
-    const telOptions = { addClientId: true, addEnvironment: true };
+    // during developement, don't actually send
     if (!this.telemetryConfig.send) {
       log.debug("NOT sending.  `telemetryConfig.send` is false");
       return false;
     }
+
+    const telOptions = { addClientId: true, addEnvironment: true };
     return TelemetryController.submitExternalPing(bucket, payload, telOptions);
   }
 

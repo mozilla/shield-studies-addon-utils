@@ -11,6 +11,7 @@ const { TextEncoder } = Cu.getGlobalForObject(Services);
  * @param {Number} fraction - a number (0 <= fraction < 1)
  * @returns {Object} - the variation object in weightedVariations for the given
  * fraction
+ *
  */
 export function chooseWeighted(weightedVariations, fraction = Math.random()) {
   /*
