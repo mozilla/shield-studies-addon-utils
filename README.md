@@ -107,9 +107,9 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
 
 3.  Set logging in `about:config`
 
-    ```    
-    shieldStudy.logLevel 
-    
+    ```
+    shieldStudy.logLevel
+
     - Trace|Debug|Info|Warn|Error
     ```
 
