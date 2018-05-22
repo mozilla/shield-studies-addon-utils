@@ -33,7 +33,7 @@ const { ExtensionUtils } = ChromeUtils.import("resource://gre/modules/ExtensionU
 // eslint-disable-next-line no-undef
 const { ExtensionError } = ExtensionUtils;
 
-const log = createShieldStudyLogger("shield-study-utils");
+const logger = this.logger = createShieldStudyLogger("shield-study-utils");
 
 // telemetry utils
 const CID = ChromeUtils.import("resource://gre/modules/ClientID.jsm", {});
@@ -170,8 +170,6 @@ class StudyUtils {
     // internals, also used by `studyTest.getInternals()`
     // either setup() or reset() will create, using extensionManifest
     this._internals = {};
-
-    this._log = log;
   }
 
   _createInternals() {
@@ -236,7 +234,7 @@ class StudyUtils {
       this._internals = this._createInternals();
     }
 
-    log.debug(`setting up! -- ${JSON.stringify(studySetup)}`);
+    logger.debug(`setting up! -- ${JSON.stringify(studySetup)}`);
 
     if (this._internals.isSetup) {
       throw new ExtensionError("StudyUtils is already setup");
@@ -250,7 +248,7 @@ class StudyUtils {
         studySetup.activeExperimentName,
         studySetup.weightedVariations,
       ));
-    log.debug(`setting up: variation ${variation.name}`);
+    logger.debug(`setting up: variation ${variation.name}`);
 
     this._internals.variation = variation;
     this._internals.studySetup = studySetup;
@@ -286,7 +284,7 @@ class StudyUtils {
    */
   getVariation() {
     this.throwIfNotSetup("getvariation");
-    log.debug(`getVariation: ${JSON.stringify(this._internals.variation)}`);
+    logger.debug(`getVariation: ${JSON.stringify(this._internals.variation)}`);
     return this._internals.variation;
   }
 
@@ -353,7 +351,7 @@ class StudyUtils {
    * @returns {Object} - study information, see schema.studySetup.json
    */
   info() {
-    log.debug("getting info");
+    logger.debug("getting info");
     this.throwIfNotSetup("info");
 
     const studyInfo = {
@@ -400,7 +398,7 @@ class StudyUtils {
         12,
       );
     }
-    log.debug(`_deterministicVariation`, weightedVariations);
+    logger.debug(`_deterministicVariation`, weightedVariations);
     return this.sampling.chooseWeighted(weightedVariations, fraction);
   }
 
@@ -417,7 +415,7 @@ class StudyUtils {
    */
   async firstSeen() {
     this.throwIfNotSetup("firstSeen uses telemetry.");
-    log.debug(`attempting firstSeen`);
+    logger.debug(`attempting firstSeen`);
     this._internals.isFirstRun = true;
     await this._telemetry({ study_state: "enter" }, "shield-study");
     this.setFirstRunTimestamp("" + Date.now());
@@ -432,7 +430,7 @@ class StudyUtils {
   setActive() {
     this.throwIfNotSetup("setActive uses telemetry.");
     const info = this.info();
-    log.debug(
+    logger.debug(
       "marking TelemetryEnvironment",
       info.activeExperimentName,
       info.variation.name,
@@ -450,7 +448,7 @@ class StudyUtils {
   unsetActive() {
     this.throwIfNotSetup("unsetActive uses telemetry.");
     const info = this.info();
-    log.debug(
+    logger.debug(
       "unmarking TelemetryEnvironment",
       info.activeExperimentName,
       info.variation.name,
@@ -467,7 +465,7 @@ class StudyUtils {
   async startup() {
     this.throwIfNotSetup("startup");
     const isFirstRun = this._internals.isFirstRun;
-    log.debug(`startup.  setting active. isFirstRun? ${isFirstRun}`);
+    logger.debug(`startup.  setting active. isFirstRun? ${isFirstRun}`);
     this.setActive();
     if (isFirstRun) {
       await this._telemetry({ study_state: "installed" }, "shield-study");
@@ -499,7 +497,7 @@ class StudyUtils {
 
     // throw if already ending
     if (this._internals.isEnding) {
-      log.debug("endStudy, already ending!");
+      logger.debug("endStudy, already ending!");
       throw new ExtensionError(
         `endStudy, requested:  ${endingName}, but already ending ${
           this._internals.endingRequested
@@ -511,7 +509,7 @@ class StudyUtils {
     this._internals.isEnding = true;
     this._internals.endingRequested = endingName;
 
-    log.debug(`endStudy ${endingName}`);
+    logger.debug(`endStudy ${endingName}`);
     await this.unsetActive();
 
     // do the work to end the studyUtils involvement
@@ -616,9 +614,9 @@ class StudyUtils {
    */
   async _telemetry(data, bucket = "shield-study-addon") {
     this.throwIfNotSetup("_telemetry");
-    log.debug(`telemetry in:  ${bucket} ${JSON.stringify(data)}`);
+    logger.debug(`telemetry in:  ${bucket} ${JSON.stringify(data)}`);
     const info = this.info();
-    log.debug(`telemetry INFO: ${JSON.stringify(info)}`);
+    logger.debug(`telemetry INFO: ${JSON.stringify(info)}`);
 
     const payload = {
       version: PACKET_VERSION,
@@ -637,7 +635,7 @@ class StudyUtils {
     } catch (err) {
       // Catch failures of unknown origin (could be library, addon, system...)
       // if validation broke, GIVE UP.
-      log.error(err);
+      logger.error(err);
       return false;
     }
     /*
@@ -654,12 +652,12 @@ class StudyUtils {
         message: JSON.stringify(validation.errors),
       };
       if (bucket === "shield-study-error") {
-        log.warn("cannot validate shield-study-error", data, bucket);
+        logger.warn("cannot validate shield-study-error", data, bucket);
         return false; // just die, maybe should have a super escape hatch?
       }
       return this.telemetryError(errorReport);
     }
-    log.debug(`telemetry: ${JSON.stringify(payload)}`);
+    logger.debug(`telemetry: ${JSON.stringify(payload)}`);
 
     // IFF it's a shield-study or error ping, which are few in number
     if (bucket === "shield-study" || bucket === "shield-study-error") {
@@ -668,7 +666,7 @@ class StudyUtils {
 
     // during developement, don't actually send
     if (!this.telemetryConfig.send) {
-      log.debug("NOT sending.  `telemetryConfig.send` is false");
+      logger.debug("NOT sending.  `telemetryConfig.send` is false");
       return false;
     }
 
@@ -685,7 +683,7 @@ class StudyUtils {
    */
   async telemetry(data) {
     this.throwIfNotSetup("telemetry");
-    log.debug(`telemetry ${JSON.stringify(data)}`);
+    logger.debug(`telemetry ${JSON.stringify(data)}`);
     const toSubmit = {
       attributes: data,
     };
@@ -713,13 +711,13 @@ class StudyUtils {
         "uninstall needs addon.id as arg or from setup.",
       );
     }
-    log.debug(`about to uninstall ${id}`);
+    logger.debug(`about to uninstall ${id}`);
     AddonManager.getAddonByID(id, addon => addon.uninstall());
   }
 }
 
 /**
- * Creates a log for debugging.
+ * Creates a logger for debugging.
  *
  * The pref to control this is "shieldStudy.logLevel"
  *

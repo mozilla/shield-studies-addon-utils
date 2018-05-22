@@ -5,6 +5,9 @@
 ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 
+const { logger, studyUtils } = require("./studyUtils.js");
+logger.log("in index!");
+
 // eslint-disable-next-line no-undef
 const { EventManager } = ExtensionCommon;
 // eslint-disable-next-line no-undef
@@ -46,7 +49,6 @@ this.study = class extends ExtensionAPI {
      * @type Extension
      */
     this.extension = extension;
-    const { studyUtils } = require("./studyUtils.js");
     this.studyUtils = studyUtils;
     this.studyApiEventEmitter = new StudyApiEventEmitter();
     console.log("constructed!");
