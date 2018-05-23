@@ -31,7 +31,7 @@ let clean = true;
 //    do their testcase (if any) pass?
 for (const i in proposed) {
   const ns = proposed[i];
-  const ajv = new Ajv({ schemaId: "id", schemas: ns.types });
+  const ajv = new Ajv({ schemaId: "auto", schemas: ns.types });
 
   for (const j in ns.types || []) {
     const type = ns.types[j];
@@ -88,7 +88,7 @@ ${full(tc)}
 // 2. Does every (function|event) 'parameter' have a valid jsonschema?
 for (const i in proposed) {
   const ns = proposed[i];
-  const ajv = new Ajv({ schemaId: "id", schemas: ns.types });
+  const ajv = new Ajv({ schemaId: "auto", schemas: ns.types });
   for (const j in ns.functions || []) {
     const type = ns.functions[j];
     for (const k in type.parameters) {
@@ -120,7 +120,7 @@ for (const i in proposed) {
 }
 
 // 3.  Check it against our not great WEE schema for WEE schemas.
-const weeAjv = new Ajv({ schemaId: "id" });
+const weeAjv = new Ajv({ schemaId: "auto" });
 if (!weeAjv.validate(wee, proposed)) {
   console.error(weeAjv.errors);
 }

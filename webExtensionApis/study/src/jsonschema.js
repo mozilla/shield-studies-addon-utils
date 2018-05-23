@@ -6,7 +6,8 @@ ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 const { ExtensionError } = ExtensionUtils;
 
 const Ajv = require("ajv/dist/ajv.min.js");
-const ajv = new Ajv();
+const ajv = new Ajv({ schemaId: "auto" });
+ajv.addMetaSchema(require("ajv/lib/refs/json-schema-draft-04.json"));
 
 const jsonschema = {
   /**
