@@ -88,7 +88,8 @@ class Guard {
    *
    */
   constructor(identifiedSchemas) {
-    this.ajv = new Ajv({ schemas: identifiedSchemas });
+    this.ajv = new Ajv({ schemas: identifiedSchemas, schemaId: "auto" });
+    this.ajv.addMetaSchema(require("ajv/lib/refs/json-schema-draft-04.json"));
   }
 
   it(schemaId, arg, msg = null) {

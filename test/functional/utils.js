@@ -24,9 +24,8 @@ const FIREFOX_PREFERENCES = {
   // Removing warning for `about:config`
   "general.warnOnAboutConfig": false,
 
-  // Force variation for testing
-  "extensions.button_icon_preference.variation": "puppers",
-
+  // More Logging
+  "shieldStudy.logLevel": "All",
   /** WARNING: Geckodriver sets many additional prefs at:
    * https://dxr.mozilla.org/mozilla-central/source/testing/geckodriver/src/prefs.rs
    *
@@ -46,7 +45,7 @@ const { ui } = require("../../testUtils/ui");
 const studySchema = require("../../test-addon/src/privileged/study/schema.json");
 
 const Ajv = require("ajv/dist/ajv.min.js");
-const ajv = new Ajv();
+const ajv = new Ajv({ schemaId: "auto" });
 
 /**
  * Validates input data based on a specified schema
