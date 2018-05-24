@@ -41,7 +41,8 @@
     "webExtensionApis/prefs/api.js",
     "webExtensionApis/prefs/schema.json",
     "webExtensionApis/study/api.js",
-    "webExtensionApis/study/schema.json"
+    "webExtensionApis/study/schema.json",
+    "webExtensionApis/study/src/telemetry.js"
   ],
   "homepage": "https://github.com/mozilla/shield-studies-addon-utils#readme",
   "keywords": [
