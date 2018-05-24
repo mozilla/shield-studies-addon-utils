@@ -9,36 +9,38 @@ class StudyLifeCycleHandler {
    * call `this.enableFeature` to actually do the feature/experience/ui.
    */
   constructor() {
+    // IMPORTANT:  Listen for onEndStudy first.
     browser.study.onEndStudy.addListener(this.handleStudyEnding);
     browser.study.onReady.addListener(this.enableFeature);
   }
 
   /**
-   * do some cleanup / 'feature reset'
+   * Cleanup
    *
    * (If you have privileged code, you might need to clean
    *  that up as well.
    * See:  https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/lifecycle.html
    *
-   * @returns {Promise<void>} Nothing
+   * @returns {undefined}
    */
   async cleanup() {
-    await browser.storage.local.clear();
+    // do whatever work your addon needs to clean up
   }
 
   /**
+   *
+   * side effects
    * - set up expiration alarms
    * - make feature/experience/ui with the particular variation for this user.
    *
-   * @param {object} studyInfo see Api for studyInfo()
-   * @returns {Promise<void>} Nothing
+   * @param {object} studyInfo browser.study.studyInfo object
+   *
+   * @returns {undefined}
    */
   async enableFeature(studyInfo) {
-    console.log("enableFeature - studyInfo", studyInfo);
-    console.log("Checking expiration");
+    console.log("enabling feature", studyInfo);
     if (studyInfo.timeUntilExpire) {
-      console.log("Setting up expiration");
-      browser.alarm.create(studyInfo.timeUntilExpire, () =>
+      browser.alarms.create(studyInfo.timeUntilExpire, () =>
         browser.study.endStudy("expired"),
       );
     }
@@ -61,8 +63,9 @@ class StudyLifeCycleHandler {
    * - opens 'ending' urls (surveys, for example)
    * - calls cleanup
    *
-   * @param {object} ending A study ending instruction set
-   * @returns {Promise<void>} Nothing
+   * @param {object} ending An ending result
+   *
+   * @returns {undefined}
    */
   async handleStudyEnding(ending) {
     console.log(`study wants to end:`, ending);
@@ -71,17 +74,19 @@ class StudyLifeCycleHandler {
     }
     switch (ending.reason) {
       default:
-        this.cleanup();
+        await this.cleanup();
         // uninstall the addon?
         break;
     }
+    // actually remove the addon.
+    return browser.study.uninstall();
   }
 }
 
 /**
  * Run every startup to get config and instantiate the feature
  *
- * @returns {Promise<void>} Nothing
+ * @returns {undefined}
  */
 async function onEveryExtensionLoad() {
   // new StudyLifeCycleHandler();

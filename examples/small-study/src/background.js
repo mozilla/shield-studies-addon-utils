@@ -30,6 +30,7 @@
  *
  */
 
+/* eslint no-unused-vars: off */
 class StudyLifeCycleHandler {
   /**
    * Listen to onEndStudy, onReady
@@ -73,8 +74,11 @@ class StudyLifeCycleHandler {
         browser.study.endStudy("expired"),
       );
     }
-    console.log("want to set title feature", studyInfo.variation.name);
-
+    console.log(
+      `Setting the browser action title to the variation name: '${
+        studyInfo.variation.name
+      }'`,
+    );
     browser.browserAction.setTitle({ title: studyInfo.variation.name });
     console.log(
       `Changed the browser action title to the variation name: ${

@@ -44,11 +44,13 @@ const studySetup = {
       baseUrls: ["http://www.example.com/?reason=expired"],
     },
     dataPermissionsRevoked: {
+      baseUrls: [],
       category: "ended-neutral",
     },
 
     /** User defined endings */
     "some-study-defined-ending": {
+      baseUrls: [],
       category: "ended-neutral",
     },
     "some-study-defined-ending-with-survey-url": {
@@ -81,10 +83,10 @@ const studySetup = {
   },
 
   // Optional: testing overrides.
-  // Set from prefs in getStudySetup
+  // TODO: Set from prefs in getStudySetup
   testing: {
-    variation: "feature-active",
-    expired: true,
+    variation: null,
+    firstRunTimestamp: null,
   },
 };
 
@@ -100,7 +102,7 @@ const studySetup = {
  *
  * This implementation caches in local storage to speed up second run.
  *
- * @returns {Promise} answer An boolean answer about whether the user should be
+ * @returns {Promise<boolean>} answer An boolean answer about whether the user should be
  *       allowed to enroll in the study
  */
 async function shouldAllowEnroll() {
@@ -113,8 +115,11 @@ async function shouldAllowEnroll() {
   If false, the study will endStudy with 'ineligible' during `setup`
   */
   // could have other reasons to be eligible, such add-ons, prefs
+  /*
   const dataPermissions = await browser.study.dataPermissions();
   allowed = dataPermissions.shield;
+  */
+  allowed = true;
 
   // cache the answer
   await browser.storage.local.set({ allowedToEnroll: allowed });
@@ -122,17 +127,18 @@ async function shouldAllowEnroll() {
 }
 
 /**
- * Augment studySetup with a few async values
+ * Augment declarative studySetup with any necessary async values
  *
- * @returns {Promise<object>} studySetup final study setup
+ * @return {object} studySetup A complete study setup object
  */
 async function getStudySetup() {
+  /*
   const id = browser.runtime.id;
   const prefs = {
     variation: `shield.${id}.variation`,
     firstRunTimestamp: `shield.${id}.firstRunTimestamp`,
   };
-  prefs;
+  */
   studySetup.allowEnroll = await shouldAllowEnroll();
   studySetup.testing = {
     // variation: await browser.prefs.getStringPref(prefs.variation);
