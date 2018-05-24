@@ -1,6 +1,5 @@
 /* global getStudySetup */
 
-/* eslint no-unused-vars: off */
 class StudyLifeCycleHandler {
   /**
    * Listen to onEndStudy, onReady
@@ -89,9 +88,9 @@ class StudyLifeCycleHandler {
  * @returns {undefined}
  */
 async function onEveryExtensionLoad() {
-  // new StudyLifeCycleHandler();
-  // const studySetup = await getStudySetup();
-  // await browser.study.setup(studySetup);
+  new StudyLifeCycleHandler();
+  const studySetup = await getStudySetup();
+  await browser.study.setup(studySetup);
 }
 
 // Since this is a test-addon, we don't initiate any code directly, but wait

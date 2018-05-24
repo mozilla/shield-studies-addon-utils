@@ -30,7 +30,6 @@
  *
  */
 
-/* eslint no-unused-vars: off */
 class StudyLifeCycleHandler {
   /**
    * Listen to onEndStudy, onReady
