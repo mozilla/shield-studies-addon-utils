@@ -69,12 +69,23 @@ class StudyLifeCycleHandler {
   async enableFeature(studyInfo) {
     console.log("enabling feature", studyInfo);
     if (studyInfo.timeUntilExpire) {
-      browser.alarms.create(studyInfo.timeUntilExpire, () =>
-        browser.study.endStudy("expired"),
-      );
+      const alarmName = `${browser.runtime.id}:studyExpiration`;
+      const alarmListener = async alarm => {
+        if (alarm.name === alarmName) {
+          browser.alarms.onAlarm.removeListener(alarmListener);
+          await browser.study.endStudy("expired");
+        }
+      };
+      browser.alarms.onAlarm.addListener(alarmListener);
+      browser.alarms.create(alarmName, {
+        when: Date.now() + studyInfo.timeUntilExpire,
+      });
     }
-    console.log("want to set title feature", studyInfo.variation.name);
-
+    console.log(
+      `Setting the browser action title to the variation name: '${
+        studyInfo.variation.name
+      }'`,
+    );
     browser.browserAction.setTitle({ title: studyInfo.variation.name });
     console.log(
       `Changed the browser action title to the variation name: ${
