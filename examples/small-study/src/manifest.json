@@ -10,14 +10,6 @@
     }
   },
   "experiment_apis": {
-    "prefs": {
-      "schema": "./privileged/prefs/schema.json",
-      "parent": {
-        "scopes": ["addon_parent"],
-        "script": "./privileged/prefs/api.js",
-        "paths": [["prefs"]]
-      }
-    },
     "study": {
       "schema": "./privileged/study/schema.json",
       "parent": {
@@ -27,7 +19,7 @@
       }
     }
   },
-  "permissions": ["storage"],
+  "permissions": ["storage", "alarms"],
   "background": {
     "scripts": ["studySetup.js", "background.js"]
   },

@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "shield-studies-addon-utils": "file:../.."
+    "shield-studies-addon-utils": "github:mozilla/shield-studies-addon-utils#develop"
   },
   "dependencies": {
     "npm": "^6.0.1"

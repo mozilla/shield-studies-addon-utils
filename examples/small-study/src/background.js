@@ -69,9 +69,11 @@ class StudyLifeCycleHandler {
   async enableFeature(studyInfo) {
     console.log("enabling feature", studyInfo);
     if (studyInfo.timeUntilExpire) {
-      browser.alarms.create(studyInfo.timeUntilExpire, () =>
-        browser.study.endStudy("expired"),
-      );
+      console.log("I want to expire", studyInfo.timeUntilExpire)
+      //browser.alarms.create({timeInstudyInfo.timeUntilExpire, () =>
+      //  browser.study.endStudy("expired"),
+      //);
+      console.log("I made an alarm!")
     }
     console.log("want to set title feature", studyInfo.variation.name);
 
