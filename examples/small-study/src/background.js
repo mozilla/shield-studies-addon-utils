@@ -39,8 +39,8 @@ class StudyLifeCycleHandler {
    */
   constructor() {
     // IMPORTANT:  Listen for onEndStudy first.
-    browser.study.onEndStudy.addListener(this.handleStudyEnding);
-    browser.study.onReady.addListener(this.enableFeature);
+    browser.study.onEndStudy.addListener(this.handleStudyEnding); // TODO BAD
+    browser.study.onReady.addListener(this.enableFeature); // TODO BAD
   }
 
   /**
@@ -69,14 +69,24 @@ class StudyLifeCycleHandler {
   async enableFeature(studyInfo) {
     console.log("enabling feature", studyInfo);
     if (studyInfo.timeUntilExpire) {
-      console.log("I want to expire", studyInfo.timeUntilExpire);
-      // browser.alarms.create({timeInstudyInfo.timeUntilExpire, () =>
-      //  browser.study.endStudy("expired"),
-      // );
-      console.log("I made an alarm!");
+      const alarmName = `${browser.runtime.id}:studyExpiration`;
+      const alarmListener = async alarm => {
+        if (alarm.name === alarmName) {
+          console.log("I Want to expire now!");
+          browser.alarms.onAlarm.removeListener(alarmListener);
+          await browser.study.endStudy("expired");
+        }
+      };
+      browser.alarms.onAlarm.addListener(alarmListener);
+      browser.alarms.create(alarmName, {
+        delayInMinutes: studyInfo.timeUntilExpire / 1000,
+      });
     }
-    console.log("want to set title feature", studyInfo.variation.name);
-
+    console.log(
+      `Setting the browser action title to the variation name: '${
+        studyInfo.variation.name
+      }'`,
+    );
     browser.browserAction.setTitle({ title: studyInfo.variation.name });
     console.log(
       `Changed the browser action title to the variation name: ${
@@ -118,6 +128,6 @@ class StudyLifeCycleHandler {
 async function onEveryExtensionLoad() {
   new StudyLifeCycleHandler();
   const studySetup = await getStudySetup();
-  await browser.study.setup(studySetup);
+  await browser.study.setup(studySetup); // TODO Bad
 }
 onEveryExtensionLoad();

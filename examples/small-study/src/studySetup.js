@@ -53,6 +53,12 @@ const studySetup = {
       baseUrls: [],
       category: "ended-neutral",
     },
+    "some-study-defined-ending-with-survey-url": {
+      baseUrls: [
+        "http://www.example.com/?reason=some-study-defined-ending-with-survey-url",
+      ],
+      category: "ended-negative",
+    },
   },
 
   // Study branches and sample weights, overweighing feature branches
@@ -77,7 +83,7 @@ const studySetup = {
   },
 
   // Optional: testing overrides.
-  // Set from prefs in getStudySetup
+  // TODO: Set from prefs in getStudySetup
   testing: {
     variation: null,
     firstRunTimestamp: null,
@@ -109,6 +115,10 @@ async function shouldAllowEnroll() {
   If false, the study will endStudy with 'ineligible' during `setup`
   */
   // could have other reasons to be eligible, such add-ons, prefs
+  /*
+  const dataPermissions = await browser.study.dataPermissions();
+  allowed = dataPermissions.shield;
+  */
   allowed = true;
 
   // cache the answer
@@ -122,12 +132,13 @@ async function shouldAllowEnroll() {
  * @return {object} studySetup A complete study setup object
  */
 async function getStudySetup() {
+  /*
   const id = browser.runtime.id;
   const prefs = {
     variation: `shield.${id}.variation`,
     firstRunTimestamp: `shield.${id}.firstRunTimestamp`,
   };
-  prefs;
+  */
   studySetup.allowEnroll = await shouldAllowEnroll();
   studySetup.testing = {
     // variation: await browser.prefs.getStringPref(prefs.variation);
