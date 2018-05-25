@@ -4,7 +4,8 @@
   "description": "",
   "main": "",
   "scripts": {
-    "postinstall": "copyStudyUtils src/privileged",
+    "postinstall": "npm run rebuild",
+    "rebuild": "copyStudyUtils src/privileged",
     "start": "web-ext run --no-reload"
   },
   "author": "",
