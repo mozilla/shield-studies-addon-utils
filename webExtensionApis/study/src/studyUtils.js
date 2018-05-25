@@ -94,6 +94,7 @@ class Guard {
       meta: require("ajv/lib/refs/json-schema-draft-04.json"),
       extendRefs: true, // optional, current default is to 'fail', spec behaviour is to 'ignore'
       unknownFormats: "ignore", // optional, current default is true (fail)
+      validateSchema: false, // used by addSchema.
 
       // schemas used by this *particular guard*
       schemas: identifiedSchemas,

@@ -11,7 +11,8 @@ const ajv = new Ajv({
   schemaId: "auto", // id UNLESS $id is defined. (draft 5)
   meta: require("ajv/lib/refs/json-schema-draft-04.json"),
   extendRefs: true, // optional, current default is to 'fail', spec behaviour is to 'ignore'
-  unknownFormats: "ignore", // optional, current default is true (fail)
+  unknownFormats: "ignore", // optional, current default is true (fail),
+  validateSchema: false,
 });
 
 const jsonschema = {
