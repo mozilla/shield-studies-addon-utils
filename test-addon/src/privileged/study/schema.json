@@ -635,7 +635,8 @@
         "name": "uninstall",
         "type": "function",
         "async": true,
-        "descripton": "Uninstall this addon.",
+        "description":
+          "\nUninstall this addon, using AddonManager.jsm.\n\nNo Telemetry.  No ending event triggered.  Just webExtenion removed.\n",
         "parameters": []
       }
     ],

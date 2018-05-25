@@ -88,11 +88,24 @@ class Guard {
    *
    */
   constructor(identifiedSchemas) {
-    this.ajv = new Ajv({ schemas: identifiedSchemas, schemaId: "auto" });
-    this.ajv.addMetaSchema(require("ajv/lib/refs/json-schema-draft-04.json"));
+    const ajv = new Ajv({
+      // important:  these options make ajv behave like 04, not draft-07
+      schemaId: "auto", // id UNLESS $id is defined. (draft 5)
+      meta: require("ajv/lib/refs/json-schema-draft-04.json"),
+      extendRefs: true, // optional, current default is to 'fail', spec behaviour is to 'ignore'
+      unknownFormats: "ignore", // optional, current default is true (fail)
+      validateSchema: false, // used by addSchema.
+
+      // schemas used by this *particular guard*
+      schemas: identifiedSchemas,
+    });
+
+    this.ajv = ajv;
+    logger.debug("Ajv schemas", Object.keys(this.ajv._schemas));
   }
 
   it(schemaId, arg, msg = null) {
+    logger.debug("about to guard", schemaId, arg);
     const valid = this.ajv.validate(schemaId, arg);
     if (!valid) {
       throw new ExtensionError(

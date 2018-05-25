@@ -68,7 +68,10 @@ this.study = class extends ExtensionAPI {
    */
   async onShutdown(shutdownReason) {
     logger.log("possible uninstalling", shutdownReason);
-    if (shutdownReason === "ADDON_UNINSTALL") {
+    if (
+      shutdownReason === "ADDON_UNINSTALL" ||
+      shutdownReason === "ADDON_DISABLE"
+    ) {
       logger.log("definitely uninstalling", shutdownReason);
       const anEndingAlias = "user-disable";
       const endingResponse = await this.studyUtils.endStudy(anEndingAlias);

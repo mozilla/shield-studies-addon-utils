@@ -24,7 +24,9 @@ function copyStudyUtilsToWebExtension(privilegedDirname, options) {
   fs.ensureDirSync(privilegedDirname);
   for (const fn of files) {
     const fullSrc = path.join(__dirname, "../webExtensionApis");
-    fs.copySync(path.join(fullSrc, fn), path.join(outputDir, fn));
+    fs.copySync(path.join(fullSrc, fn), path.join(outputDir, fn), {
+      overwrite: true,
+    });
   }
   if (options.example) {
     printTemplate(privilegedDirname);

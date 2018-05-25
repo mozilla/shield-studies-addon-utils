@@ -492,7 +492,12 @@
   - name: uninstall
     type: function
     async: true
-    descripton:  Uninstall this addon.
+    description: |
+
+      Uninstall this addon, using AddonManager.jsm.
+
+      No Telemetry.  No ending event triggered.  Just webExtenion removed.
+
     parameters: []
 
   # things that would be 'listeners' are 'events' in webExtensions

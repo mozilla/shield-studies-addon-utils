@@ -39,8 +39,8 @@ class StudyLifeCycleHandler {
    */
   constructor() {
     // IMPORTANT:  Listen for onEndStudy first.
-    browser.study.onEndStudy.addListener(this.handleStudyEnding);
-    browser.study.onReady.addListener(this.enableFeature);
+    browser.study.onEndStudy.addListener(this.handleStudyEnding); // TODO BAD
+    browser.study.onReady.addListener(this.enableFeature); // TODO BAD
   }
 
   /**
@@ -72,13 +72,14 @@ class StudyLifeCycleHandler {
       const alarmName = `${browser.runtime.id}:studyExpiration`;
       const alarmListener = async alarm => {
         if (alarm.name === alarmName) {
+          console.log("I Want to expire now!");
           browser.alarms.onAlarm.removeListener(alarmListener);
           await browser.study.endStudy("expired");
         }
       };
       browser.alarms.onAlarm.addListener(alarmListener);
       browser.alarms.create(alarmName, {
-        when: Date.now() + studyInfo.timeUntilExpire,
+        delayInMinutes: studyInfo.timeUntilExpire / 1000,
       });
     }
     console.log(
@@ -127,6 +128,6 @@ class StudyLifeCycleHandler {
 async function onEveryExtensionLoad() {
   new StudyLifeCycleHandler();
   const studySetup = await getStudySetup();
-  await browser.study.setup(studySetup);
+  await browser.study.setup(studySetup); // TODO Bad
 }
 onEveryExtensionLoad();
