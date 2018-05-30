@@ -270,6 +270,8 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert(!internals.isEnding, "should not be ending");
       assert(info.isFirstRun, "should be isFirstRun");
       assert(info.variation, "should be a variation");
+      assert.equal(info.variation.name, "control", "should be 'control'");
+
       assert(now - info.firstRunTimestamp < 5000, "less than 5 seconds old");
       assert(info.timeUntilExpire < 14 * DAYS, "should expire within 14 days");
       assert.deepStrictEqual(
@@ -306,6 +308,8 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert(!internals.isEnding, "should not be ending");
       assert(!info.isFirstRun, "should NOT be isFirstRun");
       assert(info.variation, "should be a variation");
+      assert.equal(info.variation.name, "control", "should be 'control'");
+
       assert.equal(
         info.firstRunTimestamp,
         now,
@@ -345,6 +349,8 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert(internals.isEnding, "should be ending");
       assert(info.isFirstRun, "should NOT be isFirstRun");
       assert(info.variation, "should be a variation");
+      assert.equal(info.variation.name, "control", "should be 'control'");
+
       assert(now - info.firstRunTimestamp < 5000, "less than 5 seconds old");
       assert(info.timeUntilExpire < 14 * DAYS, "should expire within 14 days");
       assert.deepStrictEqual(

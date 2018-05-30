@@ -3,7 +3,7 @@
 const defaultConfig = {
   // Global options:
   sourceDir: "./src/",
-  artifactsDir: "./built-addons/",
+  artifactsDir: "./web-ext-artifacts/",
   ignoreFiles: [".DS_Store"],
   // Command options:
   build: {

@@ -5,7 +5,7 @@
 ```
 .
 ├── README.md
-├── built-addons/       # `web-ext build` output
+├── web-ext-artifacts/       # `web-ext build` output
 ├── package-lock.json
 ├── package.json
 ├── src/
@@ -24,29 +24,22 @@
 ```
 npm install -g web-ext
 
-# up tree to make the utils
-(cd ../../ && npm run build)
-
-## in this directory:
-
-# uses the 'in-tree' version of the addon utils
+# rebuilds the utils from source then copies them in.
 npm install
-# copy in necessary files.
-npm run studyutils  
 ```
 
 ## start the study web extension experiment (WEE)
 
 ```
-npm start    # web-ext run --no-reload
+npm start    # web-ext run
 ```
 
 ## short description flow and description
 
-1.  `manifest.json` maps `experiment_apis` to make lazy gettres at `browser.study`
+1.  `manifest.json` maps `experiment_apis` to make lazy gettrers at `browser.study`
 2.  Background loads
 
-    * `studySetup.js`, mostly declarative config for studies.
+    * `studySetup.js`, a mostly declarative configuration for the study.
     * `background.js` which runs both the feature (a button / browserAction) and the `browser.study` lifecycle events
 
 3.  `background.js:StudyLifeCycleHandler` tracks a little logic.

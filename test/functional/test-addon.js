@@ -73,22 +73,6 @@ describe("Tests verifying that the test add-on works as expected", function() {
       );
     });
 
-    /* it("should have chosen one of the study's variations", async() => {
-      const chosenVariation = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
-        driver,
-        async callback => {
-          const { variation } = await browser.study.getStudyInfo();
-          callback(variation);
-        },
-      );
-      assert(chosenVariation);
-      assert(
-        chosenVariation.name === "feature-active" ||
-          chosenVariation.name === "feature-passive" ||
-          chosenVariation.name === "control",
-      );
-    });*/
-
     describe.skip("test the library's endStudy() function", function() {
       // before(async() => {
       //   await utils.executeJs.executeAsyncScriptInExtensionPageForTests(

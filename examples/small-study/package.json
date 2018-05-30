@@ -1,18 +1,15 @@
 {
   "name": "small-study",
   "version": "1.0.0",
-  "description": "",
+  "description": "A tiny example study using the studyUtils",
   "main": "",
   "scripts": {
     "postinstall": "npm run rebuild",
-    "rebuild": "copyStudyUtils src/privileged",
-    "start": "web-ext run --no-reload"
+    "rebuild": "(cd ../../ && npm run build) && ../../bin/copyStudyUtils.js src/privileged",
+    "start": "web-ext run"
   },
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "shield-studies-addon-utils": "github:mozilla/shield-studies-addon-utils#develop"
-  },
   "dependencies": {
     "npm": "^6.0.1"
   }
