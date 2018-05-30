@@ -80,13 +80,12 @@
     "postbuild": "if [ -z ${SKIPLINT} ]; then npm run format; fi",
     "postformat": "run-p lint:fixpack eslint-fix",
     "prebuild": "if [ -z ${SKIPLINT} ]; then npm run lint; fi",
-    "prepare": "fixpack && npm run build",
-    "presmall-study:run": "npm run build && npm run small-study:bundle-utils",
+    "prepare": "export SKIPLINT=1 && fixpack && npm run build",
     "pretest": "npm run build && npm run test-addon:bundle-utils && npm run test-addon:build",
     "pretest-addon:run": "npm run pretest",
     "test": "npm run test-only",
     "test-addon:build": "cd test-addon && web-ext build",
-    "test-addon:bundle-utils": "test-addon/bin/bundle-shield-studies-addon-utils.sh",
+    "test-addon:bundle-utils": "./bin/copyStudyUtils.js test-addon/src/privileged",
     "test-addon:run": "cd test-addon && web-ext run --no-reload",
     "test-only": "FIREFOX_BINARY=${FIREFOX_BINARY:-firefox} ADDON_ZIP=test-addon/dist/shield_utils_test_add-on-1.0.0.zip mocha test/functional/ --bail"
   }

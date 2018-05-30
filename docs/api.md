@@ -234,6 +234,10 @@ Using AJV, do jsonschema validation of an object. Can be used to validate your a
 
 ### `browser.study.uninstall( )`
 
+Uninstall this addon, using AddonManager.jsm.
+
+No Telemetry. No ending event triggered. Just webExtenion removed.
+
 **Parameters**
 
 ## Events
