@@ -6,7 +6,23 @@
 
 [![Build Status](https://travis-ci.org/mozilla/shield-studies-addon-utils.svg?branch=master)](https://travis-ci.org/mozilla/shield-studies-addon-utils)
 
-A Firefox JavaScript module to be bundled with shield study add-ons (as `StudyUtils.jsm`). Provides these capabilities:
+## Important notice
+
+### We are moving to Web Extension Experiments
+
+In an effort to remove the necessity of creating legacy add-ons for Shield studies, we are working on [supporting a pure Web Extension Experiment workflow in this template](https://github.com/mozilla/shield-studies-addon-template/issues/53) with a new version, v5, of the [Shield utilities](https://github.com/mozilla/shield-studies-addon-utils/). Support for these workflows is not yet stable. In the meantime, **we do not recommend using this v4 of Shield Utils**.
+
+Instead, we recommend that you:
+* build your study as a WEE ([Web Extension Experiment](https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/index.html))
+* help us test the requisite [experimental Shield API(s)](https://github.com/mozilla/shield-studies-addon-utils/) on the `develop` branch of this repo.
+
+Example Shield add-ons (implemented as WEEs) using the experimental Shield API(s):
+* https://github.com/mozilla/shield-studies-addon-utils/blob/develop/examples/small-study
+* https://github.com/mozilla/shield-cloudstorage
+
+## What is this for?
+
+This is a Firefox JavaScript module to be bundled with shield study add-ons (as `StudyUtils.jsm`). Provides these capabilities:
 
 1.  **Suggest variation for a client** (Deterministically! i.e. based on a hash of non-PII user info, they will always get assigned to the same branch every time the study launches)
 2.  **Report study lifecycle data** using Telemetry
