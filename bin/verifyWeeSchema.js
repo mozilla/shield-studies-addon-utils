@@ -27,12 +27,30 @@ const wee = require(path.resolve(
 
 let clean = true;
 
+function draft04(schemas = []) {
+  const ajv = new Ajv({
+    // important:  these options make ajv behave like 04, not draft-07
+    schemaId: "auto", // id UNLESS $id is defined. (draft 5)
+    meta: require("ajv/lib/refs/json-schema-draft-04.json"),
+    extendRefs: true, // optional, current default is to 'fail', spec behaviour is to 'ignore'
+    unknownFormats: "ignore", // optional, current default is true (fail)
+    validateSchema: false, // used by addSchema.
+
+    // schemas used by this *particular guard*
+    // schemas: identifiedSchemas,
+    /* NOTE:  adding these at constructor isn't validating against 04 */
+  });
+
+  for (const s of schemas) {
+    ajv.addSchema(s);
+  }
+  return ajv;
+}
 // 1. is every 'type' valid jsonschema
 //    do their testcase (if any) pass?
 for (const i in proposed) {
   const ns = proposed[i];
-  const ajv = new Ajv({ schemaId: "auto", schemas: ns.types });
-
+  const ajv = draft04(ns.types);
   for (const j in ns.types || []) {
     const type = ns.types[j];
     let valid = ajv.validateSchema(type);
@@ -88,7 +106,7 @@ ${full(tc)}
 // 2. Does every (function|event) 'parameter' have a valid jsonschema?
 for (const i in proposed) {
   const ns = proposed[i];
-  const ajv = new Ajv({ schemaId: "auto", schemas: ns.types });
+  const ajv = draft04(ns.types);
   for (const j in ns.functions || []) {
     const type = ns.functions[j];
     for (const k in type.parameters) {
@@ -119,8 +137,11 @@ for (const i in proposed) {
   }
 }
 
-// 3.  Check it against our not great WEE schema for WEE schemas.
-const weeAjv = new Ajv({ schemaId: "auto" });
+// 3.  Check it against our not great WEE schema for WEE schemas (draft-04)
+const weeAjv = new Ajv({
+  schemaId: "auto", // id UNLESS $id is defined. (draft 5)
+});
+
 if (!weeAjv.validate(wee, proposed)) {
   console.error(weeAjv.errors);
 }

@@ -43,10 +43,6 @@ const studySetup = {
     expired: {
       baseUrls: ["http://www.example.com/?reason=expired"],
     },
-    dataPermissionsRevoked: {
-      baseUrls: [],
-      category: "ended-neutral",
-    },
 
     /** User defined endings */
     "some-study-defined-ending": {
@@ -115,10 +111,7 @@ async function shouldAllowEnroll() {
   If false, the study will endStudy with 'ineligible' during `setup`
   */
   // could have other reasons to be eligible, such add-ons, prefs
-  /*
-  const dataPermissions = await browser.study.dataPermissions();
-  allowed = dataPermissions.shield;
-  */
+
   allowed = true;
 
   // cache the answer

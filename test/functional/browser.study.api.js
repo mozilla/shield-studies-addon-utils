@@ -513,6 +513,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       it("should have fire onEndStudy event with the endingResult", function() {
         console.debug(full(endingResult));
         assert(endingResult);
+        assert.equal(endingResult.endingName, "customEnding");
         assert.equal(endingResult.queryArgs.fullreason, "customEnding");
         assert(endingResult.shouldUninstall);
         assert.equal(endingResult.urls.length, 1);
