@@ -32,10 +32,6 @@ const { Preferences } = ChromeUtils.import(
   {},
 );
 
-const { AddonManager } = ChromeUtils.import(
-  "resource://gre/modules/AddonManager.jsm",
-  {},
-);
 Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
 
 const { ExtensionUtils } = ChromeUtils.import(
@@ -88,6 +84,7 @@ class Guard {
    *
    */
   constructor(identifiedSchemas) {
+    logger.debug("wanting guard");
     const ajv = new Ajv({
       // important:  these options make ajv behave like 04, not draft-07
       schemaId: "auto", // id UNLESS $id is defined. (draft 5)
@@ -97,9 +94,15 @@ class Guard {
       validateSchema: false, // used by addSchema.
 
       // schemas used by this *particular guard*
-      schemas: identifiedSchemas,
+      // schemas: identifiedSchemas,
+      /* NOTE:  adding these at constructor isn't validating against 04 */
     });
 
+    for (const s of identifiedSchemas) {
+      logger.debug(`adding schemas ${s}`);
+
+      ajv.addSchema(s);
+    }
     this.ajv = ajv;
     logger.debug("Ajv schemas", Object.keys(this.ajv._schemas));
   }
@@ -158,7 +161,7 @@ function mergeQueryArgs(url, ...args) {
 }
 
 /**
- * Class representing utilities for shield studies.
+ * Class representing utilities singleton for shield studies.
  */
 class StudyUtils {
   /**
@@ -577,6 +580,7 @@ class StudyUtils {
     const out = {
       shouldUninstall: true,
       urls: [],
+      endingName,
     };
 
     // baseUrls: needs to be appended with query arguments before use,
@@ -723,22 +727,6 @@ class StudyUtils {
    */
   telemetryError(errorReport) {
     return this._telemetry(errorReport, "shield-study-error");
-  }
-
-  /**
-   * Uninstalls the shield study addon, given its addon id.
-   * @param {string} id - the addon id
-   * @returns {void}
-   */
-  uninstall(id) {
-    if (!id) id = this._extensionManifest.applications.gecko.id;
-    if (!id) {
-      throw new ExtensionError(
-        "uninstall needs addon.id as arg or from setup.",
-      );
-    }
-    logger.debug(`about to uninstall ${id}`);
-    AddonManager.getAddonByID(id, addon => addon.uninstall());
   }
 }
 

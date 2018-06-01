@@ -24,6 +24,7 @@
   apiVersion: 5  # for dev use
   types:
   - id: NullableString
+    $schema: "http://json-schema.org/draft-04/schema"
     oneOf: [
       {type: 'null'},
       {type: 'string'}]
@@ -33,11 +34,13 @@
     testcases: [null, 'a string']
 
   - id: studyTypesEnum
+    $schema: "http://json-schema.org/draft-04/schema"
     type: string
     enum: ['shield', 'pioneer']
     testcase:  'shield'
 
   - id: weightedVariationObject
+    $schema: "http://json-schema.org/draft-04/schema"
     type: 'object'
     properties:
       name:
@@ -48,6 +51,7 @@
     required: ["name", "weight"]
 
   - id: weightedVariationsArray
+    $schema: "http://json-schema.org/draft-04/schema"
     type: array
     items:
       # FIXME, this is a repeat of weightedVariationObject
@@ -63,10 +67,7 @@
     testcase: [{name: feature-active, weight: 1.5}]
 
   - id: anEndingRequest
-    # TBD, this is incomplete, and seems a little rocky
-    # Should endings be a list?  a map?
-    # goal make endStudy and this agree :)
-    # what to name the 'return' from endStudy?  EndingInstructions
+    $schema: "http://json-schema.org/draft-04/schema"
     type: object
     properties:
       fullname:
@@ -110,6 +111,7 @@
     ]
 
   - id: onEndStudyResponse
+    $schema: "http://json-schema.org/draft-04/schema"
     type: object
     properties:
       fields:
@@ -121,6 +123,7 @@
           type: 'string'
 
   - id: studyInfoObject
+    $schema: "http://json-schema.org/draft-04/schema"
     type: object
     additionalProperties: true
     properties:
@@ -141,18 +144,19 @@
     - activeExperimentName
     - isFirstRun
 
-  - id: dataPermissionsObject
-    type: object
-    additionalProperties: true
-    properties:
-      shield:
-        type:
-          boolean
-
-    required:
-    - shield
+  #- id: dataPermissionsObject
+  #  type: object
+  #  additionalProperties: true
+  #  properties:
+  #    shield:
+  #      type:
+  #        boolean
+  #
+  #  required:
+  #  - shield
 
   - id: studySetup
+    $schema: "http://json-schema.org/draft-04/schema"
     type: object
     properties:
       activeExperimentName:
@@ -226,15 +230,17 @@
           expired: true,
         }
       },
-      {"activeExperimentName":"shield-utils-test-addon@shield.mozilla.org","studyType":"shield","telemetry":{"send":true,"removeTestingFlag":false},"endings":{"user-disable":{"baseUrls":["http://www.example.com/?reason=user-disable"]},"ineligible":{"baseUrls":["http://www.example.com/?reason=ineligible"]},"expired":{"baseUrls":["http://www.example.com/?reason=expired"]},"dataPermissionsRevoked":{"category":"ended-neutral"},"some-study-defined-ending":{"category":"ended-neutral"},"some-study-defined-ending-with-survey-url":{"baseUrls":["http://www.example.com/?reason=some-study-defined-ending-with-survey-url"],"category":"ended-negative"}},"weightedVariations":[{"name":"feature-active","weight":1.5},{"name":"feature-passive","weight":1.5},{"name":"control","weight":1}],"expire":{"days":14},"testing":{},"allowEnroll":true}
+      {"activeExperimentName":"shield-utils-test-addon@shield.mozilla.org","studyType":"shield","telemetry":{"send":true,"removeTestingFlag":false},"endings":{"user-disable":{"baseUrls":["http://www.example.com/?reason=user-disable"]},"ineligible":{"baseUrls":["http://www.example.com/?reason=ineligible"]},"expired":{"baseUrls":["http://www.example.com/?reason=expired"]},"some-study-defined-ending":{"category":"ended-neutral"},"some-study-defined-ending-with-survey-url":{"baseUrls":["http://www.example.com/?reason=some-study-defined-ending-with-survey-url"],"category":"ended-negative"}},"weightedVariations":[{"name":"feature-active","weight":1.5},{"name":"feature-passive","weight":1.5},{"name":"control","weight":1}],"expire":{"days":14},"testing":{},"allowEnroll":true}
     ]
 
   - id: telemetryPayload
+    $schema: "http://json-schema.org/draft-04/schema"
     type: object
     additionalProperties: true
     testcase: {foo: 'bar'}
 
   - id: searchTelemetryQuery
+    $schema: "http://json-schema.org/draft-04/schema"
     type: object
     properties:
       type: {type: ['array'], items: {type:'string'}, optional: true}
@@ -245,6 +251,7 @@
     testcase: {type: ['shield-study-addon', 'shield-study'], n: 100, minimumTimestamp: 1523968204184, headersOnly: false}
 
   - id: anEndingAnswer
+    $schema: "http://json-schema.org/draft-04/schema"
     type: object
     additionalProperties: true
 
@@ -257,7 +264,7 @@
 
       - sets 'studyType' as Shield or Pioneer
         - affects telemetry
-        - watches for dataPermission changes that should *always*
+        - (5.1 TODO) watches for dataPermission changes that should *always*
           stop that kind of study
 
       - Use or choose variation
@@ -509,13 +516,13 @@
   # https://dxr.mozilla.org/mozilla-central/source/toolkit/components/extensions/parent/ext-runtime.js#41
   # https://searchfox.org/mozilla-central/source/toolkit/components/extensions/ExtensionCommon.jsm#1671
   events:
-  - name: onDataPermissionsChange
-    type: function
-    defaultReturn: {shield: true, pioneer: false}
-    description: Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation.
-    parameters:  # for the callback
-    - name: updatedPermissions
-      type: object
+  # - name: onDataPermissionsChange
+  #   type: function
+  #   defaultReturn: {shield: true, pioneer: false}
+  #   description: Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation.
+  #   parameters:  # for the callback
+  #   - name: updatedPermissions
+  #     type: object
 
   - name: onReady
     type: function

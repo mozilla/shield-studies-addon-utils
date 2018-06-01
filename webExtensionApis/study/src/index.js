@@ -18,13 +18,8 @@ const { EventEmitter, ExtensionError } = ExtensionUtils;
  * - onReady
  * - onEndStudy
  *
- * onDataPermissionChange is handled more directly
  */
 class StudyApiEventEmitter extends EventEmitter {
-  emitDataPermissionsChange(updatedPermissions) {
-    this.emit("dataPermissionsChange", updatedPermissions);
-  }
-
   emitReady(studyInfo) {
     this.emit("ready", studyInfo);
   }
@@ -255,16 +250,6 @@ this.study = class extends ExtensionAPI {
         getStudyInfo: async function getStudyInfo() {
           logger.log("called getStudyInfo ");
           return studyUtils.info();
-        },
-
-        /** Uninstall the addon from the webExtension context.
-         *
-         * note: call in response to and onEndStudy.
-         *
-         * @returns {void}
-         */
-        uninstall: async function uninstall() {
-          return studyUtils.uninstall();
         },
 
         /** Send Telemetry using appropriate shield or pioneer methods.

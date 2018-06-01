@@ -11,7 +11,7 @@ Attempt an setup/enrollment, with these effects:
 * sets 'studyType' as Shield or Pioneer
 
   * affects telemetry
-  * watches for dataPermission changes that should _always_
+  * (5.1 TODO) watches for dataPermission changes that should _always_
     stop that kind of study
 
 * Use or choose variation
@@ -242,17 +242,6 @@ No Telemetry. No ending event triggered. Just webExtenion removed.
 
 ## Events
 
-### `browser.study.onDataPermissionsChange ()` Event
-
-Fires whenever any 'dataPermission' changes, with the new dataPermission object. Allows watching for shield or pioneer revocation.
-
-**Parameters**
-
-* `updatedPermissions`
-  * type: updatedPermissions
-  * $ref:
-  * optional: false
-
 ### `browser.study.onReady ()` Event
 
 Fires when the study is 'ready' for the feature to startup.
@@ -290,6 +279,7 @@ Act on it by
 ```json
 {
   "id": "NullableString",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "oneOf": [
     {
       "type": "null"
@@ -315,6 +305,7 @@ Act on it by
 ```json
 {
   "id": "studyTypesEnum",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "type": "string",
   "enum": ["shield", "pioneer"],
   "testcase": "shield"
@@ -326,6 +317,7 @@ Act on it by
 ```json
 {
   "id": "weightedVariationObject",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "type": "object",
   "properties": {
     "name": {
@@ -345,6 +337,7 @@ Act on it by
 ```json
 {
   "id": "weightedVariationsArray",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "type": "array",
   "items": {
     "type": "object",
@@ -373,6 +366,7 @@ Act on it by
 ```json
 {
   "id": "anEndingRequest",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "type": "object",
   "properties": {
     "fullname": {
@@ -483,6 +477,7 @@ Act on it by
 ```json
 {
   "id": "onEndStudyResponse",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "type": "object",
   "properties": {
     "fields": {
@@ -504,6 +499,7 @@ Act on it by
 ```json
 {
   "id": "studyInfoObject",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "type": "object",
   "additionalProperties": true,
   "properties": {
@@ -532,27 +528,12 @@ Act on it by
 }
 ```
 
-### [7] dataPermissionsObject
-
-```json
-{
-  "id": "dataPermissionsObject",
-  "type": "object",
-  "additionalProperties": true,
-  "properties": {
-    "shield": {
-      "type": "boolean"
-    }
-  },
-  "required": ["shield"]
-}
-```
-
-### [8] studySetup
+### [7] studySetup
 
 ```json
 {
   "id": "studySetup",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "type": "object",
   "properties": {
     "activeExperimentName": {
@@ -714,9 +695,6 @@ Act on it by
         "expired": {
           "baseUrls": ["http://www.example.com/?reason=expired"]
         },
-        "dataPermissionsRevoked": {
-          "category": "ended-neutral"
-        },
         "some-study-defined-ending": {
           "category": "ended-neutral"
         },
@@ -751,11 +729,12 @@ Act on it by
 }
 ```
 
-### [9] telemetryPayload
+### [8] telemetryPayload
 
 ```json
 {
   "id": "telemetryPayload",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "type": "object",
   "additionalProperties": true,
   "testcase": {
@@ -764,11 +743,12 @@ Act on it by
 }
 ```
 
-### [10] searchTelemetryQuery
+### [9] searchTelemetryQuery
 
 ```json
 {
   "id": "searchTelemetryQuery",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "type": "object",
   "properties": {
     "type": {
@@ -801,11 +781,12 @@ Act on it by
 }
 ```
 
-### [11] anEndingAnswer
+### [10] anEndingAnswer
 
 ```json
 {
   "id": "anEndingAnswer",
+  "$schema": "http://json-schema.org/draft-04/schema",
   "type": "object",
   "additionalProperties": true
 }

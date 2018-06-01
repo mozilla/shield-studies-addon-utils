@@ -1,32 +1,34 @@
 /* global getStudySetup */
 
 /**
- *  Goal:  Implement an instrumented feature using
- *  `browser.study` API
+ *  Goal:  Implement an instrumented feature using `browser.study` API
  *
  *  Every runtime:
- *  - instantiate the feature
+ *  - Prepare
  *
  *    - listen for `onEndStudy` (study endings)
  *    - listen for `study.onReady`
+ *
+ *  - Startup the feature
+ *
  *    - attempt to `browser.study.setup` the study using our studySetup
  *
- *      - will fire EITHER endStudy (expired, ineligible)
- *      - onReady
+ *      - will fire EITHER
+ *        -  `endStudy` (`expired`, `ineligible`)
+ *        - onReady
  *      - (see docs for `browser.study.setup`)
  *
  *    - onReady: configure the feature to match the `variation` study selected
  *    - or, if we got an `onEndStudy` cleanup and uninstall.
  *
- *    During the feature:
+ *  During the feature:
  *    - `sendTelemetry` to send pings
  *    - `endStudy` to force an ending (for positive or negative reasons!)
  *
  *  Interesting things to try next:
  *  - `browser.study.validateJSON` your pings before sending
  *  - `endStudy` different endings in response to user action
- *  - force an override of timestamp to see an `expired`
- *  - unset the shield or telemetry prefs during runtime to trigger an ending.
+ *  - force an override of setup.testing to choose branches.
  *
  */
 
@@ -38,9 +40,14 @@ class StudyLifeCycleHandler {
    * call `this.enableFeature` to actually do the feature/experience/ui.
    */
   constructor() {
-    // IMPORTANT:  Listen for onEndStudy first.
-    browser.study.onEndStudy.addListener(this.handleStudyEnding); // TODO BAD
-    browser.study.onReady.addListener(this.enableFeature); // TODO BAD
+    /*
+     * IMPORTANT:  Listen for `onEndStudy` before calling `browser.study.setup`
+     * because:
+     * - `setup` can end with 'ineligible' due to 'allowEnroll' key in first session.
+     *
+     */
+    browser.study.onEndStudy.addListener(this.handleStudyEnding.bind(this));
+    browser.study.onReady.addListener(this.enableFeature.bind(this));
   }
 
   /**
@@ -54,6 +61,7 @@ class StudyLifeCycleHandler {
    */
   async cleanup() {
     // do whatever work your addon needs to clean up
+    return true;
   }
 
   /**
@@ -72,26 +80,22 @@ class StudyLifeCycleHandler {
       const alarmName = `${browser.runtime.id}:studyExpiration`;
       const alarmListener = async alarm => {
         if (alarm.name === alarmName) {
-          console.log("I Want to expire now!");
+          console.log("study will expire now!");
           browser.alarms.onAlarm.removeListener(alarmListener);
           await browser.study.endStudy("expired");
         }
       };
       browser.alarms.onAlarm.addListener(alarmListener);
       browser.alarms.create(alarmName, {
-        delayInMinutes: studyInfo.timeUntilExpire / 1000,
+        delayInMinutes: studyInfo.timeUntilExpire / (1000 * 60),
       });
     }
+    feature.configure(studyInfo);
+
     console.log(
       `Setting the browser action title to the variation name: '${
         studyInfo.variation.name
       }'`,
-    );
-    browser.browserAction.setTitle({ title: studyInfo.variation.name });
-    console.log(
-      `Changed the browser action title to the variation name: ${
-        studyInfo.variation.name
-      }`,
     );
   }
 
@@ -109,16 +113,44 @@ class StudyLifeCycleHandler {
     for (const url of ending.urls) {
       await browser.tabs.create({ url });
     }
-    switch (ending.reason) {
+    switch (ending.endingName) {
+      // could have different actions depending on positive / ending names
       default:
+        console.log(`the ending: ${ending.endingName}`);
         await this.cleanup();
-        // uninstall the addon?
         break;
     }
     // actually remove the addon.
-    return browser.study.uninstall();
+    console.log("about to actualy uninstall");
+    return browser.management.uninstallSelf();
   }
 }
+
+/* An example feature singleton, demonstrating Telemetry and some endings */
+class ButtonFeature {
+  constructor() {
+    let clicksInSession = 0;
+    browser.browserAction.setBadgeText({ text: "" + clicksInSession });
+
+    browser.browserAction.onClicked.addListener(() => {
+      clicksInSession++;
+      browser.browserAction.setBadgeText({ text: "" + clicksInSession });
+
+      // see the telemetry appear in `about:Telemetry`, as string:string
+      browser.study.sendTelemetry({ clicksInSession: "" + clicksInSession });
+      if (clicksInSession >= 3) {
+        browser.study.endStudy("user-used-the-feature");
+      }
+    });
+  }
+
+  async configure(studyInfo) {
+    await browser.browserAction.setTitle({ title: studyInfo.variation.name });
+  }
+}
+
+// construct. will be configured after setup.
+const feature = new ButtonFeature();
 
 /**
  * Run every startup to get config and instantiate the feature
@@ -127,7 +159,9 @@ class StudyLifeCycleHandler {
  */
 async function onEveryExtensionLoad() {
   new StudyLifeCycleHandler();
+
   const studySetup = await getStudySetup();
-  await browser.study.setup(studySetup); // TODO Bad
+  console.log(`studySetup: ${JSON.stringify(studySetup)}`);
+  await browser.study.setup(studySetup);
 }
 onEveryExtensionLoad();
