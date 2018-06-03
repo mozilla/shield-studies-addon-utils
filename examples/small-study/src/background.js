@@ -91,12 +91,6 @@ class StudyLifeCycleHandler {
       });
     }
     feature.configure(studyInfo);
-
-    console.log(
-      `Setting the browser action title to the variation name: '${
-        studyInfo.variation.name
-      }'`,
-    );
   }
 
   /** handles `study:end` signals
@@ -121,7 +115,7 @@ class StudyLifeCycleHandler {
         break;
     }
     // actually remove the addon.
-    console.log("about to actualy uninstall");
+    console.log("about to actually uninstall");
     return browser.management.uninstallSelf();
   }
 }
@@ -145,6 +139,11 @@ class ButtonFeature {
   }
 
   async configure(studyInfo) {
+    console.log(
+      `Setting the browser action title to the variation name: '${
+        studyInfo.variation.name
+      }'`,
+    );
     await browser.browserAction.setTitle({ title: studyInfo.variation.name });
   }
 }

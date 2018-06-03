@@ -54,7 +54,9 @@ const baseStudySetup = {
 
     /** Study specific endings */
     "user-used-the-feature": {
-      baseUrls: ["https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/"],
+      baseUrls: [
+        "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=user-used-the-feature",
+      ],
       category: "ended-positive",
     },
     "hated-the-feature": {
@@ -114,7 +116,7 @@ async function cachingFirstRunShouldAllowEnroll() {
   if (allowed) return true;
 
   /*
-   * First run, we must calculate the answer.
+  First run, we must calculate the answer.
   If false, the study will endStudy with 'ineligible' during `setup`
   */
 
