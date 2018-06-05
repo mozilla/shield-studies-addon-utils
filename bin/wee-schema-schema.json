@@ -1,0 +1,109 @@
+{
+  "description":
+    "Derived from Schemas.jsm behaviour.  Incomplete, but tries to catch some common errors",
+  "author": "Gregg Lind",
+  "status":
+    "Provisional, take with lots of salt, throw away if we get a real one",
+  "type": "array",
+  "definitions": {
+    "API": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "type": "string"
+        },
+        "types": {
+          "$ref": "#/definitions/typesArray"
+        },
+        "functions": {
+          "$ref": "#/definitions/functionsArray"
+        },
+        "events": {
+          "$ref": "#/definitions/eventsArray"
+        }
+      },
+      "required": ["namespace"]
+    },
+    "parameters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": ["string", "array", "object"]
+          },
+          "$ref": {
+            "type": "string"
+          }
+        },
+        "oneOf": [
+          {
+            "required": ["type"]
+          },
+          {
+            "required": ["$ref"]
+          }
+        ],
+        "required": ["name"]
+      }
+    },
+    "typesArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/aType"
+      }
+    },
+    "functionsArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/aFunction"
+      }
+    },
+    "eventsArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/aEvent"
+      }
+    },
+    "aType": {
+      "type": "object",
+      "properties": {}
+    },
+    "aFunction": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": { "enum": ["function"] },
+        "async": {
+          "type": "boolean"
+        },
+        "parameters": {
+          "$ref": "#/definitions/parameters"
+        },
+        "returns": {}
+      },
+      "required": ["name", "type", "parameters", "async"]
+    },
+    "aEvent": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": { "enum": ["function"] },
+        "parameters": {
+          "$ref": "#/definitions/parameters"
+        }
+      },
+      "required": ["name", "type", "parameters"]
+    }
+  },
+  "items": {
+    "$ref": "#/definitions/API"
+  }
+}
