@@ -1,5 +1,7 @@
 /* eslint-env node */
 
+// TODO, eventually remove this.  It's used by the Template testing, for now.
+
 // TODO, making this a seperate file means that we have to pass the error from the other compartment.
 
 /**

@@ -1,5 +1,7 @@
 /* eslint-env commonjs */
 
+/** Wraps basic jsonschema validation using Ajv */
+
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 
 // eslint-disable-next-line no-undef

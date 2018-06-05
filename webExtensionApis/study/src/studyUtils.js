@@ -7,6 +7,11 @@ import sampling from "./sampling";
 /*
 * Supports the `browser.study` webExtensionExperiment api.
 *
+* - Conversion of v4 "StudyUtils.jsm".
+* - Contains the 'dangerous' code.
+* - Creates and exports the `studyUtils` singleton
+* - does all the actuall privileged work including Telemetry
+*
 * See API.md at:
 * https://github.com/mozilla/shield-studies-addon-utils/blob/develop/docs/api.md
 *
@@ -270,9 +275,24 @@ class StudyUtils {
     }
     guard.it("studySetup", studySetup, "(in studySetup)");
 
+    function getVariationByName(name, variations) {
+      if (!name) return null;
+      const chosen = variations.filter(x => x.name === name)[0];
+      if (!chosen) {
+        throw new ExtensionError(
+          `setup error: testing.variationName "${name}" not in ${JSON.stringify(
+            variations,
+          )}`,
+        );
+      }
+      return chosen;
+    }
     // variation:  decide and set
     const variation =
-      studySetup.weightedVariations[studySetup.testing.variationName] ||
+      getVariationByName(
+        studySetup.testing.variationName,
+        studySetup.weightedVariations,
+      ) ||
       (await this._deterministicVariation(
         studySetup.activeExperimentName,
         studySetup.weightedVariations,

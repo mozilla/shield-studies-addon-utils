@@ -1,3 +1,5 @@
+/** Sampling utilies, including hashing functions */
+
 const { Services } = ChromeUtils.import(
   "resource://gre/modules/Services.jsm",
   {},

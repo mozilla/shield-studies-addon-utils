@@ -360,19 +360,57 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       );
     });
 
-    it.skip("4.  Some {testing} keys", async function() {
-      describe("studySetup, overlaps a lot with getStudyInfo", function() {
-        describe("isFirstRun:", function() {
-          it("sets pref is none given");
-          it("if pref is given, sets pref to that?");
-        });
-        describe("variation:", function() {
-          it("if none given, chooses from weightedVariations");
-          it(
-            "if variation name isn't in weightedVariations, throw (basically, is it aliases or not?)",
-          );
-        });
+    it("4.  testing.variationName chooses that branch", async function() {
+      const thisSetup = studySetupForTests({
+        testing: {
+          variationName: "the-rare-one",
+        },
+        weightedVariations: [
+          {
+            name: "the-rare-one",
+            weight: 1,
+          },
+          {
+            name: "common",
+            weight: 1000000,
+          },
+        ],
       });
+      const data = await addonExec(async (setup, cb) => {
+        // this is what runs in the webExtension scope.
+        const info = await browser.study.setup(setup);
+        const internals = await browser.studyDebug.getInternals();
+        // call back with all the data we care about to Mocha / node
+        cb({ info, internals });
+      }, thisSetup);
+      const { info } = data;
+      assert.equal(
+        info.variation.name,
+        "the-rare-one",
+        "should be 'the-rare-one'",
+      );
+    });
+    it("5. testing.variationName: if variation name isn't in weightedVariations, throw ", async function() {
+      const thisSetup = studySetupForTests({
+        testing: {
+          variationName: "not-there",
+        },
+      });
+      const error = await addonExec(async (setup, cb) => {
+        // this is what runs in the webExtension scope.
+        try {
+          await browser.study.setup(setup);
+        } catch (e) {
+          cb(e.toString());
+        }
+        cb("This should be an error");
+      }, thisSetup);
+      assert.equal(
+        error,
+        'Error: setup error: testing.variationName "not-there" not in [{"name":"control","weight":1}]',
+        "should be an exception",
+      );
+      ("should be an error");
     });
   });
 
@@ -677,28 +715,28 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
     });
   });
 
-  describe("getDataPermissions", function() {
-    it("returns correct and current list of permissions");
-  });
-
   describe("searchSentTelemetry (light testing)", function() {
     it("searches get results, see the endStudy() and other test", function() {});
   });
 
-  // TODO 5.1
-  describe.skip("5.1?:  surveyUrl: not yet implemented", function() {
-    describe("needs setup", function() {
-      it("throws StudyNotsSetupError  if not setup");
-    });
-    describe("correctly constructs urls queryArgs from profile info", function() {
-      it("an example url is correct");
-    });
-  });
-
-  // TODO 5.1
-  describe.skip("5.1?:  log", function() {
-    it("log level works?");
-  });
-
   describe("uninstall by users?", function() {});
+
+  // TODO 5.1
+  describe.skip("Possible 5.1 future tests.", function() {
+    describe("getDataPermissions", function() {
+      it("returns correct and current list of permissions");
+    });
+
+    describe("surveyUrl", function() {
+      describe("needs setup", function() {
+        it("throws StudyNotsSetupError  if not setup");
+      });
+      describe("correctly constructs urls queryArgs from profile info", function() {
+        it("an example url is correct");
+      });
+    });
+    describe.skip("log", function() {
+      it("log level works?");
+    });
+  });
 });
