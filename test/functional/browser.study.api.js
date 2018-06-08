@@ -223,26 +223,60 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
     });
   });
 
-  it("should not be able to send telemetry before setup", async () => {
-    const caughtError = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
-      driver,
-      async callback => {
-        let _caughtError = null;
-        try {
-          await browser.study.sendTelemetry({ foo: "bar" });
-          callback(false);
-        } catch (e) {
-          // console.debug("Caught error", e);
-          _caughtError = e.toString();
+  describe("test the setup requirement", function() {
+    it("should not be able to send telemetry before setup", async () => {
+      const caughtError = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+        driver,
+        async callback => {
+          let _caughtError = null;
+          try {
+            await browser.study.sendTelemetry({ foo: "bar" });
+            callback(false);
+          } catch (e) {
+            // console.debug("Caught error", e);
+            _caughtError = e.toString();
+            callback(_caughtError);
+          }
           callback(_caughtError);
+        },
+      );
+      assert(
+        caughtError ===
+          "Error: telemetry: this method can't be used until `setup` is called",
+      );
+    });
+
+    it("most functions throw if not studyUtils is not setup", async function() {
+      await resetStudy();
+      const caughtErrors = await addonExec(async callback => {
+        const _caughtErrors = [];
+        try {
+          await browser.study.endStudy("ineligible");
+        } catch (e) {
+          _caughtErrors.push(e.toString());
         }
-        callback(_caughtError);
-      },
-    );
-    assert(
-      caughtError ===
+
+        try {
+          await browser.study.sendTelemetry({ a: "b" });
+        } catch (e) {
+          _caughtErrors.push(e.toString());
+        }
+
+        try {
+          await browser.study.getStudyInfo();
+        } catch (e) {
+          _caughtErrors.push(e.toString());
+        }
+
+        callback(_caughtErrors);
+      });
+      const expected = [
+        "Error: endStudy: this method can't be used until `setup` is called",
         "Error: telemetry: this method can't be used until `setup` is called",
-    );
+        "Error: info: this method can't be used until `setup` is called",
+      ];
+      assert.deepStrictEqual(expected, caughtErrors);
+    });
   });
 
   describe("internals,studyInfo under several browser.setup() scenarios", function() {
@@ -634,71 +668,41 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
     });
   });
 
-  it("most functions throw if not studyUtils is not setup", async function() {
-    await resetStudy();
-    const caughtErrors = await addonExec(async callback => {
-      const _caughtErrors = [];
-      try {
-        await browser.study.endStudy("ineligible");
-      } catch (e) {
-        _caughtErrors.push(e.toString());
-      }
-
-      try {
-        await browser.study.sendTelemetry({ a: "b" });
-      } catch (e) {
-        _caughtErrors.push(e.toString());
-      }
-
-      try {
-        await browser.study.getStudyInfo();
-      } catch (e) {
-        _caughtErrors.push(e.toString());
-      }
-
-      callback(_caughtErrors);
+  describe("api: validateJSON", function() {
+    it("api: validateJSON should work as expected", async function() {
+      const answers = await addonExec(async callback => {
+        const validations = [];
+        validations.push(
+          await browser.study.validateJSON(
+            { a: 1 },
+            { type: "object", properties: { a: { type: "number" } } },
+          ),
+        );
+        validations.push(
+          await browser.study.validateJSON(
+            { a: 1 },
+            { type: "object", properties: { a: { type: "string" } } },
+          ),
+        );
+        callback(validations);
+      });
+      const expected = [
+        { errors: [], valid: true },
+        {
+          errors: [
+            {
+              dataPath: ".a",
+              keyword: "type",
+              message: "should be string",
+              params: { type: "string" },
+              schemaPath: "#/properties/a/type",
+            },
+          ],
+          valid: false,
+        },
+      ];
+      assert.deepStrictEqual(expected, answers);
     });
-    const expected = [
-      "Error: endStudy: this method can't be used until `setup` is called",
-      "Error: telemetry: this method can't be used until `setup` is called",
-      "Error: info: this method can't be used until `setup` is called",
-    ];
-    assert.deepStrictEqual(expected, caughtErrors);
-  });
-
-  it("api: validateJSON", async function() {
-    const answers = await addonExec(async callback => {
-      const validations = [];
-      validations.push(
-        await browser.study.validateJSON(
-          { a: 1 },
-          { type: "object", properties: { a: { type: "number" } } },
-        ),
-      );
-      validations.push(
-        await browser.study.validateJSON(
-          { a: 1 },
-          { type: "object", properties: { a: { type: "string" } } },
-        ),
-      );
-      callback(validations);
-    });
-    const expected = [
-      { errors: [], valid: true },
-      {
-        errors: [
-          {
-            dataPath: ".a",
-            keyword: "type",
-            message: "should be string",
-            params: { type: "string" },
-            schemaPath: "#/properties/a/type",
-          },
-        ],
-        valid: false,
-      },
-    ];
-    assert.deepStrictEqual(expected, answers);
   });
 
   describe("endStudy", function() {
