@@ -84,7 +84,9 @@
         └── webpack.config.js # Webpack configuration for bundling/building the study API's api.js file
 ```
 
-# Circle CI
+# Continuous Integration
+
+[Circle CI](https://circleci.com/) is used for continuous integration. Configured via `./.circleci/config.yml`.
 
 Full docs available at https://circleci.com/docs/2.0/local-cli/
 
@@ -102,8 +104,12 @@ circleci config validate -c .circleci/config.yml
 
 ## Run Circle CI locally (requires Docker)
 
+To prevent re-use of the local `node_modules` directory (which may contain locally compiled binaries which will cause troubles inside the Docker environment), clone your repository into a clean directory then run CircleCI inside that directory:
+
 ```shell
+git clone . /tmp/$(basename $PWD)
+cd /tmp/$(basename $PWD)
 circleci build
 ```
 
-Note: Steps related to caching and uploading/storing artifacts will report as failed locally. This is not necessarily a problem, they are designed to fail since the operations are not supported locally.
+Note: Steps related to caching and uploading/storing artifacts will report as failed locally. This is not necessarily a problem, they are designed to fail since the operations are not supported locally by the CircleCI build agent.
