@@ -525,13 +525,10 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       });
 
       it("should have sent one shield-study telemetry ping with study_state=enter", async () => {
-        const filteredPings = utils.telemetry.filterPings(
-          [
-            ping =>
-              ping.type === "shield-study" &&
-              ping.payload.data.study_state === "enter",
-          ],
-          studyPings,
+        const filteredPings = studyPings.filter(
+          ping =>
+            ping.type === "shield-study" &&
+            ping.payload.data.study_state === "enter",
         );
         assert(
           filteredPings.length > 0,
@@ -540,13 +537,10 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       });
 
       it("should have sent one shield-study telemetry ping with study_state=installed", async () => {
-        const filteredPings = utils.telemetry.filterPings(
-          [
-            ping =>
-              ping.type === "shield-study" &&
-              ping.payload.data.study_state === "installed",
-          ],
-          studyPings,
+        const filteredPings = studyPings.filter(
+          ping =>
+            ping.type === "shield-study" &&
+            ping.payload.data.study_state === "installed",
         );
         assert(
           filteredPings.length > 0,
@@ -555,13 +549,10 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       });
 
       it("should have sent one shield-study-addon telemetry ping with payload.data.attributes.foo=bar", async () => {
-        const filteredPings = utils.telemetry.filterPings(
-          [
-            ping =>
-              ping.type === "shield-study-addon" &&
-              ping.payload.data.attributes.foo === "bar",
-          ],
-          studyPings,
+        const filteredPings = studyPings.filter(
+          ping =>
+            ping.type === "shield-study-addon" &&
+            ping.payload.data.attributes.foo === "bar",
         );
         assert(
           filteredPings.length > 0,
@@ -635,13 +626,10 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         });
 
         it("one shield-study telemetry ping with study_state=exit", async () => {
-          const filteredPings = utils.telemetry.filterPings(
-            [
-              ping =>
-                ping.type === "shield-study" &&
-                ping.payload.data.study_state === "exit",
-            ],
-            studyPings,
+          const filteredPings = studyPings.filter(
+            ping =>
+              ping.type === "shield-study" &&
+              ping.payload.data.study_state === "exit",
           );
           assert(
             filteredPings.length > 0,
@@ -650,14 +638,11 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         });
 
         it("one shield-study telemetry ping with study_state_fullname=customEnding", async () => {
-          const filteredPings = utils.telemetry.filterPings(
-            [
-              ping =>
-                ping.type === "shield-study" &&
-                ping.payload.data.study_state === "ended-positive" &&
-                ping.payload.data.study_state_fullname === "customEnding",
-            ],
-            studyPings,
+          const filteredPings = studyPings.filter(
+            ping =>
+              ping.type === "shield-study" &&
+              ping.payload.data.study_state === "ended-positive" &&
+              ping.payload.data.study_state_fullname === "customEnding",
           );
           assert(
             filteredPings.length > 0,

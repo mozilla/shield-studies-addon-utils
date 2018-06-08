@@ -48,18 +48,6 @@ module.exports.telemetry = {
     });
   },
 
-  filterPings: (conditionArray, pings) => {
-    const resultingPings = [];
-    for (const condition of conditionArray) {
-      const index = pings.findIndex(ping => condition(ping));
-      if (index === -1) {
-        continue;
-      }
-      resultingPings.push(pings[index]);
-    }
-    return resultingPings;
-  },
-
   summarizePings: pings => {
     return pings.map(p => [p.payload.type, p.payload.data]);
   },
