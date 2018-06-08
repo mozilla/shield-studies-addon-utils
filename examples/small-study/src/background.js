@@ -122,7 +122,9 @@ class StudyLifeCycleHandler {
 
 /* An example feature singleton, demonstrating Telemetry and some endings */
 class ButtonFeature {
-  constructor() {
+  constructor() {}
+
+  async configure(studyInfo) {
     let clicksInSession = 0;
     browser.browserAction.setBadgeText({ text: "" + clicksInSession });
 
@@ -136,9 +138,6 @@ class ButtonFeature {
         browser.study.endStudy("user-used-the-feature");
       }
     });
-  }
-
-  async configure(studyInfo) {
     console.log(
       `Setting the browser action title to the variation name: '${
         studyInfo.variation.name
