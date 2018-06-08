@@ -8,9 +8,14 @@ class StudyLifeCycleHandler {
    * call `this.enableFeature` to actually do the feature/experience/ui.
    */
   constructor() {
-    // IMPORTANT:  Listen for onEndStudy first.
-    browser.study.onEndStudy.addListener(this.handleStudyEnding);
-    browser.study.onReady.addListener(this.enableFeature);
+    /*
+     * IMPORTANT:  Listen for `onEndStudy` before calling `browser.study.setup`
+     * because:
+     * - `setup` can end with 'ineligible' due to 'allowEnroll' key in first session.
+     *
+     */
+    browser.study.onEndStudy.addListener(this.handleStudyEnding.bind(this));
+    browser.study.onReady.addListener(this.enableFeature.bind(this));
   }
 
   /**
@@ -38,30 +43,21 @@ class StudyLifeCycleHandler {
    */
   async enableFeature(studyInfo) {
     console.log("enabling feature", studyInfo);
-    const { delayInMinutes } = studyInfo;
-    if (delayInMinutes !== undefined) {
+    if (studyInfo.timeUntilExpire) {
       const alarmName = `${browser.runtime.id}:studyExpiration`;
       const alarmListener = async alarm => {
         if (alarm.name === alarmName) {
+          console.log("study will expire now!");
           browser.alarms.onAlarm.removeListener(alarmListener);
           await browser.study.endStudy("expired");
         }
       };
       browser.alarms.onAlarm.addListener(alarmListener);
       browser.alarms.create(alarmName, {
-        delayInMinutes,
+        when: Date.now() + studyInfo.timeUntilExpire,
       });
     }
-    console.log(
-      `Setting the browser action title to the variation name: '${
-        studyInfo.variation.name
-      }'`,
-    );
-    browser.browserAction.setTitle({ title: studyInfo.variation.name });
-    console.log(
-      "Feature is now enabled, sending 'test:onFeatureEnabled' event (for the tests)",
-    );
-    browser.runtime.sendMessage("test:onFeatureEnabled").catch(console.error);
+    feature.configure(studyInfo);
     console.log("Removing onReady listener this.enableFeature");
     browser.study.onReady.removeListener(this.enableFeature);
   }
@@ -80,17 +76,39 @@ class StudyLifeCycleHandler {
     for (const url of ending.urls) {
       await browser.tabs.create({ url });
     }
-    switch (ending.reason) {
-      // if necessary, do different actions for different reasons.
+    switch (ending.endingName) {
+      // could have different actions depending on positive / ending names
       default:
+        console.log(`the ending: ${ending.endingName}`);
         await this.cleanup();
-        // uninstall the addon?
         break;
     }
     // actually remove the addon.
-    return browser.study.uninstall();
+    console.log("about to actually uninstall");
+    return browser.management.uninstallSelf();
   }
 }
+
+/* An example feature singleton, demonstrating Telemetry and some endings */
+class ButtonFeature {
+  constructor() {}
+
+  async configure(studyInfo) {
+    console.log(
+      `Setting the browser action title to the variation name: '${
+        studyInfo.variation.name
+      }'`,
+    );
+    await browser.browserAction.setTitle({ title: studyInfo.variation.name });
+    console.log(
+      "Feature is now enabled, sending 'test:onFeatureEnabled' event (for the tests)",
+    );
+    browser.runtime.sendMessage("test:onFeatureEnabled").catch(console.error);
+  }
+}
+
+// construct. will be configured after setup.
+const feature = new ButtonFeature();
 
 /**
  * Run every startup to get config and instantiate the feature
@@ -99,7 +117,9 @@ class StudyLifeCycleHandler {
  */
 async function onEveryExtensionLoad() {
   new StudyLifeCycleHandler();
+
   const studySetup = await getStudySetup();
+  console.log(`studySetup: ${JSON.stringify(studySetup)}`);
   await browser.study.setup(studySetup);
 }
 
@@ -136,10 +156,7 @@ browser.windows.create(createData);
 /**
  * Fired when the extension is first installed, when the extension is updated
  * to a new version, and when the browser is updated to a new version.
- *
- * See:  https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/runtime/onInstalled
- *
- * @param {object} details webExtension details object
+ * @param {object} details Unclear what a 'details' is TODO
  * @returns {undefined} Nothing
  */
 function handleInstalled(details) {
