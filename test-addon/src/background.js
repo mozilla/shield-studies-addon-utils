@@ -58,8 +58,6 @@ class StudyLifeCycleHandler {
       });
     }
     feature.configure(studyInfo);
-    console.log("Removing onReady listener this.enableFeature");
-    browser.study.onReady.removeListener(this.enableFeature);
   }
 
   /** handles `study:end` signals
