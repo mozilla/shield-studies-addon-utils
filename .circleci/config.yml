@@ -5,38 +5,38 @@ jobs:
       - image: circleci/node:latest-browsers
         environment:
           FIREFOX_BINARY: /home/circleci/checkout/firefox/firefox-bin
+          FIREFOX_DEVELOPER_BIN: /home/circleci/checkout/firefox/firefox-bin
 
     working_directory: ~/checkout
 
     steps:
       - checkout
 
-      # Download and cache dependencies
+      # Download and cache dependencies (update the cache keys to force a newer version of devedition)
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+          - v1-dependencies-{{ checksum "package-lock.json" }}-devedition-20180608
 
       - run:
-          name: cleanly install dependencies
-          command: if [ -d node_modules ]; then rm -rf node_modules; fi; npm install
+          name: Install dependencies
+          command: npm install
 
       - run:
-          name:  Get nightly
+          name:  Get devedition
           command: |
             if [ -d ./firefox ]; then
               echo "firefox dir exists, must be from cache"
             else
-              ./node_modules/.bin/get-firefox -b nightly -p linux -e
-              ls ./firefox/firefox-bin
+              ./node_modules/.bin/get-firefox -b devedition -p linux -e
             fi
+            ls -l $FIREFOX_BINARY
+            $FIREFOX_BINARY -v
 
       - save_cache:
           paths:
             - node_modules
             - firefox
-          key: v1-dependencies-{{ checksum "package.json" }}
+          key: v1-dependencies-{{ checksum "package-lock.json" }}-devedition-20180608
 
       - run:
           name: build study apis (webpack) and lint
