@@ -3,6 +3,7 @@
 "use strict";
 
 import sampling from "./sampling";
+import logger from "./logger";
 
 /*
 * Supports the `browser.study` webExtensionExperiment api.
@@ -45,8 +46,6 @@ const { ExtensionUtils } = ChromeUtils.import(
 );
 // eslint-disable-next-line no-undef
 const { ExtensionError } = ExtensionUtils;
-
-const logger = (this.logger = createShieldStudyLogger("shield-study-utils"));
 
 // telemetry utils
 const CID = ChromeUtils.import("resource://gre/modules/ClientID.jsm", {});
@@ -751,28 +750,6 @@ class StudyUtils {
   telemetryError(errorReport) {
     return this._telemetry(errorReport, "shield-study-error");
   }
-}
-
-/**
- * Creates a logger for debugging.
- *
- * The pref to control this is "shieldStudy.logLevel"
- *
- * @param {string} logPrefix - the name of the Console instance
- * @param {string} level - level to use by default
- * @returns {Object} - the Console instance, see gre/modules/Console.jsm
- */
-function createShieldStudyLogger(logPrefix, level = "Warn") {
-  const prefName = "shieldStudy.logLevel";
-  const ConsoleAPI = ChromeUtils.import(
-    "resource://gre/modules/Console.jsm",
-    {},
-  ).ConsoleAPI;
-  return new ConsoleAPI({
-    maxLogLevel: level,
-    maxLogLevelPref: prefName,
-    prefix: logPrefix,
-  });
 }
 
 // TODO, use the usual es6 exports
