@@ -133,7 +133,7 @@
         type: 'number'  # 1523968204184,
       activeExperimentName:
         type: string    # some experiment"
-      timeUntilExpire:
+      delayInMinutes:
         type:  number
       isFirstRun:
         type: 'boolean'
@@ -371,7 +371,7 @@
       current study configuration, including
       - variation
       - activeExperimentName
-      - timeUntilExpire
+      - delayInMinutes
       - firstRunTimestamp
       - isFirstRun
 
@@ -380,7 +380,7 @@
 
       Throws Error if called before `browser.study.setup`
 
-    defaultReturn: {variation: "styleA", firstRunTimestamp: 1523968204184, activeExperimentName: "some experiment", timeUntilExpire: 12}
+    defaultReturn: {variation: "styleA", firstRunTimestamp: 1523968204184, activeExperimentName: "some experiment", delayInMinutes: 12}
     parameters: []
     returns:
     - $ref: studyInfoObject

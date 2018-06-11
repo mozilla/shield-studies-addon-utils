@@ -38,7 +38,8 @@ class StudyLifeCycleHandler {
    */
   async enableFeature(studyInfo) {
     console.log("enabling feature", studyInfo);
-    if (studyInfo.timeUntilExpire) {
+    const { delayInMinutes } = studyInfo;
+    if (delayInMinutes !== undefined) {
       const alarmName = `${browser.runtime.id}:studyExpiration`;
       const alarmListener = async alarm => {
         if (alarm.name === alarmName) {
@@ -48,7 +49,7 @@ class StudyLifeCycleHandler {
       };
       browser.alarms.onAlarm.addListener(alarmListener);
       browser.alarms.create(alarmName, {
-        when: Date.now() + studyInfo.timeUntilExpire,
+        delayInMinutes,
       });
     }
     console.log(

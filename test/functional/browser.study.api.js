@@ -273,7 +273,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert.equal(info.variation.name, "control", "should be 'control'");
 
       assert(now - info.firstRunTimestamp < 5000, "less than 5 seconds old");
-      assert(info.timeUntilExpire < 14 * DAYS, "should expire within 14 days");
+      assert(info.delayInMinutes < 14 * DAYS, "should expire within 14 days");
       assert.deepStrictEqual(
         seenTelemetryStates,
         ["enter", "installed"],
@@ -316,7 +316,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         "firstRunTimestamp should be what we set",
       );
       assert(now - info.firstRunTimestamp < 5000, "less than 5 seconds old");
-      assert(info.timeUntilExpire < 14 * DAYS, "should expire within 14 days");
+      assert(info.delayInMinutes < 14 * DAYS, "should expire within 14 days");
       assert.deepStrictEqual(
         seenTelemetryStates,
         [],
@@ -352,7 +352,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert.equal(info.variation.name, "control", "should be 'control'");
 
       assert(now - info.firstRunTimestamp < 5000, "less than 5 seconds old");
-      assert(info.timeUntilExpire < 14 * DAYS, "should expire within 14 days");
+      assert(info.delayInMinutes < 14 * DAYS, "should expire within 14 days");
       assert.deepStrictEqual(
         seenTelemetryStates,
         ["enter", "ineligible", "exit"],
@@ -711,7 +711,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       // tests
       it("during first run, isFirstRun is true", function() {});
       it("during second run, isFirstRun is false", function() {});
-      it("if duration.days in studySetup(), have a timeUntilExpire in studyInfo", async function() {});
+      it("if duration.days in studySetup(), have a delayInMinutes in studyInfo", async function() {});
     });
   });
 

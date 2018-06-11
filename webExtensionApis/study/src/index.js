@@ -244,7 +244,7 @@ this.study = class extends ExtensionAPI {
         /* current study configuration, including
          *  - variation
          *  - activeExperimentName
-         *  - timeUntilExpire
+         *  - delayInMinutes
          *  - firstRunTimestamp
          *
          *  But not:

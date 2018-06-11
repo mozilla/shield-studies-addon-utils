@@ -359,17 +359,23 @@ class StudyUtils {
 
   /** Calculate time left in study given `studySetup.expire.days` and firstRunTimestamp
    *
-   * @return {Number} timeUntilExpire Either the time left or Number.MAX_SAFE_INTEGER
+   * Safe to use with `browser.alarms.create{ delayInMinutes, }`
+   *
+   * A value of 0 means "the past / now".
+   *
+   * @return {Number} delayInMinutes Either the time left or Number.MAX_SAFE_INTEGER
    */
-  getTimeUntilExpire() {
+  getDelayInMinutes() {
+    const toMinutes = 1 / (1000 * 60);
     const days = this._internals.studySetup.expire.days;
+    let delayInMinutes = Number.MAX_SAFE_INTEGER; // approx 286,000 years
     if (days) {
       // days in ms
       const ms = days * 86400 * 1000;
       const firstrun = this.getFirstRunTimestamp();
-      return firstrun + ms - Date.now();
+      delayInMinutes = Math.max(firstrun + ms - Date.now(), 0);
     }
-    return Number.MAX_SAFE_INTEGER; // approx 286,000 years
+    return delayInMinutes * toMinutes;
   }
 
   /**
@@ -409,7 +415,7 @@ class StudyUtils {
       firstRunTimestamp: this.getFirstRunTimestamp(),
       variation: this.getVariation(),
       shieldId: this.getShieldId(),
-      timeUntilExpire: this.getTimeUntilExpire(),
+      delayInMinutes: this.getDelayInMinutes(),
     };
     guard.it("studyInfoObject", studyInfo, "(in studyInfo)");
     return studyInfo;

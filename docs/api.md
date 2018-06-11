@@ -127,7 +127,7 @@ current study configuration, including
 
 * variation
 * activeExperimentName
-* timeUntilExpire
+* delayInMinutes
 * firstRunTimestamp
 * isFirstRun
 
@@ -512,7 +512,7 @@ Act on it by
     "activeExperimentName": {
       "type": "string"
     },
-    "timeUntilExpire": {
+    "delayInMinutes": {
       "type": "number"
     },
     "isFirstRun": {
