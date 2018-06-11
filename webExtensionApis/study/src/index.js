@@ -151,7 +151,7 @@ this.study = class extends ExtensionAPI {
             studySetup.testing = {};
           }
 
-          // 1. addon info for prefs etc.
+          // 1. add-on info for prefs etc.
           studyUtils.setExtensionManifest(extension.manifest);
 
           // Setup and sets the variation / _internals
@@ -168,7 +168,7 @@ this.study = class extends ExtensionAPI {
               logger.debug("User is ineligible, ending study.");
               // 1. uses studySetup.endings.ineligible.url if any,
               // 2. sends UT for "ineligible"
-              // 3. then uninstalls addon
+              // 3. then uninstalls add-on
               await studyUtils.endStudy("ineligible");
               return studyUtils.info();
             }
@@ -201,7 +201,7 @@ this.study = class extends ExtensionAPI {
         /* Signal to browser.study that it should end.
          *
          *  Usage scenarios:
-         *  - addons defined
+         *  - add-ons defined
          *    - postive endings (tried feature)
          *    - negative endings (client clicked 'no thanks')
          *    - expiration / timeout (feature should last for 14 days then uninstall)
@@ -231,7 +231,7 @@ this.study = class extends ExtensionAPI {
          *  Addon should then do
          *  - open returned urls
          *  - feature specific cleanup
-         *  - uninstall the addon
+         *  - uninstall the add-on
          *
          *  Note:
          *  1.  calling this function multiple time is safe.
@@ -314,7 +314,7 @@ this.study = class extends ExtensionAPI {
          *
          *  Usage scenarios:
          *  - enrollment / eligiblity using recent Telemetry behaviours or client environment
-         *  - addon testing scenarios
+         *  - add-on testing scenarios
          *
          * @param {Object<query>} searchTelemetryQuery see above
          * @returns {Array<sendTelemetry>} matchingPings
@@ -357,7 +357,7 @@ this.study = class extends ExtensionAPI {
          *  Act on it by
          *  - opening surveyUrls
          *  - tearing down your feature
-         *  - uninstalling the addon
+         *  - uninstalling the add-on
          */
         onEndStudy: new EventManager(context, "study:onEndStudy", fire => {
           const listener = (eventReference, ending) => {
