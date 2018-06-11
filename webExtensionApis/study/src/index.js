@@ -7,10 +7,12 @@
  * 3.  Does NOT handle 'user-disable' surveys, see #194
  */
 
+import logger from "./logger";
+
 ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 
-const { logger, studyUtils } = require("./studyUtils.js");
+logger.debug("loading web extension experiment study/api.js");
 
 // eslint-disable-next-line no-undef
 const { EventManager } = ExtensionCommon;
@@ -48,7 +50,6 @@ this.study = class extends ExtensionAPI {
      * @type Extension
      */
     this.extension = extension;
-    this.studyUtils = studyUtils;
     this.studyApiEventEmitter = new StudyApiEventEmitter();
     logger.debug("constructed!");
   }
@@ -86,8 +87,11 @@ this.study = class extends ExtensionAPI {
   getAPI(context) {
     const { extension } = this;
 
+    // Load studyUtils
+    const { studyUtils } = require("./studyUtils.js");
+
     /* eslint no-shadow: off */
-    const { studyUtils, studyApiEventEmitter } = this;
+    const { studyApiEventEmitter } = this;
 
     // once.  Used for pref naming, telemetry
     studyUtils.setExtensionManifest(extension.manifest);
