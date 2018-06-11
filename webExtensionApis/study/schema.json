@@ -26,6 +26,27 @@
         "testcases": [null, "a string"]
       },
       {
+        "id": "NullableInteger",
+        "$schema": "http://json-schema.org/draft-04/schema",
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "integer"
+          }
+        ],
+        "choices": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "integer"
+          }
+        ],
+        "testcases": [null, 1234567890]
+      },
+      {
         "id": "studyTypesEnum",
         "$schema": "http://json-schema.org/draft-04/schema",
         "type": "string",
@@ -270,6 +291,29 @@
               "variationName": {
                 "$ref": "NullableString",
                 "optional": true
+              },
+              "firstRunTimestamp": {
+                "$ref": "NullableInteger",
+                "optional": true
+              },
+              "expired": {
+                "choices": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ],
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ],
+                "optional": true
               }
             },
             "additionalProperties": false,
@@ -328,7 +372,11 @@
               "send": false,
               "removeTestingFlag": false
             },
-            "testing": {}
+            "testing": {
+              "variationName": "something",
+              "firstRunTimestamp": 1234567890,
+              "expired": true
+            }
           },
           {
             "activeExperimentName": "aStudy",
@@ -349,7 +397,9 @@
               "removeTestingFlag": true
             },
             "testing": {
-              "variationName": "something"
+              "variationName": "something",
+              "firstRunTimestamp": 1234567890,
+              "expired": true
             }
           },
           {

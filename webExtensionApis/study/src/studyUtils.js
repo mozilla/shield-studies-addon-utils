@@ -341,8 +341,14 @@ class StudyUtils {
   }
 
   getFirstRunTimestamp() {
-    return Number(
-      Services.prefs.getStringPref(this._internals.prefs.firstRunTimestamp, 0),
+    return (
+      this._internals.studySetup.testing.firstRunTimestamp ||
+      Number(
+        Services.prefs.getStringPref(
+          this._internals.prefs.firstRunTimestamp,
+          0,
+        ),
+      )
     );
   }
 
@@ -365,6 +371,9 @@ class StudyUtils {
    * @return {Number} delayInMinutes Either the time left or Number.MAX_SAFE_INTEGER
    */
   getDelayInMinutes() {
+    if (this._internals.studySetup.testing.expired === true) {
+      return 0;
+    }
     const toMinutes = 1 / (1000 * 60);
     const days = this._internals.studySetup.expire.days;
     let delayInMinutes = Number.MAX_SAFE_INTEGER; // approx 286,000 years

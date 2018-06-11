@@ -34,6 +34,16 @@
       {type: 'string'}]
     testcases: [null, 'a string']
 
+  - id: NullableInteger
+    $schema: "http://json-schema.org/draft-04/schema"
+    oneOf: [
+      {type: 'null'},
+      {type: 'integer'}]
+    choices: [
+      {type: 'null'},
+      {type: 'integer'}]
+    testcases: [null, 1234567890]
+
   - id: studyTypesEnum
     $schema: "http://json-schema.org/draft-04/schema"
     type: string
@@ -190,6 +200,13 @@
           variationName:
             $ref: NullableString
             optional: true
+          firstRunTimestamp:
+            $ref: NullableInteger
+            optional: true
+          expired:
+            choices: [{type: 'null'}, {type: 'boolean'}]
+            oneOf: [{type: 'null'}, {type: 'boolean'}]
+            optional: true
         additionalProperties: false
         optional: true
 
@@ -216,7 +233,11 @@
         endings: {anEnding: {baseUrls: ['some.url']}},
         weightedVariations: [{name: feature-active, weight: 1.5}],
         telemetry: {  send: false, removeTestingFlag: false},
-        testing: {}
+        testing: {
+          variationName: "something",
+          firstRunTimestamp: 1234567890,
+          expired: true,
+        }
       },
       {
         activeExperimentName: aStudy,
@@ -226,6 +247,8 @@
         telemetry: {  send: false, removeTestingFlag: true},
         testing: {
           variationName: "something",
+          firstRunTimestamp: 1234567890,
+          expired: true,
         }
       },
       {"activeExperimentName":"shield-utils-test-addon@shield.mozilla.org","studyType":"shield","telemetry":{"send":true,"removeTestingFlag":false},"endings":{"user-disable":{"baseUrls":["http://www.example.com/?reason=user-disable"]},"ineligible":{"baseUrls":["http://www.example.com/?reason=ineligible"]},"expired":{"baseUrls":["http://www.example.com/?reason=expired"]},"some-study-defined-ending":{"category":"ended-neutral"},"some-study-defined-ending-with-survey-url":{"baseUrls":["http://www.example.com/?reason=some-study-defined-ending-with-survey-url"],"category":"ended-negative"}},"weightedVariations":[{"name":"feature-active","weight":1.5},{"name":"feature-passive","weight":1.5},{"name":"control","weight":1}],"expire":{"days":14},"testing":{},"allowEnroll":true}

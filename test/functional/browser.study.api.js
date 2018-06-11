@@ -471,6 +471,48 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         "should be an exception",
       );
     });
+
+    it("6. testing.firstRunTimestamp override works as expected", async function() {
+      // console.debug("doing test 6");
+      const thisSetup = studySetupForTests({
+        testing: {
+          firstRunTimestamp: 123,
+        },
+      });
+      const data = await addonExec(async (setup, cb) => {
+        // this is what runs in the webExtension scope.
+        const info = await browser.study.setup(setup);
+        const internals = await browser.studyDebug.getInternals();
+        // call back with all the data we care about to Mocha / node
+        cb({ info, internals });
+      }, thisSetup);
+      const { info } = data;
+      // console.debug(full(data));
+      assert.strictEqual(
+        info.firstRunTimestamp,
+        123,
+        "should be the same as our override",
+      );
+    });
+
+    it("7. testing.expired override works as expected", async function() {
+      // console.debug("doing test 7");
+      const thisSetup = studySetupForTests({
+        testing: {
+          expired: true,
+        },
+      });
+      const data = await addonExec(async (setup, cb) => {
+        // this is what runs in the webExtension scope.
+        const info = await browser.study.setup(setup);
+        const internals = await browser.studyDebug.getInternals();
+        // call back with all the data we care about to Mocha / node
+        cb({ info, internals });
+      }, thisSetup);
+      const { info } = data;
+      // console.debug(full(data));
+      assert.strictEqual(info.delayInMinutes, 0, "should be zero");
+    });
   });
 
   describe("a full life-cycle: setup, sendTelemetry, endStudy", function() {
