@@ -26,7 +26,7 @@ import sampling from "./sampling";
 const UTILS_VERSION = require("../../../package.json").version;
 const PACKET_VERSION = 3;
 
-const Ajv = require("ajv/dist/ajv.min.js");
+const Ajv = require("ajv");
 
 const { Services } = ChromeUtils.import(
   "resource://gre/modules/Services.jsm",
