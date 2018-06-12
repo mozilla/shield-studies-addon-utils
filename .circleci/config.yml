@@ -3,52 +3,66 @@ jobs:
   build:
     docker:
       - image: circleci/node:latest-browsers
-        environment:
-          FIREFOX_BINARY: /home/circleci/checkout/firefox/firefox-bin
-          FIREFOX_DEVELOPER_BIN: /home/circleci/checkout/firefox/firefox-bin
 
     working_directory: ~/checkout
 
     steps:
       - checkout
 
-      # Download and cache dependencies (update the cache keys to force a newer version of devedition)
+      # Download and cache dependencies (update the cache keys to force a newer version)
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "package-lock.json" }}-devedition-20180608
+          - v1-dependencies-{{ checksum "package-lock.json" }}-20180612
 
       - run:
           name: Install dependencies
           command: npm install
 
       - run:
-          name:  Get devedition
+          name:  Install different versions of Firefox
           command: |
-            if [ -d ./firefox ]; then
-              echo "firefox dir exists, must be from cache"
-            else
-              ./node_modules/.bin/get-firefox -b devedition -p linux -e
-            fi
-            ls -l $FIREFOX_BINARY
-            $FIREFOX_BINARY -v
+            ./node_modules/.bin/get-firefox -b nightly -p linux -e
+            mv ./firefox ./firefox-nightly
+            ./node_modules/.bin/get-firefox -b devedition -p linux -e
+            mv ./firefox ./firefox-devedition
+            ./node_modules/.bin/get-firefox -b beta -p linux -e
+            mv ./firefox ./firefox-beta
+            ./node_modules/.bin/get-firefox -b release -p linux -e
+            mv ./firefox ./firefox-release
 
       - save_cache:
           paths:
             - node_modules
-            - firefox
-          key: v1-dependencies-{{ checksum "package-lock.json" }}-devedition-20180608
+            - firefox-nightly
+            - firefox-devedition
+            - firefox-beta
+            - firefox-release
+            - firefox-unbranded-release
+          key: v1-dependencies-{{ checksum "package-lock.json" }}-20180612
 
       - run:
-          name: build study apis (webpack) and lint
+          name: Build study apis (webpack) and lint
           command: npm run build
 
       - run:
-          name: build study apis (webpack) and lint + build test add-on
-          command: npm run test-addon:build
+          name: Build test add-on
+          command: npm run test-addon:bundle-utils && npm run test-addon:build
 
       - run:
-          name: build study apis (webpack) and lint + build test add-on + functional tests
-          command: npm run test
+          name: Test with Firefox Release
+          command: FIREFOX_BINARY=/home/circleci/checkout/firefox-release/firefox-bin npm run test-only
+
+      - run:
+          name: Test with Firefox Beta
+          command: FIREFOX_BINARY=/home/circleci/checkout/firefox-beta/firefox-bin npm run test-only
+
+      - run:
+          name: Test with Firefox Developer Edition
+          command: FIREFOX_BINARY=/home/circleci/checkout/firefox-devedition/firefox-bin FIREFOX_DEVELOPER_BIN=/home/circleci/checkout/firefox-devedition/firefox-bin npm run test-only
+
+      - run:
+          name: Test with Firefox Nightly
+          command: FIREFOX_BINARY=/home/circleci/checkout/firefox-nightly/firefox-bin npm run test-only
 
       - store_artifacts:
           path: "examples/test-addon/dist"
