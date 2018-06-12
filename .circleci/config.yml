@@ -48,6 +48,9 @@ jobs:
           name: Build test add-on
           command: npm run test-addon:bundle-utils && npm run test-addon:build
 
+      - store_artifacts:
+          path: "test-addon/dist"
+
       - run:
           name: Test with Firefox Release
           command: FIREFOX_BINARY=/home/circleci/checkout/firefox-release/firefox-bin npm run test-only
@@ -63,6 +66,3 @@ jobs:
       - run:
           name: Test with Firefox Nightly
           command: FIREFOX_BINARY=/home/circleci/checkout/firefox-nightly/firefox-bin npm run test-only
-
-      - store_artifacts:
-          path: "examples/test-addon/dist"
