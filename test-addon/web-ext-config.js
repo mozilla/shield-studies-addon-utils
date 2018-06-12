@@ -13,6 +13,7 @@ const defaultConfig = {
     firefox: "nightly",
     browserConsole: true,
     startUrl: ["about:debugging"],
+    pref: ["shieldStudy.logLevel='All'"],
   },
 };
 
