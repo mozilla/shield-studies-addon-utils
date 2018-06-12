@@ -379,7 +379,6 @@ class StudyUtils {
   }
 
   /**
-   * @async
    * Gets the telemetry client ID for the user.
    * @returns {string} - the telemetry client ID
    */
@@ -431,7 +430,6 @@ class StudyUtils {
   }
 
   /**
-   * @async
    * Deterministically selects and returns the study variation for the user.
    * @param {string} activeExperimentName name to use as part of the hash
    * @param {Object[]} weightedVariations - see schema.weightedVariations.json
@@ -528,7 +526,6 @@ class StudyUtils {
   }
 
   /**
-   * @async
    * Ends the study:
    *  - Removes the study from the active list of telemetry experiments
    *  - Sends a telemetry ping about the nature of the ending
@@ -546,8 +543,11 @@ class StudyUtils {
     let ending = this._internals.studySetup.endings[endingName];
     if (!ending) {
       // a 'no-action' ending is okay for the 'always handle'
-      if (alwaysHandle.includes(endingName)) ending = {};
-      else throw new ExtensionError(`${endingName} isn't known ending`);
+      if (alwaysHandle.includes(endingName)) {
+        ending = {};
+      } else {
+        throw new ExtensionError(`${endingName} isn't known ending`);
+      }
     }
 
     // throw if already ending
@@ -635,7 +635,6 @@ class StudyUtils {
   }
 
   /**
-   * @async
    * Builds an object whose properties are query arguments that can be
    * appended to a study ending url
    * @returns {Object} - the query arguments for the study
@@ -658,7 +657,6 @@ class StudyUtils {
   }
 
   /**
-   * @async
    * Validates and submits telemetry pings from StudyUtils.
    * @param {Object} data - the data to send as part of the telemetry packet
    * @param {string} bucket - the type of telemetry packet to be sent
@@ -731,7 +729,6 @@ class StudyUtils {
   }
 
   /**
-   * @async
    * Validates and submits telemetry pings from the addon; mostly from
    * webExtension messages.
    * @param {Object} data - the data to send as part of the telemetry packet

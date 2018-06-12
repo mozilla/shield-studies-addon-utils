@@ -6,15 +6,16 @@
 # - events
 # - types
 #
+# Note: JSONSchema for WEE interfaces is a modified version of Draft-03.
 #
-# possible types are here
-# - https://searchfox.org/mozilla-central/source/toolkit/components/extensions/Schemas.jsm#2418-2426
+# Note: possible `types` are here
+# - https://dxr.mozilla.org/mozilla-central/source/toolkit/components/extensions/Schemas.jsm#2417-2427
 # - type property:
 #   boolean, integer, number, string, array, object, or any.
 
 #
-#  "choices" is a non-standard extension, see:
-#  https://searchfox.org/mozilla-central/source/toolkit/components/extensions/Schemas.jsm
+# Note: "choices" is a non-standard extension to draft-03, see:
+# - https://dxr.mozilla.org/mozilla-central/source/toolkit/components/extensions/Schemas.jsm#2875-2879
 #
 
 
@@ -511,16 +512,9 @@
   # https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/background.html#javascript-apis
   # https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
   # https://dxr.mozilla.org/mozilla-central/source/toolkit/components/extensions/parent/ext-runtime.js#41
-  # https://searchfox.org/mozilla-central/source/toolkit/components/extensions/ExtensionCommon.jsm#1671
-  events:
-  # - name: onDataPermissionsChange
-  #   type: function
-  #   defaultReturn: {shield: true, pioneer: false}
-  #   description: Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation.
-  #   parameters:  # for the callback
-  #   - name: updatedPermissions
-  #     type: object
+  #https://dxr.mozilla.org/mozilla-central/source/toolkit/components/extensions/ExtensionCommon.jsm?q=file%3AExtensionCommon.jsm&redirect_type=single#1673
 
+  events:
   - name: onReady
     type: function
     defaultReturn: {variation: 'styleA', firstRunTimestamp: 1523968204184}
@@ -544,6 +538,14 @@
     - name: ending
       type: object
 
+  # TODO 5.1
+  # - name: onDataPermissionsChange
+  #   type: function
+  #   defaultReturn: {shield: true, pioneer: false}
+  #   description: Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation.
+  #   parameters:  # for the callback
+  #   - name: updatedPermissions
+  #     type: object
 
 - namespace:  studyDebug
   description: Interface for Test Utilities

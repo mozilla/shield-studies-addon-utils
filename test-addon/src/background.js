@@ -81,6 +81,7 @@ class StudyLifeCycleHandler {
       await browser.tabs.create({ url });
     }
     switch (ending.reason) {
+      // if necessary, do different actions for different reasons.
       default:
         await this.cleanup();
         // uninstall the addon?
@@ -135,7 +136,10 @@ browser.windows.create(createData);
 /**
  * Fired when the extension is first installed, when the extension is updated
  * to a new version, and when the browser is updated to a new version.
- * @param {object} details Unclear what a 'details' is TODO
+ *
+ * See:  https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/runtime/onInstalled
+ *
+ * @param {object} details webExtension details object
  * @returns {undefined} Nothing
  */
 function handleInstalled(details) {

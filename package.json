@@ -39,8 +39,6 @@
   "files": [
     "bin/copyStudyUtils.js",
     "testUtils",
-    "webExtensionApis/prefs/api.js",
-    "webExtensionApis/prefs/schema.json",
     "webExtensionApis/study/api.js",
     "webExtensionApis/study/schema.json",
     "webExtensionApis/study/src/telemetry.js"
