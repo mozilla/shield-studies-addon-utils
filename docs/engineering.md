@@ -1,6 +1,6 @@
-# Engineering Shield Study add-ons
+# Engineering Shield Study Add-ons
 
-The [template](https://github.com/mozilla/shield-studies-addon-template) contains files for making a **Shield Study Add-on**. Shield Study Add-ons are **LEGACY ADD-ONS** for Firefox that include the **SHIELD-STUDIES-ADDON-UTILS** (`StudyUtils.jsm`) file (4.1.x series).
+This document describes general Shield Study Add-on engineering and is aimed at Add-on engineers. To improve the utils in this repo, see [Development on the Utils](./development-on-the-utils.md).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -59,6 +59,8 @@ The [template](https://github.com/mozilla/shield-studies-addon-template) contain
 * respond coherently to add-on life-cycle events (`install`, `startup`, `disable`, `uninstall`).
 
 ## tl;dr - Creating a new Shield Study add-on based on the template
+
+The [template](https://github.com/mozilla/shield-studies-addon-template) contains files for making a **Shield Study Add-on**.
 
 1.  **One time**:
 

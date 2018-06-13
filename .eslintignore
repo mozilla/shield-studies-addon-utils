@@ -1,0 +1,18 @@
+# do not lint/format generated artifacts
+dist/
+webExtensionApis/study/api.js
+package-lock.json
+# do not lint/format bundled util libraries
+examples/test-addon/src/privileged/prefs/
+examples/test-addon/src/privileged/study/
+# makes sure that eslintrc.js gets linted/formatted
+!.eslintrc.js
+# don't lint/format code the directory where get-firefox stores the Firefox binaries
+/firefox
+# don't lint/format package.json since npm install formats it differently by default
+package.json
+# don't lint node_modules
+node_modules
+
+# re #169, skip the misc dir
+misc/

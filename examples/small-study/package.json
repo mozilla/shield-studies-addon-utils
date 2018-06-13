@@ -1,0 +1,16 @@
+{
+  "name": "small-study",
+  "version": "1.0.0",
+  "description": "A tiny example study using the studyUtils",
+  "main": "",
+  "scripts": {
+    "postinstall": "npm run rebuild",
+    "rebuild": "(cd ../../ && npm run build) && ../../bin/copyStudyUtils.js src/privileged",
+    "start": "web-ext run"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "npm": "^6.0.1"
+  }
+}

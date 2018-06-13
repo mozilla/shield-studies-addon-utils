@@ -2,33 +2,53 @@ version: 2
 jobs:
   build:
     docker:
-      - image: marcrowo/shield-study-utils-base:3
+      - image: circleci/node:latest-browsers
         environment:
-          DISPLAY: :10
+          FIREFOX_BINARY: /home/circleci/checkout/firefox/firefox-bin
 
-    working_directory: /shield-study-addon-utils
+    working_directory: ~/checkout
 
     steps:
-      - run:
-          name: xvfb and openbox
-          command: Xvfb $DISPLAY -ac & sleep 3 & openbox
-          background: true
-
       - checkout
 
-      - run: npm install
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
 
       - run:
-          name: webpack and eslint
-          command: npm run dist
+          name: cleanly install dependencies
+          command: if [ -d node_modules ]; then rm -rf node_modules; fi; npm install
 
       - run:
-          name: Build .XPI
-          command: npm run build-test-addon-xpi
+          name:  Get nightly
+          command: |
+            if [ -d ./firefox ]; then
+              echo "firefox dir exists, must be from cache"
+            else
+              ./node_modules/.bin/get-firefox -b nightly -p linux -e
+              ls ./firefox/firefox-bin
+            fi
+
+      - save_cache:
+          paths:
+            - node_modules
+            - firefox
+          key: v1-dependencies-{{ checksum "package.json" }}
 
       - run:
-          name: Functional tests
+          name: build study apis (webpack) and lint
+          command: npm run build
+
+      - run:
+          name: build study apis (webpack) and lint + build test add-on
+          command: npm run test-addon:build
+
+      - run:
+          name: build study apis (webpack) and lint + build test add-on + functional tests
           command: npm run test
 
       - store_artifacts:
-          path: "test-addon/test-addon.xpi"
+          path: "examples/test-addon/dist"
