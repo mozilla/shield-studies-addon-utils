@@ -2,11 +2,15 @@
 /* eslint no-logger: off */
 /* global ExtensionAPI */
 
+/** 1.  Provides the WebExtension Experiment `getApi`
+ * 2.  Handles 'user-disable' telemetry.
+ * 3.  Does NOT handle 'user-disable' surveys, see #194
+ */
+
 ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 
 const { logger, studyUtils } = require("./studyUtils.js");
-logger.log("in index!");
 
 // eslint-disable-next-line no-undef
 const { EventManager } = ExtensionCommon;
@@ -46,7 +50,7 @@ this.study = class extends ExtensionAPI {
     this.extension = extension;
     this.studyUtils = studyUtils;
     this.studyApiEventEmitter = new StudyApiEventEmitter();
-    logger.log("constructed!");
+    logger.debug("constructed!");
   }
 
   /**
@@ -59,17 +63,18 @@ this.study = class extends ExtensionAPI {
    * https://searchfox.org/mozilla-central/source/toolkit/components/extensions/parent/ext-protocolHandlers.js#46
    *
    * @param {string} shutdownReason one of the reasons
-   * @returns {undefined} TODO TODO
+   * @returns {undefined}
    */
   async onShutdown(shutdownReason) {
-    logger.log("possible uninstalling", shutdownReason);
+    logger.debug("possible uninstalling", shutdownReason);
     if (
       shutdownReason === "ADDON_UNINSTALL" ||
       shutdownReason === "ADDON_DISABLE"
     ) {
-      logger.log("definitely uninstalling", shutdownReason);
+      logger.debug("definitely uninstall | disable", shutdownReason);
       const anEndingAlias = "user-disable";
       const endingResponse = await this.studyUtils.endStudy(anEndingAlias);
+      // See #194, getApi is already torn down, so cannot hear it.
       await this.studyApiEventEmitter.emitEndStudy(endingResponse);
     }
   }
@@ -231,7 +236,7 @@ this.study = class extends ExtensionAPI {
          *  3.  throws if the endStudy fails
          **/
         endStudy: async function endStudy(anEndingAlias) {
-          logger.log("called endStudy anEndingAlias");
+          logger.debug("called endStudy anEndingAlias");
           const endingResponse = await studyUtils.endStudy(anEndingAlias);
           studyApiEventEmitter.emitEndStudy(endingResponse);
         },
@@ -239,7 +244,7 @@ this.study = class extends ExtensionAPI {
         /* current study configuration, including
          *  - variation
          *  - activeExperimentName
-         *  - timeUntilExpire
+         *  - delayInMinutes
          *  - firstRunTimestamp
          *
          *  But not:
@@ -248,7 +253,7 @@ this.study = class extends ExtensionAPI {
          *  Throws ExtensionError if called before `browser.study.setup`
          **/
         getStudyInfo: async function getStudyInfo() {
-          logger.log("called getStudyInfo ");
+          logger.debug("called getStudyInfo ");
           return studyUtils.info();
         },
 
@@ -273,7 +278,7 @@ this.study = class extends ExtensionAPI {
          * @returns {undefined}
          */
         sendTelemetry: async function sendTelemetry(payload) {
-          logger.log("called sendTelemetry payload");
+          logger.debug("called sendTelemetry payload");
 
           function throwIfInvalid(obj) {
             // Check: all keys and values must be strings,
@@ -321,7 +326,7 @@ this.study = class extends ExtensionAPI {
 
         /* Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client. */
         validateJSON: async function validateJSON(someJson, jsonschema) {
-          logger.log("called validateJSON someJson, jsonschema");
+          logger.debug("called validateJSON someJson, jsonschema");
           return studyUtils.jsonschema.validate(someJson, jsonschema);
           // return { valid: true, errors: [] };
         },

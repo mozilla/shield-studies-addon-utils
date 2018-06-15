@@ -7,6 +7,11 @@ import sampling from "./sampling";
 /*
 * Supports the `browser.study` webExtensionExperiment api.
 *
+* - Conversion of v4 "StudyUtils.jsm".
+* - Contains the 'dangerous' code.
+* - Creates and exports the `studyUtils` singleton
+* - does all the actuall privileged work including Telemetry
+*
 * See API.md at:
 * https://github.com/mozilla/shield-studies-addon-utils/blob/develop/docs/api.md
 *
@@ -270,9 +275,24 @@ class StudyUtils {
     }
     guard.it("studySetup", studySetup, "(in studySetup)");
 
+    function getVariationByName(name, variations) {
+      if (!name) return null;
+      const chosen = variations.filter(x => x.name === name)[0];
+      if (!chosen) {
+        throw new ExtensionError(
+          `setup error: testing.variationName "${name}" not in ${JSON.stringify(
+            variations,
+          )}`,
+        );
+      }
+      return chosen;
+    }
     // variation:  decide and set
     const variation =
-      studySetup.weightedVariations[studySetup.testing.variationName] ||
+      getVariationByName(
+        studySetup.testing.variationName,
+        studySetup.weightedVariations,
+      ) ||
       (await this._deterministicVariation(
         studySetup.activeExperimentName,
         studySetup.weightedVariations,
@@ -339,21 +359,26 @@ class StudyUtils {
 
   /** Calculate time left in study given `studySetup.expire.days` and firstRunTimestamp
    *
-   * @return {Number} timeUntilExpire Either the time left or Number.MAX_SAFE_INTEGER
+   * Safe to use with `browser.alarms.create{ delayInMinutes, }`
+   *
+   * A value of 0 means "the past / now".
+   *
+   * @return {Number} delayInMinutes Either the time left or Number.MAX_SAFE_INTEGER
    */
-  getTimeUntilExpire() {
+  getDelayInMinutes() {
+    const toMinutes = 1 / (1000 * 60);
     const days = this._internals.studySetup.expire.days;
+    let delayInMinutes = Number.MAX_SAFE_INTEGER; // approx 286,000 years
     if (days) {
       // days in ms
       const ms = days * 86400 * 1000;
       const firstrun = this.getFirstRunTimestamp();
-      return firstrun + ms - Date.now();
+      delayInMinutes = Math.max(firstrun + ms - Date.now(), 0);
     }
-    return Number.MAX_SAFE_INTEGER; // approx 286,000 years
+    return delayInMinutes * toMinutes;
   }
 
   /**
-   * @async
    * Gets the telemetry client ID for the user.
    * @returns {string} - the telemetry client ID
    */
@@ -389,7 +414,7 @@ class StudyUtils {
       firstRunTimestamp: this.getFirstRunTimestamp(),
       variation: this.getVariation(),
       shieldId: this.getShieldId(),
-      timeUntilExpire: this.getTimeUntilExpire(),
+      delayInMinutes: this.getDelayInMinutes(),
     };
     guard.it("studyInfoObject", studyInfo, "(in studyInfo)");
     return studyInfo;
@@ -405,7 +430,6 @@ class StudyUtils {
   }
 
   /**
-   * @async
    * Deterministically selects and returns the study variation for the user.
    * @param {string} activeExperimentName name to use as part of the hash
    * @param {Object[]} weightedVariations - see schema.weightedVariations.json
@@ -502,7 +526,6 @@ class StudyUtils {
   }
 
   /**
-   * @async
    * Ends the study:
    *  - Removes the study from the active list of telemetry experiments
    *  - Sends a telemetry ping about the nature of the ending
@@ -520,8 +543,11 @@ class StudyUtils {
     let ending = this._internals.studySetup.endings[endingName];
     if (!ending) {
       // a 'no-action' ending is okay for the 'always handle'
-      if (alwaysHandle.includes(endingName)) ending = {};
-      else throw new ExtensionError(`${endingName} isn't known ending`);
+      if (alwaysHandle.includes(endingName)) {
+        ending = {};
+      } else {
+        throw new ExtensionError(`${endingName} isn't known ending`);
+      }
     }
 
     // throw if already ending
@@ -609,7 +635,6 @@ class StudyUtils {
   }
 
   /**
-   * @async
    * Builds an object whose properties are query arguments that can be
    * appended to a study ending url
    * @returns {Object} - the query arguments for the study
@@ -632,7 +657,6 @@ class StudyUtils {
   }
 
   /**
-   * @async
    * Validates and submits telemetry pings from StudyUtils.
    * @param {Object} data - the data to send as part of the telemetry packet
    * @param {string} bucket - the type of telemetry packet to be sent
@@ -705,7 +729,6 @@ class StudyUtils {
   }
 
   /**
-   * @async
    * Validates and submits telemetry pings from the addon; mostly from
    * webExtension messages.
    * @param {Object} data - the data to send as part of the telemetry packet

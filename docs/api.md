@@ -127,7 +127,7 @@ current study configuration, including
 
 * variation
 * activeExperimentName
-* timeUntilExpire
+* delayInMinutes
 * firstRunTimestamp
 * isFirstRun
 
@@ -512,7 +512,7 @@ Act on it by
     "activeExperimentName": {
       "type": "string"
     },
-    "timeUntilExpire": {
+    "delayInMinutes": {
       "type": "number"
     },
     "isFirstRun": {
@@ -549,7 +549,8 @@ Act on it by
           "type": "integer"
         }
       },
-      "optional": true
+      "optional": true,
+      "additionalProperties": false
     },
     "endings": {
       "type": "object",
@@ -577,28 +578,9 @@ Act on it by
         "variationName": {
           "$ref": "NullableString",
           "optional": true
-        },
-        "expired": {
-          "choices": [
-            {
-              "type": "null"
-            },
-            {
-              "type": "boolean"
-            }
-          ],
-          "oneOf": [
-            {
-              "type": "null"
-            },
-            {
-              "type": "boolean"
-            }
-          ],
-          "optional": true
         }
       },
-      "additionalProperties": true,
+      "additionalProperties": false,
       "optional": true
     }
   },
@@ -675,7 +657,7 @@ Act on it by
         "removeTestingFlag": true
       },
       "testing": {
-        "expired": true
+        "variationName": "something"
       }
     },
     {

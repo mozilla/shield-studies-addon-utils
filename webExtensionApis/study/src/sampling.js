@@ -1,3 +1,5 @@
+/** Sampling utilies, including hashing functions */
+
 const { Services } = ChromeUtils.import(
   "resource://gre/modules/Services.jsm",
   {},
@@ -36,7 +38,6 @@ export function chooseWeighted(weightedVariations, fraction = Math.random()) {
 }
 
 /**
- * @async
  * Converts a string into a fraction (0 <= fraction < 1) based on the first
  * X bits of its sha256 hexadecimal representation
  * Note: Salting (adding the study name to the telemetry clientID) ensures
@@ -55,7 +56,6 @@ export async function hashFraction(saltedString, bits = 12) {
 }
 
 /**
- * @async
  * Converts a string into its sha256 hexadecimal representation.
  * Note: This is ultimately used to make a hash of the user's telemetry clientID
  * and the study name.

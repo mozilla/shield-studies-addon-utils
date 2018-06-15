@@ -6,15 +6,16 @@
 # - events
 # - types
 #
+# Note: JSONSchema for WEE interfaces is a modified version of Draft-03.
 #
-# possible types are here
-# - https://searchfox.org/mozilla-central/source/toolkit/components/extensions/Schemas.jsm#2418-2426
+# Note: possible `types` are here
+# - https://dxr.mozilla.org/mozilla-central/source/toolkit/components/extensions/Schemas.jsm#2417-2427
 # - type property:
 #   boolean, integer, number, string, array, object, or any.
 
 #
-#  "choices" is a non-standard extension, see:
-#  https://searchfox.org/mozilla-central/source/toolkit/components/extensions/Schemas.jsm
+# Note: "choices" is a non-standard extension to draft-03, see:
+# - https://dxr.mozilla.org/mozilla-central/source/toolkit/components/extensions/Schemas.jsm#2875-2879
 #
 
 
@@ -133,7 +134,7 @@
         type: 'number'  # 1523968204184,
       activeExperimentName:
         type: string    # some experiment"
-      timeUntilExpire:
+      delayInMinutes:
         type:  number
       isFirstRun:
         type: 'boolean'
@@ -169,6 +170,7 @@
           days:
             type: 'integer'
         optional: true
+        additionalProperties: false
       endings:
         type: object
         additionalProperties:
@@ -188,11 +190,7 @@
           variationName:
             $ref: NullableString
             optional: true
-          expired:
-            choices: [{type: 'null'}, {type: 'boolean'}]
-            oneOf: [{type: 'null'}, {type: 'boolean'}]
-            optional: true
-        additionalProperties: true
+        additionalProperties: false
         optional: true
 
     required:
@@ -227,7 +225,7 @@
         weightedVariations: [{name: feature-active, weight: 1.5}],
         telemetry: {  send: false, removeTestingFlag: true},
         testing: {
-          expired: true,
+          variationName: "something",
         }
       },
       {"activeExperimentName":"shield-utils-test-addon@shield.mozilla.org","studyType":"shield","telemetry":{"send":true,"removeTestingFlag":false},"endings":{"user-disable":{"baseUrls":["http://www.example.com/?reason=user-disable"]},"ineligible":{"baseUrls":["http://www.example.com/?reason=ineligible"]},"expired":{"baseUrls":["http://www.example.com/?reason=expired"]},"some-study-defined-ending":{"category":"ended-neutral"},"some-study-defined-ending-with-survey-url":{"baseUrls":["http://www.example.com/?reason=some-study-defined-ending-with-survey-url"],"category":"ended-negative"}},"weightedVariations":[{"name":"feature-active","weight":1.5},{"name":"feature-passive","weight":1.5},{"name":"control","weight":1}],"expire":{"days":14},"testing":{},"allowEnroll":true}
@@ -374,7 +372,7 @@
       current study configuration, including
       - variation
       - activeExperimentName
-      - timeUntilExpire
+      - delayInMinutes
       - firstRunTimestamp
       - isFirstRun
 
@@ -383,7 +381,7 @@
 
       Throws Error if called before `browser.study.setup`
 
-    defaultReturn: {variation: "styleA", firstRunTimestamp: 1523968204184, activeExperimentName: "some experiment", timeUntilExpire: 12}
+    defaultReturn: {variation: "styleA", firstRunTimestamp: 1523968204184, activeExperimentName: "some experiment", delayInMinutes: 12}
     parameters: []
     returns:
     - $ref: studyInfoObject
@@ -514,16 +512,9 @@
   # https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/background.html#javascript-apis
   # https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
   # https://dxr.mozilla.org/mozilla-central/source/toolkit/components/extensions/parent/ext-runtime.js#41
-  # https://searchfox.org/mozilla-central/source/toolkit/components/extensions/ExtensionCommon.jsm#1671
-  events:
-  # - name: onDataPermissionsChange
-  #   type: function
-  #   defaultReturn: {shield: true, pioneer: false}
-  #   description: Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation.
-  #   parameters:  # for the callback
-  #   - name: updatedPermissions
-  #     type: object
+  #https://dxr.mozilla.org/mozilla-central/source/toolkit/components/extensions/ExtensionCommon.jsm?q=file%3AExtensionCommon.jsm&redirect_type=single#1673
 
+  events:
   - name: onReady
     type: function
     defaultReturn: {variation: 'styleA', firstRunTimestamp: 1523968204184}
@@ -547,6 +538,14 @@
     - name: ending
       type: object
 
+  # TODO 5.1
+  # - name: onDataPermissionsChange
+  #   type: function
+  #   defaultReturn: {shield: true, pioneer: false}
+  #   description: Fires whenever any 'dataPermission' changes, with the new dataPermission object.  Allows watching for shield or pioneer revocation.
+  #   parameters:  # for the callback
+  #   - name: updatedPermissions
+  #     type: object
 
 - namespace:  studyDebug
   description: Interface for Test Utilities
