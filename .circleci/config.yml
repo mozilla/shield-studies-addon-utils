@@ -12,7 +12,7 @@ jobs:
       # Download and cache dependencies (update the cache keys to force a newer version)
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "package-lock.json" }}-20180612
+          - v1-dependencies-{{ checksum "package-lock.json" }}-20180618
 
       - run:
           name: Install dependencies
@@ -21,14 +21,14 @@ jobs:
       - run:
           name:  Install different versions of Firefox
           command: |
-            ./node_modules/.bin/get-firefox -b nightly -p linux -e
-            mv ./firefox ./firefox-nightly
-            ./node_modules/.bin/get-firefox -b devedition -p linux -e
-            mv ./firefox ./firefox-devedition
-            ./node_modules/.bin/get-firefox -b beta -p linux -e
-            mv ./firefox ./firefox-beta
             ./node_modules/.bin/get-firefox -b release -p linux -e
             mv ./firefox ./firefox-release
+            ./node_modules/.bin/get-firefox -b beta -p linux -e
+            mv ./firefox ./firefox-beta
+            ./node_modules/.bin/get-firefox -b devedition -p linux -e
+            mv ./firefox ./firefox-devedition
+            ./node_modules/.bin/get-firefox -b nightly -p linux -e
+            mv ./firefox ./firefox-nightly
 
       - save_cache:
           paths:
@@ -38,7 +38,7 @@ jobs:
             - firefox-beta
             - firefox-release
             - firefox-unbranded-release
-          key: v1-dependencies-{{ checksum "package-lock.json" }}-20180612
+          key: v1-dependencies-{{ checksum "package-lock.json" }}-20180618
 
       - run:
           name: Build study apis (webpack) and lint
