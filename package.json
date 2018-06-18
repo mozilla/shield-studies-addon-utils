@@ -35,6 +35,9 @@
     "webpack": "^2.6.1",
     "yamljs": "^0.3.0"
   },
+  "engines": {
+    "npm": "^6.1.0"
+  },
   "files": [
     "bin/copyStudyUtils.js",
     "testUtils",
