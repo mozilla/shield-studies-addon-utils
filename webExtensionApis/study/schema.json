@@ -209,7 +209,7 @@
           "activeExperimentName": {
             "type": "string"
           },
-          "timeUntilExpire": {
+          "delayInMinutes": {
             "type": "number"
           },
           "isFirstRun": {
@@ -241,7 +241,8 @@
                 "type": "integer"
               }
             },
-            "optional": true
+            "optional": true,
+            "additionalProperties": false
           },
           "endings": {
             "type": "object",
@@ -269,28 +270,9 @@
               "variationName": {
                 "$ref": "NullableString",
                 "optional": true
-              },
-              "expired": {
-                "choices": [
-                  {
-                    "type": "null"
-                  },
-                  {
-                    "type": "boolean"
-                  }
-                ],
-                "oneOf": [
-                  {
-                    "type": "null"
-                  },
-                  {
-                    "type": "boolean"
-                  }
-                ],
-                "optional": true
               }
             },
-            "additionalProperties": true,
+            "additionalProperties": false,
             "optional": true
           }
         },
@@ -367,7 +349,7 @@
               "removeTestingFlag": true
             },
             "testing": {
-              "expired": true
+              "variationName": "something"
             }
           },
           {
@@ -515,12 +497,12 @@
         "type": "function",
         "async": true,
         "description":
-          "current study configuration, including\n- variation\n- activeExperimentName\n- timeUntilExpire\n- firstRunTimestamp\n- isFirstRun\n\nBut not:\n- telemetry clientId\n\nThrows Error if called before `browser.study.setup`\n",
+          "current study configuration, including\n- variation\n- activeExperimentName\n- delayInMinutes\n- firstRunTimestamp\n- isFirstRun\n\nBut not:\n- telemetry clientId\n\nThrows Error if called before `browser.study.setup`\n",
         "defaultReturn": {
           "variation": "styleA",
           "firstRunTimestamp": 1523968204184,
           "activeExperimentName": "some experiment",
-          "timeUntilExpire": 12
+          "delayInMinutes": 12
         },
         "parameters": [],
         "returns": [
