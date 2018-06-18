@@ -334,7 +334,7 @@ Act on it by
   "$schema": "http://json-schema.org/draft-04/schema",
   "type": "string",
   "enum": ["shield", "pioneer"],
-  "testcase": "shield"
+  "testcases": ["shield", "pioneer"]
 }
 ```
 
@@ -354,7 +354,11 @@ Act on it by
       "minimum": 0
     }
   },
-  "required": ["name", "weight"]
+  "required": ["name", "weight"],
+  "testcase": {
+    "name": "feature-active",
+    "weight": 1.5
+  }
 }
 ```
 
@@ -381,6 +385,10 @@ Act on it by
   "testcase": [
     {
       "name": "feature-active",
+      "weight": 1.5
+    },
+    {
+      "name": "feature-inactive",
       "weight": 1.5
     }
   ]

@@ -48,7 +48,7 @@
     $schema: "http://json-schema.org/draft-04/schema"
     type: string
     enum: ['shield', 'pioneer']
-    testcase:  'shield'
+    testcases: ['shield', 'pioneer']
 
   - id: weightedVariationObject
     $schema: "http://json-schema.org/draft-04/schema"
@@ -60,6 +60,7 @@
         type: "number"
         minimum: 0
     required: ["name", "weight"]
+    testcase: {name: feature-active, weight: 1.5}
 
   - id: weightedVariationsArray
     $schema: "http://json-schema.org/draft-04/schema"
@@ -75,7 +76,7 @@
           type: "number"
           minimum: 0
       required: ["name", "weight"]
-    testcase: [{name: feature-active, weight: 1.5}]
+    testcase: [{name: feature-active, weight: 1.5},{name: feature-inactive, weight: 1.5}]
 
   - id: anEndingRequest
     $schema: "http://json-schema.org/draft-04/schema"
