@@ -293,8 +293,8 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         // call back with all the data we care about to Mocha / node
         cb({ info, internals });
       }, thisSetup);
-      const { info, internals } = data;
       // console.debug(full(data));
+      const { info, internals } = data;
 
       // tests
       const now = Number(Date.now());
@@ -340,8 +340,8 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         thisSetup,
         now,
       );
-      const { info, internals } = data;
       // console.debug(full(data));
+      const { info, internals } = data;
 
       // tests
       const seenTelemetryStates = internals.seenTelemetry["shield-study"].map(
@@ -389,8 +389,9 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         // call back with all the data we care about to Mocha / node
         cb({ info, internals });
       }, thisSetup);
-      const { info, internals } = data;
       // console.debug(full(data));
+      const { info, internals } = data;
+
       // tests
       const seenTelemetryStates = internals.seenTelemetry["shield-study"].map(
         x => x.data.study_state,
@@ -443,6 +444,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         // call back with all the data we care about to Mocha / node
         cb({ info, internals });
       }, thisSetup);
+      // console.debug(full(data));
       const { info } = data;
       assert.strictEqual(
         info.variation.name,
@@ -450,7 +452,9 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         "should be 'the-rare-one'",
       );
     });
+
     it("5. testing.variationName: if variation name isn't in weightedVariations, throw setup error", async function() {
+      // console.debug("doing test 5");
       const thisSetup = studySetupForTests({
         testing: {
           variationName: "not-there",
@@ -465,6 +469,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         }
         cb("This should be an error");
       }, thisSetup);
+      // console.debug(full(error));
       assert.strictEqual(
         error,
         'Error: setup error: testing.variationName "not-there" not in [{"name":"control","weight":1}]',
@@ -486,8 +491,8 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         // call back with all the data we care about to Mocha / node
         cb({ info, internals });
       }, thisSetup);
-      const { info } = data;
       // console.debug(full(data));
+      const { info } = data;
       assert.strictEqual(
         info.firstRunTimestamp,
         123,
@@ -509,8 +514,8 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         // call back with all the data we care about to Mocha / node
         cb({ info, internals });
       }, thisSetup);
-      const { info } = data;
       // console.debug(full(data));
+      const { info } = data;
       assert.strictEqual(info.delayInMinutes, 0, "should be zero");
     });
   });
