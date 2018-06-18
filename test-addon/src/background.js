@@ -43,18 +43,18 @@ class StudyLifeCycleHandler {
    */
   async enableFeature(studyInfo) {
     console.log("enabling feature", studyInfo);
-    if (studyInfo.timeUntilExpire) {
+    const { delayInMinutes } = studyInfo;
+    if (delayInMinutes !== undefined) {
       const alarmName = `${browser.runtime.id}:studyExpiration`;
       const alarmListener = async alarm => {
         if (alarm.name === alarmName) {
-          console.log("study will expire now!");
           browser.alarms.onAlarm.removeListener(alarmListener);
           await browser.study.endStudy("expired");
         }
       };
       browser.alarms.onAlarm.addListener(alarmListener);
       browser.alarms.create(alarmName, {
-        when: Date.now() + studyInfo.timeUntilExpire,
+        delayInMinutes,
       });
     }
     feature.configure(studyInfo);
@@ -92,6 +92,19 @@ class ButtonFeature {
   constructor() {}
 
   async configure(studyInfo) {
+    let clicksInSession = 0;
+    browser.browserAction.setBadgeText({ text: "" + clicksInSession });
+
+    browser.browserAction.onClicked.addListener(() => {
+      clicksInSession++;
+      browser.browserAction.setBadgeText({ text: "" + clicksInSession });
+
+      // see the telemetry appear in `about:Telemetry`, as string:string
+      browser.study.sendTelemetry({ clicksInSession: "" + clicksInSession });
+      if (clicksInSession >= 3) {
+        browser.study.endStudy("user-used-the-feature");
+      }
+    });
     console.log(
       `Setting the browser action title to the variation name: '${
         studyInfo.variation.name

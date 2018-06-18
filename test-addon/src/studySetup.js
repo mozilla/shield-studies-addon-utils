@@ -91,8 +91,7 @@ const baseStudySetup = {
   // Optional: testing overrides.
   // TODO: Set from prefs in getStudySetup
   testing: {
-    variation: null,
-    firstRunTimestamp: null,
+    variationName: null,
   },
 };
 
@@ -138,8 +137,7 @@ async function getStudySetup() {
   /*
    * const id = browser.runtime.id;
    * const prefs = {
-   *   variation: `shield.${id}.variation`,
-   *   firstRunTimestamp: `shield.${id}.firstRunTimestamp`,
+   *   variationName: `shield.${id}.variationName`,
    *   };
    */
 
@@ -149,8 +147,7 @@ async function getStudySetup() {
   studySetup.allowEnroll = await cachingFirstRunShouldAllowEnroll();
   studySetup.testing = {
     /* Example: override testing keys various ways, such as by prefs. (TODO) */
-    variation: null, // await browser.prefs.getStringPref(prefs.variation);
-    firstRunTimestamp: null, // await browser.prefs.getStringPref(prefs.firstRunTimestamp);
+    variationName: null, // await browser.prefs.getStringPref(prefs.variationName);
   };
   return studySetup;
 }
