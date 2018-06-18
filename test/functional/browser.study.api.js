@@ -520,206 +520,208 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
     });
   });
 
-  describe("a full life-cycle: setup, sendTelemetry, endStudy", function() {
-    let studyInfo;
-    const overrides = {
-      activeExperimentName: "test:browser.study.api",
-      telemetry: {
-        send: true,
-        removeTestingFlag: false,
-      },
-      endings: {
-        customEnding: {
-          baseUrls: ["https://some.url"],
-          category: "ended-positive",
+  describe("life-cycle tests", function() {
+    describe("setup, sendTelemetry, manually invoked endStudy", function() {
+      let studyInfo;
+      const overrides = {
+        activeExperimentName: "test:browser.study.api",
+        telemetry: {
+          send: true,
+          removeTestingFlag: false,
         },
-      },
-    };
+        endings: {
+          customEnding: {
+            baseUrls: ["https://some.url"],
+            category: "ended-positive",
+          },
+        },
+      };
 
-    before(async function resetSetupDoTelemetryAndWait() {
-      await resetStudy();
-      studyInfo = await addonExec(async (_studySetupForTests, callback) => {
-        // Ensure we have a configured study and are supposed to run our feature
-        browser.study.onReady.addListener(async _studyInfo => {
-          await browser.study.sendTelemetry({ foo: "bar" });
-          callback(_studyInfo);
-        });
-        await browser.study.setup(_studySetupForTests);
-      }, studySetupForTests(overrides));
-      await delay(1000); // wait a second to telemetry to settle on disk.
-    });
-
-    it("should fire the onReady event upon successful setup", async () => {
-      // console.debug(studyInfo);
-      assert.strictEqual(
-        studyInfo.activeExperimentName,
-        overrides.activeExperimentName,
-      );
-    });
-
-    describe("telemetry archive / controller effects", function() {
-      let studyPings;
-      before(async () => {
-        studyPings = await addonExec(async callback => {
-          const _studyPings = await browser.study.searchSentTelemetry({
-            type: ["shield-study", "shield-study-addon"],
+      before(async function resetSetupDoTelemetryAndWait() {
+        await resetStudy();
+        studyInfo = await addonExec(async (_studySetupForTests, callback) => {
+          // Ensure we have a configured study and are supposed to run our feature
+          browser.study.onReady.addListener(async _studyInfo => {
+            await browser.study.sendTelemetry({ foo: "bar" });
+            callback(_studyInfo);
           });
-          callback(_studyPings);
-        });
-        // console.debug(full(studyPings.map(x => x.payload)));
-        // For debugging tests
-        // console.debug("Pings report: ", utils.telemetry.pingsReport(studyPings));
+          await browser.study.setup(_studySetupForTests);
+        }, studySetupForTests(overrides));
+        await delay(1000); // wait a second to telemetry to settle on disk.
       });
 
-      it("should have set the experiment to active in Telemetry", async () => {
-        const activeExperiments = await utils.telemetry.getActiveExperiments(
-          driver,
-        );
-        // console.debug(activeExperiments);
-        assert(
-          activeExperiments.hasOwnProperty(studyInfo.activeExperimentName),
+      it("should fire the onReady event upon successful setup", async () => {
+        // console.debug(studyInfo);
+        assert.strictEqual(
+          studyInfo.activeExperimentName,
+          overrides.activeExperimentName,
         );
       });
 
-      it("shield-study-addon telemetry should be working (as seen by telemetry)", async () => {
-        const shieldTelemetryPings = await addonExec(async callback => {
-          const _studyPings = await browser.study.searchSentTelemetry({
-            type: ["shield-study-addon"],
-          });
-          callback(_studyPings.map(x => x.payload));
-        });
-        // console.debug("pings", full(shieldTelemetryPings));
-        assert(shieldTelemetryPings[0].data.attributes.foo === "bar");
-      });
-
-      it("should have sent at least one shield telemetry ping", async () => {
-        assert(studyPings.length > 0, "at least one shield telemetry ping");
-      });
-
-      it("should have sent one shield-study telemetry ping with study_state=enter", async () => {
-        const filteredPings = studyPings.filter(
-          ping =>
-            ping.type === "shield-study" &&
-            ping.payload.data.study_state === "enter",
-        );
-        assert(
-          filteredPings.length > 0,
-          "at least one shield-study telemetry ping with study_state=enter",
-        );
-      });
-
-      it("should have sent one shield-study telemetry ping with study_state=installed", async () => {
-        const filteredPings = studyPings.filter(
-          ping =>
-            ping.type === "shield-study" &&
-            ping.payload.data.study_state === "installed",
-        );
-        assert(
-          filteredPings.length > 0,
-          "at least one shield-study telemetry ping with study_state=installed",
-        );
-      });
-
-      it("should have sent one shield-study-addon telemetry ping with payload.data.attributes.foo=bar", async () => {
-        const filteredPings = studyPings.filter(
-          ping =>
-            ping.type === "shield-study-addon" &&
-            ping.payload.data.attributes.foo === "bar",
-        );
-        assert(
-          filteredPings.length > 0,
-          "at least one shield-study-addon telemetry ping with payload.data.attributes.foo=bar",
-        );
-      });
-    });
-
-    describe("browser.study.endStudy() side effects for first time called", function() {
-      let endingResult;
-      before(async () => {
-        endingResult = await addonExec(async callback => {
-          browser.study.onEndStudy.addListener(async _endingResult => {
-            callback(_endingResult);
-          });
-          await browser.study.endStudy("customEnding");
-        });
-        // let telemetry and disk/files sync up
-        await delay(1000);
-      });
-      it("should have fire onEndStudy event with the endingResult", function() {
-        // console.debug(full(endingResult));
-        assert(endingResult);
-        assert.strictEqual(endingResult.endingName, "customEnding");
-        assert.strictEqual(endingResult.queryArgs.fullreason, "customEnding");
-        assert(endingResult.shouldUninstall);
-        assert.strictEqual(endingResult.urls.length, 1);
-      });
-
-      it("should have set the experiment as inactive", async () => {
-        const activeExperiments = await utils.telemetry.getActiveExperiments(
-          driver,
-        );
-        assert(
-          !activeExperiments.hasOwnProperty(studyInfo.activeExperimentName),
-        );
-      });
-
-      it("should throw when calling endStudy multiple times", async function() {
-        const caughtErrors = await addonExec(async callback => {
-          const _caughtErrors = [];
-          const reasons = ["ineligible", "expired", "user-disable"];
-          for (const r of reasons) {
-            try {
-              await browser.study.endStudy(r);
-            } catch (e) {
-              // console.debug("Caught error", e);
-              _caughtErrors.push(e.toString());
-            }
-          }
-          callback(_caughtErrors);
-        });
-        const expected = [
-          "Error: endStudy, requested:  ineligible, but already ending customEnding",
-          "Error: endStudy, requested:  expired, but already ending customEnding",
-          "Error: endStudy, requested:  user-disable, but already ending customEnding",
-        ];
-        assert.deepStrictEqual(expected, caughtErrors);
-      });
-
-      describe("should have sent the expected exit telemetry", function() {
+      describe("telemetry archive / controller effects", function() {
         let studyPings;
-
         before(async () => {
-          studyPings = await utils.telemetry.searchSentTelemetry(driver, {
-            type: ["shield-study", "shield-study-addon"],
+          studyPings = await addonExec(async callback => {
+            const _studyPings = await browser.study.searchSentTelemetry({
+              type: ["shield-study", "shield-study-addon"],
+            });
+            callback(_studyPings);
           });
+          // console.debug(full(studyPings.map(x => x.payload)));
           // For debugging tests
-          // console.debug(full(studyPings.map(x => [x.type, x.payload])));
-          // console.debug("Final pings report: ", utils.telemetry.pingsReport(studyPings));
+          // console.debug("Pings report: ", utils.telemetry.pingsReport(studyPings));
         });
 
-        it("one shield-study telemetry ping with study_state=exit", async () => {
-          const filteredPings = studyPings.filter(
-            ping =>
-              ping.type === "shield-study" &&
-              ping.payload.data.study_state === "exit",
+        it("should have set the experiment to active in Telemetry", async () => {
+          const activeExperiments = await utils.telemetry.getActiveExperiments(
+            driver,
           );
+          // console.debug(activeExperiments);
           assert(
-            filteredPings.length > 0,
-            "at least one shield-study telemetry ping with study_state=exit",
+            activeExperiments.hasOwnProperty(studyInfo.activeExperimentName),
           );
         });
 
-        it("one shield-study telemetry ping with study_state_fullname=customEnding", async () => {
+        it("shield-study-addon telemetry should be working (as seen by telemetry)", async () => {
+          const shieldTelemetryPings = await addonExec(async callback => {
+            const _studyPings = await browser.study.searchSentTelemetry({
+              type: ["shield-study-addon"],
+            });
+            callback(_studyPings.map(x => x.payload));
+          });
+          // console.debug("pings", full(shieldTelemetryPings));
+          assert(shieldTelemetryPings[0].data.attributes.foo === "bar");
+        });
+
+        it("should have sent at least one shield telemetry ping", async () => {
+          assert(studyPings.length > 0, "at least one shield telemetry ping");
+        });
+
+        it("should have sent one shield-study telemetry ping with study_state=enter", async () => {
           const filteredPings = studyPings.filter(
             ping =>
               ping.type === "shield-study" &&
-              ping.payload.data.study_state === "ended-positive" &&
-              ping.payload.data.study_state_fullname === "customEnding",
+              ping.payload.data.study_state === "enter",
           );
           assert(
             filteredPings.length > 0,
-            "at least one shield-study telemetry ping with study_state_fullname=customEnding",
+            "at least one shield-study telemetry ping with study_state=enter",
           );
+        });
+
+        it("should have sent one shield-study telemetry ping with study_state=installed", async () => {
+          const filteredPings = studyPings.filter(
+            ping =>
+              ping.type === "shield-study" &&
+              ping.payload.data.study_state === "installed",
+          );
+          assert(
+            filteredPings.length > 0,
+            "at least one shield-study telemetry ping with study_state=installed",
+          );
+        });
+
+        it("should have sent one shield-study-addon telemetry ping with payload.data.attributes.foo=bar", async () => {
+          const filteredPings = studyPings.filter(
+            ping =>
+              ping.type === "shield-study-addon" &&
+              ping.payload.data.attributes.foo === "bar",
+          );
+          assert(
+            filteredPings.length > 0,
+            "at least one shield-study-addon telemetry ping with payload.data.attributes.foo=bar",
+          );
+        });
+      });
+
+      describe("browser.study.endStudy() side effects for first time called", function() {
+        let endingResult;
+        before(async () => {
+          endingResult = await addonExec(async callback => {
+            browser.study.onEndStudy.addListener(async _endingResult => {
+              callback(_endingResult);
+            });
+            await browser.study.endStudy("customEnding");
+          });
+          // let telemetry and disk/files sync up
+          await delay(1000);
+        });
+        it("should have fire onEndStudy event with the endingResult", function() {
+          // console.debug(full(endingResult));
+          assert(endingResult);
+          assert.strictEqual(endingResult.endingName, "customEnding");
+          assert.strictEqual(endingResult.queryArgs.fullreason, "customEnding");
+          assert(endingResult.shouldUninstall);
+          assert.strictEqual(endingResult.urls.length, 1);
+        });
+
+        it("should have set the experiment as inactive", async () => {
+          const activeExperiments = await utils.telemetry.getActiveExperiments(
+            driver,
+          );
+          assert(
+            !activeExperiments.hasOwnProperty(studyInfo.activeExperimentName),
+          );
+        });
+
+        it("should throw when calling endStudy multiple times", async function() {
+          const caughtErrors = await addonExec(async callback => {
+            const _caughtErrors = [];
+            const reasons = ["ineligible", "expired", "user-disable"];
+            for (const r of reasons) {
+              try {
+                await browser.study.endStudy(r);
+              } catch (e) {
+                // console.debug("Caught error", e);
+                _caughtErrors.push(e.toString());
+              }
+            }
+            callback(_caughtErrors);
+          });
+          const expected = [
+            "Error: endStudy, requested:  ineligible, but already ending customEnding",
+            "Error: endStudy, requested:  expired, but already ending customEnding",
+            "Error: endStudy, requested:  user-disable, but already ending customEnding",
+          ];
+          assert.deepStrictEqual(expected, caughtErrors);
+        });
+
+        describe("should have sent the expected exit telemetry", function() {
+          let studyPings;
+
+          before(async () => {
+            studyPings = await utils.telemetry.searchSentTelemetry(driver, {
+              type: ["shield-study", "shield-study-addon"],
+            });
+            // For debugging tests
+            // console.debug(full(studyPings.map(x => [x.type, x.payload])));
+            // console.debug("Final pings report: ", utils.telemetry.pingsReport(studyPings));
+          });
+
+          it("one shield-study telemetry ping with study_state=exit", async () => {
+            const filteredPings = studyPings.filter(
+              ping =>
+                ping.type === "shield-study" &&
+                ping.payload.data.study_state === "exit",
+            );
+            assert(
+              filteredPings.length > 0,
+              "at least one shield-study telemetry ping with study_state=exit",
+            );
+          });
+
+          it("one shield-study telemetry ping with study_state_fullname=customEnding", async () => {
+            const filteredPings = studyPings.filter(
+              ping =>
+                ping.type === "shield-study" &&
+                ping.payload.data.study_state === "ended-positive" &&
+                ping.payload.data.study_state_fullname === "customEnding",
+            );
+            assert(
+              filteredPings.length > 0,
+              "at least one shield-study telemetry ping with study_state_fullname=customEnding",
+            );
+          });
         });
       });
     });
