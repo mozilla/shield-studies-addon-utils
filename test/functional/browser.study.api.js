@@ -67,10 +67,14 @@ function studySetupForTests(...overrides) {
     studyType: "shield",
     endings: {
       ineligible: {
-        baseUrls: ["http://www.example.com/?reason=ineligible"],
+        baseUrls: [
+          "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=ineligible",
+        ],
       },
       BrowserStudyApiEnding: {
-        baseUrls: ["http://www.example.com/?reason=BrowserStudyApiEnding"],
+        baseUrls: [
+          "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=BrowserStudyApiEnding",
+        ],
       },
     },
     telemetry: {
@@ -531,7 +535,9 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         },
         endings: {
           customEnding: {
-            baseUrls: ["https://some.url"],
+            baseUrls: [
+              "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=customEnding",
+            ],
             category: "ended-positive",
           },
         },
@@ -646,7 +652,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
           // let telemetry and disk/files sync up
           await delay(1000);
         });
-        it("should have fire onEndStudy event with the endingResult", function() {
+        it("should have fired onEndStudy event with the endingResult", function() {
           // console.debug(full(endingResult));
           assert(endingResult);
           assert.strictEqual(endingResult.endingName, "customEnding");

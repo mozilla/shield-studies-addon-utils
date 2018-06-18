@@ -158,7 +158,7 @@ this.study = class extends ExtensionAPI {
           studyUtils.setExtensionManifest(extension.manifest);
 
           // Setup and sets the variation / _internals
-          // incldues possible 'firstRun' handling.
+          // includes possible 'firstRun' handling.
           await studyUtils.setup(studySetup);
 
           // current studyInfo.
