@@ -95,11 +95,14 @@ module.exports.setupWebdriver = {
       path: fileLocation,
       temporary: true,
     });
-    await executor.execute(installCmd);
-    console.log(`Add-on at ${fileLocation} installed`);
+    const addonId = await executor.execute(installCmd);
+    console.log(
+      `Add-on at ${fileLocation} installed with (addonId: ${addonId})`,
+    );
+    return addonId;
   },
 
-  uninstallAddon: async (driver, id) => {
+  uninstallAddon: async (driver, addonId) => {
     const executor = driver.getExecutor();
     executor.defineCommand(
       "uninstallAddon",
@@ -109,7 +112,8 @@ module.exports.setupWebdriver = {
     const uninstallCmd = new cmd.Command("uninstallAddon");
 
     const session = await driver.getSession();
-    uninstallCmd.setParameters({ sessionId: session.getId(), id });
+    uninstallCmd.setParameters({ sessionId: session.getId(), id: addonId });
     await executor.execute(uninstallCmd);
+    console.log(`Add-on with id ${addonId} uninstalled`);
   },
 };
