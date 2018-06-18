@@ -100,6 +100,12 @@ this.study = class extends ExtensionAPI {
     studyUtils.setExtensionManifest(extension.manifest);
     studyUtils.reset();
 
+    async function endStudy(anEndingAlias) {
+      logger.debug("called endStudy anEndingAlias");
+      const endingResponse = await studyUtils.endStudy(anEndingAlias);
+      studyApiEventEmitter.emitEndStudy(endingResponse);
+    }
+
     return {
       study: {
         /** Attempt an setup/enrollment, with these effects:
@@ -177,8 +183,9 @@ this.study = class extends ExtensionAPI {
             }
           }
 
-          if (studySetup.testing.expired) {
-            await studyUtils.endStudy("expired");
+          if (studyInfo.delayInMinutes === 0) {
+            logger.debug("encountered already expired study");
+            await endStudy("expired");
             return studyUtils.info();
           }
 
@@ -242,11 +249,7 @@ this.study = class extends ExtensionAPI {
          *  2.  the 'user-disable' case is handled above
          *  3.  throws if the endStudy fails
          **/
-        endStudy: async function endStudy(anEndingAlias) {
-          logger.debug("called endStudy anEndingAlias");
-          const endingResponse = await studyUtils.endStudy(anEndingAlias);
-          studyApiEventEmitter.emitEndStudy(endingResponse);
-        },
+        endStudy,
 
         /* current study configuration, including
          *  - variation

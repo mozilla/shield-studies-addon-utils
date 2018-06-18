@@ -731,6 +731,109 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         });
       });
     });
+
+    describe("setup of an already expired study should result in endStudy('expired') without even emitting onReady", function() {
+      let endingResult;
+      const overrides = {
+        activeExperimentName: "test:browser.study.api",
+        telemetry: {
+          send: true,
+          removeTestingFlag: false,
+        },
+        endings: {
+          expired: {
+            baseUrls: [
+              "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=expired",
+            ],
+          },
+        },
+        testing: {
+          expired: true,
+        },
+      };
+
+      before(async function resetSetupAndAwaitEndStudy() {
+        await resetStudy();
+        endingResult = await addonExec(
+          async (_studySetupForTests, callback) => {
+            // Ensure we have a configured study and are supposed to run our feature
+            browser.study.onEndStudy.addListener(async _endingResult => {
+              console.log("In onEndStudy listener", _endingResult);
+              callback(_endingResult);
+            });
+            browser.study.onReady.addListener(async _studyInfo => {
+              throw new Error(
+                "onReady should not have been emitted",
+                _studyInfo,
+              );
+            });
+            await browser.study.setup(_studySetupForTests);
+          },
+          studySetupForTests(overrides),
+        );
+      });
+
+      describe("browser.study.endStudy() side effects", function() {
+        it("should have fired onEndStudy event with the endingResult", function() {
+          // console.debug(full(endingResult));
+          assert(endingResult);
+          assert.strictEqual(endingResult.endingName, "expired");
+          assert.strictEqual(endingResult.queryArgs.fullreason, "expired");
+          assert(endingResult.shouldUninstall);
+          assert.strictEqual(
+            endingResult.urls.length,
+            1,
+            "the ending should have the expected number of urls configured",
+          );
+        });
+
+        it("should have set the experiment as inactive", async () => {
+          const activeExperiments = await utils.telemetry.getActiveExperiments(
+            driver,
+          );
+          assert(
+            !activeExperiments.hasOwnProperty(overrides.activeExperimentName),
+          );
+        });
+
+        describe("should have sent the expected exit telemetry", function() {
+          let studyPings;
+
+          before(async () => {
+            studyPings = await utils.telemetry.searchSentTelemetry(driver, {
+              type: ["shield-study", "shield-study-addon"],
+            });
+            // For debugging tests
+            // console.debug(full(studyPings.map(x => [x.type, x.payload])));
+            // console.debug("Final pings report: ", utils.telemetry.pingsReport(studyPings));
+          });
+
+          it("one shield-study telemetry ping with study_state=exit", async () => {
+            const filteredPings = studyPings.filter(
+              ping =>
+                ping.type === "shield-study" &&
+                ping.payload.data.study_state === "exit",
+            );
+            assert(
+              filteredPings.length > 0,
+              "at least one shield-study telemetry ping with study_state=exit",
+            );
+          });
+
+          it("one shield-study telemetry ping with study_state=expired", async () => {
+            const filteredPings = studyPings.filter(
+              ping =>
+                ping.type === "shield-study" &&
+                ping.payload.data.study_state === "expired",
+            );
+            assert(
+              filteredPings.length > 0,
+              "at least one shield-study telemetry ping with study_state=expired",
+            );
+          });
+        });
+      });
+    });
   });
 
   describe("api: validateJSON", function() {
