@@ -4,8 +4,9 @@
   "description": "A tiny example study using the studyUtils",
   "main": "",
   "scripts": {
+    "bundle-utils": "../../bin/copyStudyUtils.js src/privileged",
     "postinstall": "npm run rebuild",
-    "rebuild": "(cd ../../ && npm run build) && ../../bin/copyStudyUtils.js src/privileged",
+    "rebuild": "(cd ../../ && npm run build) && npm run bundle-utils",
     "start": "web-ext run"
   },
   "author": "",

@@ -12,7 +12,6 @@
   "dependencies": {
     "commander": "^2.15.1",
     "fs-extra": "^6.0.1",
-    "npm": "^6.1.0",
     "shield-study-schemas": "^0.8.3"
   },
   "devDependencies": {
@@ -35,6 +34,9 @@
     "web-ext": "^2.5.0",
     "webpack": "^2.6.1",
     "yamljs": "^0.3.0"
+  },
+  "engines": {
+    "npm": "^6.1.0"
   },
   "files": [
     "bin/copyStudyUtils.js",
@@ -86,6 +88,6 @@
     "test-addon:build": "cd test-addon && web-ext build",
     "test-addon:bundle-utils": "./bin/copyStudyUtils.js test-addon/src/privileged",
     "test-addon:run": "cd test-addon && web-ext run --no-reload",
-    "test-only": "FIREFOX_BINARY=${FIREFOX_BINARY:-firefox} ADDON_ZIP=test-addon/dist/shield_utils_test_add-on-1.0.0.zip mocha test/functional/ --bail"
+    "test-only": "FIREFOX_BINARY=${FIREFOX_BINARY:-firefoxdeveloperedition} ADDON_ZIP=test-addon/dist/shield_utils_test_add-on-1.0.0.zip mocha test/functional/ --bail"
   }
 }

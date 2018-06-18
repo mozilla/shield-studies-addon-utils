@@ -4,7 +4,7 @@
 
 # Shield Studies Addon Utils
 
-[![Build Status](https://travis-ci.org/mozilla/shield-studies-addon-utils.svg?branch=master)](https://travis-ci.org/mozilla/shield-studies-addon-utils)
+[![CircleCI badge](https://img.shields.io/circleci/project/github/mozilla/shield-studies-addon-utils/master.svg?label=CircleCI)](https://circleci.com/gh/mozilla/shield-studies-addon-utils/)
 
 This is the home of the [`shield-studies-addon-utils` npm package](https://www.npmjs.com/package/shield-studies-addon-utils), which provides:
 
