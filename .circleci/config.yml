@@ -41,6 +41,15 @@ jobs:
           key: v1-dependencies-{{ checksum "package-lock.json" }}-20180618
 
       - run:
+          name: Reveal which Firefox versions are installed
+          command: |
+            echo "Versions of Firefox installed:"
+            ./firefox-release/firefox-bin -v
+            ./firefox-beta/firefox-bin -v
+            ./firefox-devedition/firefox-bin -v
+            ./firefox-nightly/firefox-bin -v
+
+      - run:
           name: Build study apis (webpack) and lint
           command: npm run build
 
