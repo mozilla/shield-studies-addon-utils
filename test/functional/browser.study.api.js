@@ -281,9 +281,9 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
 
   describe("internals,studyInfo under several browser.setup() scenarios", function() {
     beforeEach(resetStudy);
-    // afterEach(resetStudy);
+    // afterEach();
 
-    it("1.  firstRun, expire.days, allowEnroll, !testing.expired should: isFirstRun, should: pings enter,install", async function() {
+    it("1. firstRun, expire.days, allowEnroll, !testing.expired should: isFirstRun, should: pings enter,install", async function() {
       // console.debug("doing test 1");
       const thisSetup = studySetupForTests();
       const data = await addonExec(async (setup, cb) => {
@@ -320,11 +320,11 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert.deepStrictEqual(
         seenTelemetryStates,
         ["enter", "installed"],
-        "incorrect study state telemetry",
+        "should have seen correct study state telemetry",
       );
     });
 
-    it("2.  secondRun, expire.days, allowEnroll, !testing.expired  should be !firstRun, should NOT have enter or install pings", async function() {
+    it("2. secondRun, expire.days, allowEnroll, !testing.expired should be !firstRun, should NOT have enter or install pings", async function() {
       // console.debug("doing test 2");
       const now = Number(Date.now());
       const thisSetup = studySetupForTests({});
@@ -372,11 +372,11 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert.deepStrictEqual(
         seenTelemetryStates,
         [],
-        "incorrect study state telemetry",
+        "should have seen any study state telemetry",
       );
     });
 
-    it("3.  firstRun, expire.days, !allowEnroll, !testing.expired should end ineligible, pings enter,ineligible,exit", async function() {
+    it("3. firstRun, expire.days, !allowEnroll, !testing.expired should end ineligible, pings enter,ineligible,exit", async function() {
       // console.debug("doing test 3");
       const now = Number(Date.now());
       const thisSetup = studySetupForTests({
@@ -399,7 +399,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert(internals.isSetup, "should be isSetup");
       assert(internals.isEnded, "should be ended");
       assert(internals.isEnding, "should be ending");
-      assert(info.isFirstRun, "should NOT be isFirstRun");
+      assert(info.isFirstRun, "should be isFirstRun");
       assert(info.variation, "should be a variation");
       assert.strictEqual(info.variation.name, "control", "should be 'control'");
 
@@ -415,11 +415,11 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert.deepStrictEqual(
         seenTelemetryStates,
         ["enter", "ineligible", "exit"],
-        "incorrect study state telemetry",
+        "should have seen correct study state telemetry",
       );
     });
 
-    it("4.  testing.variationName chooses that branch", async function() {
+    it("4. testing.variationName chooses that branch", async function() {
       // console.debug("doing test 4");
       const thisSetup = studySetupForTests({
         testing: {
@@ -450,7 +450,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         "should be 'the-rare-one'",
       );
     });
-    it("5. testing.variationName: if variation name isn't in weightedVariations, throw ", async function() {
+    it("5. testing.variationName: if variation name isn't in weightedVariations, throw setup error", async function() {
       const thisSetup = studySetupForTests({
         testing: {
           variationName: "not-there",
@@ -470,11 +470,10 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         'Error: setup error: testing.variationName "not-there" not in [{"name":"control","weight":1}]',
         "should be an exception",
       );
-      ("should be an error");
     });
   });
 
-  describe("A full life-cycle: setup, sendTelemetry, endStudy", function() {
+  describe("a full life-cycle: setup, sendTelemetry, endStudy", function() {
     let studyInfo;
     const overrides = {
       activeExperimentName: "test:browser.study.api",
@@ -737,7 +736,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
   describe("uninstall by users?", function() {});
 
   // TODO 5.1
-  describe.skip("Possible 5.1 future tests.", function() {
+  describe.skip("possible 5.1 future tests.", function() {
     describe("getDataPermissions", function() {
       it("returns correct and current list of permissions");
     });
