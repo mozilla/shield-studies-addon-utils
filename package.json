@@ -83,12 +83,12 @@
     "prebuild": "if [ -z ${SKIPLINT} ]; then npm run lint; fi",
     "prepare": "export SKIPLINT=1 && fixpack && npm run build",
     "pretest": "npm run build && npm run test-addon:bundle-utils && npm run test-addon:build",
-    "pretest-addon:run": "npm run pretest",
+    "pretest-addon": "npm run pretest",
     "small-study": "cd examples/small-study && npm run rebuild && npm start",
     "test": "npm run test-only",
+    "test-addon": "cd test-addon && web-ext run --no-reload",
     "test-addon:build": "cd test-addon && web-ext build",
     "test-addon:bundle-utils": "./bin/copyStudyUtils.js test-addon/src/privileged",
-    "test-addon:run": "cd test-addon && web-ext run --no-reload",
     "test-only": "FIREFOX_BINARY=${FIREFOX_BINARY:-firefoxdeveloperedition} ADDON_ZIP=test-addon/dist/shield_utils_test_add-on-1.0.0.zip mocha test/functional/ --bail"
   }
 }
