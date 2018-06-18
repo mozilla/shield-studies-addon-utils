@@ -84,6 +84,7 @@
     "prepare": "export SKIPLINT=1 && fixpack && npm run build",
     "pretest": "npm run build && npm run test-addon:bundle-utils && npm run test-addon:build",
     "pretest-addon:run": "npm run pretest",
+    "small-study": "cd examples/small-study && npm run rebuild && npm start",
     "test": "npm run test-only",
     "test-addon:build": "cd test-addon && web-ext build",
     "test-addon:bundle-utils": "./bin/copyStudyUtils.js test-addon/src/privileged",
