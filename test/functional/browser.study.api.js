@@ -123,14 +123,14 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
 
   /* Reset a study */
   async function resetStudy() {
-    console.debug("resetting");
+    // console.debug("resetting");
     const reset = await addonExec(async function(cb) {
       await browser.studyDebug.reset();
       const internals = await browser.studyDebug.getInternals();
       return cb(internals);
     });
     assert(reset.isSetup === false);
-    console.debug("reset done");
+    // console.debug("reset done");
     return reset;
   }
 
@@ -284,6 +284,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
     // afterEach(resetStudy);
 
     it("1.  firstRun, expire.days, allowEnroll, !testing.expired should: isFirstRun, should: pings enter,install", async function() {
+      // console.debug("doing test 1");
       const thisSetup = studySetupForTests();
       const data = await addonExec(async (setup, cb) => {
         // this is what runs in the webExtension scope.
@@ -293,6 +294,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         cb({ info, internals });
       }, thisSetup);
       const { info, internals } = data;
+      // console.debug(full(data));
 
       // tests
       const now = Number(Date.now());
@@ -323,6 +325,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
     });
 
     it("2.  secondRun, expire.days, allowEnroll, !testing.expired  should be !firstRun, should NOT have enter or install pings", async function() {
+      // console.debug("doing test 2");
       const now = Number(Date.now());
       const thisSetup = studySetupForTests({});
       const data = await addonExec(
@@ -338,6 +341,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         now,
       );
       const { info, internals } = data;
+      // console.debug(full(data));
 
       // tests
       const seenTelemetryStates = internals.seenTelemetry["shield-study"].map(
@@ -373,7 +377,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
     });
 
     it("3.  firstRun, expire.days, !allowEnroll, !testing.expired should end ineligible, pings enter,ineligible,exit", async function() {
-      console.debug("doing test 3");
+      // console.debug("doing test 3");
       const now = Number(Date.now());
       const thisSetup = studySetupForTests({
         allowEnroll: false,
@@ -386,7 +390,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         cb({ info, internals });
       }, thisSetup);
       const { info, internals } = data;
-      console.debug(full(data));
+      // console.debug(full(data));
       // tests
       const seenTelemetryStates = internals.seenTelemetry["shield-study"].map(
         x => x.data.study_state,
@@ -416,6 +420,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
     });
 
     it("4.  testing.variationName chooses that branch", async function() {
+      // console.debug("doing test 4");
       const thisSetup = studySetupForTests({
         testing: {
           variationName: "the-rare-one",
@@ -499,7 +504,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
     });
 
     it("should fire the onReady event upon successful setup", async () => {
-      console.debug(studyInfo);
+      // console.debug(studyInfo);
       assert.strictEqual(
         studyInfo.activeExperimentName,
         overrides.activeExperimentName,
@@ -515,7 +520,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
           });
           callback(_studyPings);
         });
-        console.debug(full(studyPings.map(x => x.payload)));
+        // console.debug(full(studyPings.map(x => x.payload)));
         // For debugging tests
         // console.debug("Pings report: ", utils.telemetry.pingsReport(studyPings));
       });
@@ -524,7 +529,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         const activeExperiments = await utils.telemetry.getActiveExperiments(
           driver,
         );
-        console.debug(activeExperiments);
+        // console.debug(activeExperiments);
         assert(
           activeExperiments.hasOwnProperty(studyInfo.activeExperimentName),
         );
@@ -537,7 +542,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
           });
           callback(_studyPings.map(x => x.payload));
         });
-        console.debug("pings", full(shieldTelemetryPings));
+        // console.debug("pings", full(shieldTelemetryPings));
         assert(shieldTelemetryPings[0].data.attributes.foo === "bar");
       });
 
@@ -595,7 +600,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         await delay(1000);
       });
       it("should have fire onEndStudy event with the endingResult", function() {
-        console.debug(full(endingResult));
+        // console.debug(full(endingResult));
         assert(endingResult);
         assert.strictEqual(endingResult.endingName, "customEnding");
         assert.strictEqual(endingResult.queryArgs.fullreason, "customEnding");
@@ -642,7 +647,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
             type: ["shield-study", "shield-study-addon"],
           });
           // For debugging tests
-          console.debug(full(studyPings.map(x => [x.type, x.payload])));
+          // console.debug(full(studyPings.map(x => [x.type, x.payload])));
           // console.debug("Final pings report: ", utils.telemetry.pingsReport(studyPings));
         });
 
