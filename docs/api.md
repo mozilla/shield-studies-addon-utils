@@ -322,7 +322,8 @@ Act on it by
       "type": "integer"
     }
   ],
-  "testcases": [null, 1234567890]
+  "testcases": [null, 1234567890],
+  "failcases": ["1234567890", []]
 }
 ```
 
@@ -334,7 +335,8 @@ Act on it by
   "$schema": "http://json-schema.org/draft-04/schema",
   "type": "string",
   "enum": ["shield", "pioneer"],
-  "testcases": ["shield", "pioneer"]
+  "testcases": ["shield", "pioneer"],
+  "failcases": ["foo"]
 }
 ```
 

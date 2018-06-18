@@ -43,12 +43,14 @@
       {type: 'null'},
       {type: 'integer'}]
     testcases: [null, 1234567890]
+    failcases: ['1234567890', []]
 
   - id: studyTypesEnum
     $schema: "http://json-schema.org/draft-04/schema"
     type: string
     enum: ['shield', 'pioneer']
     testcases: ['shield', 'pioneer']
+    failcases: ['foo']
 
   - id: weightedVariationObject
     $schema: "http://json-schema.org/draft-04/schema"
