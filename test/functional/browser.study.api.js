@@ -56,11 +56,11 @@ function merge(...sources) {
   return Object.assign({}, ...sources);
 }
 
-/** return a studySetup, shallow merged from sources
+/** return a studySetup, shallow merged from overrides
  *
  * @return {object} mergedStudySetup
  */
-function studySetupForTests(...sources) {
+function studySetupForTests(...overrides) {
   // Minimal configuration to pass schema validation
   const studySetup = {
     activeExperimentName: "shield-utils-test-addon@shield.mozilla.org",
@@ -92,7 +92,7 @@ function studySetupForTests(...sources) {
     testing: {},
   };
 
-  return merge(studySetup, ...sources);
+  return merge(studySetup, ...overrides);
 }
 
 describe("PUBLIC API `browser.study` (not specific to any add-on background logic)", function() {
