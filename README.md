@@ -246,6 +246,12 @@ Goal: Use `webdriver` to exercise the `browser.study` API to prove correctness.
 
 **Note**: `browser.studyDebug.getInternals()` gets internals of the `studyUtils` singleton as needful. `browser.studyDebug` also allows other manipulation of the studyUtils singleton, for use by tests, and to induce states and reactions.
 
+## Known issues
+
+* Utils v5.0.0-v5.0.1 does not work with Firefox Beta (#200)
+
+In general, see https://github.com/mozilla/shield-studies-addon-utils/issues
+
 ## FAQ
 
 * What's the deal with Webpack?
