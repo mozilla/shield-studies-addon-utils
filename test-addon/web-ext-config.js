@@ -10,7 +10,7 @@ const defaultConfig = {
     overwriteDest: true,
   },
   run: {
-    firefox: "firefoxdeveloperedition",
+    firefox: "firefox",
     browserConsole: true,
     startUrl: ["about:debugging"],
     pref: ["shieldStudy.logLevel='All'"],
