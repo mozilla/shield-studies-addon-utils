@@ -39,7 +39,7 @@ const KEEPOPEN = process.env.KEEPOPEN;
 const assert = require("assert");
 const utils = require("./utils");
 
-const DAYS = 86400 * 1000;
+const MINUTES_PER_DAY = 60 * 24;
 
 // node's util, for printing a deeply nested object to node console
 const { inspect } = require("util");
@@ -307,7 +307,14 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert.equal(info.variation.name, "control", "should be 'control'");
 
       assert(now - info.firstRunTimestamp < 5000, "less than 5 seconds old");
-      assert(info.delayInMinutes < 14 * DAYS, "should expire within 14 days");
+      assert(
+        info.delayInMinutes > 13 * MINUTES_PER_DAY,
+        "should not expire within 13 days",
+      );
+      assert(
+        info.delayInMinutes < 15 * MINUTES_PER_DAY,
+        "should expire within 15 days",
+      );
       assert.deepStrictEqual(
         seenTelemetryStates,
         ["enter", "installed"],
@@ -350,7 +357,14 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         "firstRunTimestamp should be what we set",
       );
       assert(now - info.firstRunTimestamp < 5000, "less than 5 seconds old");
-      assert(info.delayInMinutes < 14 * DAYS, "should expire within 14 days");
+      assert(
+        info.delayInMinutes > 13 * MINUTES_PER_DAY,
+        "should not expire within 13 days",
+      );
+      assert(
+        info.delayInMinutes < 15 * MINUTES_PER_DAY,
+        "should expire within 15 days",
+      );
       assert.deepStrictEqual(
         seenTelemetryStates,
         [],
@@ -386,7 +400,14 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert.equal(info.variation.name, "control", "should be 'control'");
 
       assert(now - info.firstRunTimestamp < 5000, "less than 5 seconds old");
-      assert(info.delayInMinutes < 14 * DAYS, "should expire within 14 days");
+      assert(
+        info.delayInMinutes > 13 * MINUTES_PER_DAY,
+        "should not expire within 13 days",
+      );
+      assert(
+        info.delayInMinutes < 15 * MINUTES_PER_DAY,
+        "should expire within 15 days",
+      );
       assert.deepStrictEqual(
         seenTelemetryStates,
         ["enter", "ineligible", "exit"],
