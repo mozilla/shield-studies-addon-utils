@@ -61,7 +61,6 @@ class StudyLifeCycleHandler {
    */
   async cleanup() {
     // do whatever work your addon needs to clean up
-    return true;
   }
 
   /**
@@ -91,12 +90,6 @@ class StudyLifeCycleHandler {
       });
     }
     feature.configure(studyInfo);
-
-    console.log(
-      `Setting the browser action title to the variation name: '${
-        studyInfo.variation.name
-      }'`,
-    );
   }
 
   /** handles `study:end` signals
@@ -121,14 +114,16 @@ class StudyLifeCycleHandler {
         break;
     }
     // actually remove the addon.
-    console.log("about to actualy uninstall");
+    console.log("about to actually uninstall");
     return browser.management.uninstallSelf();
   }
 }
 
 /* An example feature singleton, demonstrating Telemetry and some endings */
 class ButtonFeature {
-  constructor() {
+  constructor() {}
+
+  async configure(studyInfo) {
     let clicksInSession = 0;
     browser.browserAction.setBadgeText({ text: "" + clicksInSession });
 
@@ -142,9 +137,11 @@ class ButtonFeature {
         browser.study.endStudy("user-used-the-feature");
       }
     });
-  }
-
-  async configure(studyInfo) {
+    console.log(
+      `Setting the browser action title to the variation name: '${
+        studyInfo.variation.name
+      }'`,
+    );
     await browser.browserAction.setTitle({ title: studyInfo.variation.name });
   }
 }

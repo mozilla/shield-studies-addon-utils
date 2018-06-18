@@ -54,7 +54,9 @@ const baseStudySetup = {
 
     /** Study specific endings */
     "user-used-the-feature": {
-      baseUrls: ["https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/"],
+      baseUrls: [
+        "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=user-used-the-feature",
+      ],
       category: "ended-positive",
     },
     "hated-the-feature": {
@@ -85,12 +87,6 @@ const baseStudySetup = {
   expire: {
     days: 14,
   },
-
-  // Optional: testing overrides.
-  // TODO: Set from prefs in getStudySetup
-  testing: {
-    variationName: null,
-  },
 };
 
 /**
@@ -114,7 +110,7 @@ async function cachingFirstRunShouldAllowEnroll() {
   if (allowed) return true;
 
   /*
-   * First run, we must calculate the answer.
+  First run, we must calculate the answer.
   If false, the study will endStudy with 'ineligible' during `setup`
   */
 
@@ -146,6 +142,8 @@ async function getStudySetup() {
   studySetup.testing = {
     /* Example: override testing keys various ways, such as by prefs. (TODO) */
     variationName: null, // await browser.prefs.getStringPref(prefs.variationName);
+    firstRunTimestamp: null,
+    expired: null,
   };
   return studySetup;
 }

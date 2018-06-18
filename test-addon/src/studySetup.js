@@ -18,40 +18,50 @@
  *
  * Will be augmented by 'getStudySetup'
  */
-const studySetup = {
+const baseStudySetup = {
   // used for activeExperiments tagging (telemetryEnvironment.setActiveExperiment)
   activeExperimentName: browser.runtime.id,
 
-  // uses shield|pioneer pipeline, watches those permissions
+  // uses shield sampling and telemetry semantics.  Future: will support "pioneer"
   studyType: "shield",
 
   // telemetry
   telemetry: {
-    send: true, // assumed false. Actually send pings?
-    removeTestingFlag: false, // Marks pings as testing, set true for actual release
+    // default false. Actually send pings.
+    send: true,
+    // Marks pings with testing=true.  Set flag to `true` before final release
+    removeTestingFlag: false,
   },
 
   // endings with urls
   endings: {
     /** standard endings */
     "user-disable": {
-      baseUrls: ["http://www.example.com/?reason=user-disable"],
+      baseUrls: [
+        "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=user-disable",
+      ],
     },
     ineligible: {
-      baseUrls: ["http://www.example.com/?reason=ineligible"],
+      baseUrls: [
+        "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=ineligible",
+      ],
     },
     expired: {
-      baseUrls: ["http://www.example.com/?reason=expired"],
+      baseUrls: [
+        "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=expired",
+      ],
     },
 
-    /** User defined endings */
-    "some-study-defined-ending": {
-      baseUrls: [],
-      category: "ended-neutral",
-    },
-    "some-study-defined-ending-with-survey-url": {
+    /** Study specific endings */
+    "user-used-the-feature": {
       baseUrls: [
-        "http://www.example.com/?reason=some-study-defined-ending-with-survey-url",
+        "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=user-used-the-feature",
+      ],
+      category: "ended-positive",
+    },
+    "hated-the-feature": {
+      baseUrls: [
+        "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=hated-the-feature",
       ],
       category: "ended-negative",
     },
@@ -77,44 +87,38 @@ const studySetup = {
   expire: {
     days: 14,
   },
-
-  // Optional: testing overrides.
-  // TODO: Set from prefs in getStudySetup
-  testing: {
-    variationName: null,
-  },
 };
 
 /**
  * Determine, based on common and study-specific criteria, if enroll (first run)
  * should proceed.
  *
- * False values imply that during first run, we should endStudy(`ineligible`)
+ * False values imply that *during first run only*, we should endStudy(`ineligible`)
  *
  * Add your own enrollment criteria as you see fit.
  *
- * (Guards against Normandy or other deployment mistakes or inadequacies)
+ * (Guards against Normandy or other deployment mistakes or inadequacies).
  *
  * This implementation caches in local storage to speed up second run.
  *
  * @returns {Promise<boolean>} answer An boolean answer about whether the user should be
  *       allowed to enroll in the study
  */
-async function shouldAllowEnroll() {
+async function cachingFirstRunShouldAllowEnroll() {
   // Cached answer.  Used on 2nd run
-  let allowed = await browser.storage.local.get("allowedToEnroll");
+  let allowed = await browser.storage.local.get("allowEnroll");
   if (allowed) return true;
 
   /*
   First run, we must calculate the answer.
   If false, the study will endStudy with 'ineligible' during `setup`
   */
-  // could have other reasons to be eligible, such add-ons, prefs
 
+  // could have other reasons to be eligible, such add-ons, prefs
   allowed = true;
 
   // cache the answer
-  await browser.storage.local.set({ allowedToEnroll: allowed });
+  await browser.storage.local.set({ allowEnroll: allowed });
   return allowed;
 }
 
@@ -125,14 +129,21 @@ async function shouldAllowEnroll() {
  */
 async function getStudySetup() {
   /*
-  const id = browser.runtime.id;
-  const prefs = {
-    variationName: `shield.${id}.variation`,
-  };
-  */
-  studySetup.allowEnroll = await shouldAllowEnroll();
+   * const id = browser.runtime.id;
+   * const prefs = {
+   *   variationName: `shield.${id}.variationName`,
+   *   };
+   */
+
+  // shallow copy
+  const studySetup = Object.assign({}, baseStudySetup);
+
+  studySetup.allowEnroll = await cachingFirstRunShouldAllowEnroll();
   studySetup.testing = {
-    // variationName: await browser.prefs.getStringPref(prefs.variationName);
+    /* Example: override testing keys various ways, such as by prefs. (TODO) */
+    variationName: null, // await browser.prefs.getStringPref(prefs.variationName);
+    firstRunTimestamp: null,
+    expired: null,
   };
   return studySetup;
 }

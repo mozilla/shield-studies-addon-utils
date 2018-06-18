@@ -10,9 +10,10 @@ const defaultConfig = {
     overwriteDest: true,
   },
   run: {
-    firefox: "nightly",
+    firefox: "firefox",
     browserConsole: true,
     startUrl: ["about:debugging"],
+    pref: ["shieldStudy.logLevel='All'"],
   },
 };
 

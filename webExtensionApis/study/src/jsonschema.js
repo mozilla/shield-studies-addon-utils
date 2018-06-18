@@ -4,7 +4,7 @@
 
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 
-const Ajv = require("ajv/dist/ajv.min.js");
+const Ajv = require("ajv");
 const ajv = new Ajv({
   // important:  these options make ajv behave like 04, not draft-07
   schemaId: "auto", // id UNLESS $id is defined. (draft 5)

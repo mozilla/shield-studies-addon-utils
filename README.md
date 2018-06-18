@@ -4,7 +4,7 @@
 
 # Shield Studies Addon Utils
 
-[![Build Status](https://travis-ci.org/mozilla/shield-studies-addon-utils.svg?branch=master)](https://travis-ci.org/mozilla/shield-studies-addon-utils)
+[![CircleCI badge](https://img.shields.io/circleci/project/github/mozilla/shield-studies-addon-utils/master.svg?label=CircleCI)](https://circleci.com/gh/mozilla/shield-studies-addon-utils/)
 
 This is the home of the [`shield-studies-addon-utils` npm package](https://www.npmjs.com/package/shield-studies-addon-utils), which provides:
 
@@ -245,6 +245,12 @@ Goal: Use `webdriver` to exercise the `browser.study` API to prove correctness.
         * use `node` `assert` to check the called back result.
 
 **Note**: `browser.studyDebug.getInternals()` gets internals of the `studyUtils` singleton as needful. `browser.studyDebug` also allows other manipulation of the studyUtils singleton, for use by tests, and to induce states and reactions.
+
+## Known issues
+
+* Utils v5.0.0-v5.0.1 does not work with Firefox Beta (#200)
+
+In general, see https://github.com/mozilla/shield-studies-addon-utils/issues
 
 ## FAQ
 

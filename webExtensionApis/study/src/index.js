@@ -7,10 +7,12 @@
  * 3.  Does NOT handle 'user-disable' surveys, see #194
  */
 
+import logger from "./logger";
+
 ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 
-const { logger, studyUtils } = require("./studyUtils.js");
+logger.debug("loading web extension experiment study/api.js");
 
 // eslint-disable-next-line no-undef
 const { EventManager } = ExtensionCommon;
@@ -48,7 +50,6 @@ this.study = class extends ExtensionAPI {
      * @type Extension
      */
     this.extension = extension;
-    this.studyUtils = studyUtils;
     this.studyApiEventEmitter = new StudyApiEventEmitter();
     logger.debug("constructed!");
   }
@@ -86,12 +87,24 @@ this.study = class extends ExtensionAPI {
   getAPI(context) {
     const { extension } = this;
 
+    // Load studyUtils
+    const { studyUtils } = require("./studyUtils.js");
+
+    // Make studyUtils available for onShutdown handler
+    this.studyUtils = studyUtils;
+
     /* eslint no-shadow: off */
-    const { studyUtils, studyApiEventEmitter } = this;
+    const { studyApiEventEmitter } = this;
 
     // once.  Used for pref naming, telemetry
     studyUtils.setExtensionManifest(extension.manifest);
     studyUtils.reset();
+
+    async function endStudy(anEndingAlias) {
+      logger.debug("called endStudy anEndingAlias");
+      const endingResponse = await studyUtils.endStudy(anEndingAlias);
+      studyApiEventEmitter.emitEndStudy(endingResponse);
+    }
 
     return {
       study: {
@@ -147,11 +160,11 @@ this.study = class extends ExtensionAPI {
             studySetup.testing = {};
           }
 
-          // 1. addon info for prefs etc.
+          // 1. add-on info for prefs etc.
           studyUtils.setExtensionManifest(extension.manifest);
 
           // Setup and sets the variation / _internals
-          // incldues possible 'firstRun' handling.
+          // includes possible 'firstRun' handling.
           await studyUtils.setup(studySetup);
 
           // current studyInfo.
@@ -164,14 +177,15 @@ this.study = class extends ExtensionAPI {
               logger.debug("User is ineligible, ending study.");
               // 1. uses studySetup.endings.ineligible.url if any,
               // 2. sends UT for "ineligible"
-              // 3. then uninstalls addon
+              // 3. then uninstalls add-on
               await studyUtils.endStudy("ineligible");
               return studyUtils.info();
             }
           }
 
-          if (studySetup.testing.expired) {
-            await studyUtils.endStudy("expired");
+          if (studyInfo.delayInMinutes === 0) {
+            logger.debug("encountered already expired study");
+            await endStudy("expired");
             return studyUtils.info();
           }
 
@@ -197,7 +211,7 @@ this.study = class extends ExtensionAPI {
         /* Signal to browser.study that it should end.
          *
          *  Usage scenarios:
-         *  - addons defined
+         *  - add-ons defined
          *    - postive endings (tried feature)
          *    - negative endings (client clicked 'no thanks')
          *    - expiration / timeout (feature should last for 14 days then uninstall)
@@ -227,7 +241,7 @@ this.study = class extends ExtensionAPI {
          *  Addon should then do
          *  - open returned urls
          *  - feature specific cleanup
-         *  - uninstall the addon
+         *  - uninstall the add-on
          *
          *  Note:
          *  1.  calling this function multiple time is safe.
@@ -235,11 +249,7 @@ this.study = class extends ExtensionAPI {
          *  2.  the 'user-disable' case is handled above
          *  3.  throws if the endStudy fails
          **/
-        endStudy: async function endStudy(anEndingAlias) {
-          logger.debug("called endStudy anEndingAlias");
-          const endingResponse = await studyUtils.endStudy(anEndingAlias);
-          studyApiEventEmitter.emitEndStudy(endingResponse);
-        },
+        endStudy,
 
         /* current study configuration, including
          *  - variation
@@ -310,7 +320,7 @@ this.study = class extends ExtensionAPI {
          *
          *  Usage scenarios:
          *  - enrollment / eligiblity using recent Telemetry behaviours or client environment
-         *  - addon testing scenarios
+         *  - add-on testing scenarios
          *
          * @param {Object<query>} searchTelemetryQuery see above
          * @returns {Array<sendTelemetry>} matchingPings
@@ -353,7 +363,7 @@ this.study = class extends ExtensionAPI {
          *  Act on it by
          *  - opening surveyUrls
          *  - tearing down your feature
-         *  - uninstalling the addon
+         *  - uninstalling the add-on
          */
         onEndStudy: new EventManager(context, "study:onEndStudy", fire => {
           const listener = (eventReference, ending) => {

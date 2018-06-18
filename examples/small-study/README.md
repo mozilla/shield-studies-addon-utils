@@ -5,17 +5,17 @@
 ```
 .
 ├── README.md
-├── web-ext-artifacts/       # `web-ext build` output
+├── dist/               # `web-ext build` output
 ├── package-lock.json
 ├── package.json
 ├── src/
-│   ├── studySetup.js   # mostly declaritive study config
-│   ├── background.js   # main script impelementing addon
+│   ├── studySetup.js   # mostly declarative study config
+│   ├── background.js   # main script implementing addon
 │   ├── icons/
 │   │   ├── LICENSE
 │   │   └── shield-icon.svg
 │   ├── manifest.json
-│   └── privileged/     # npm run studyutils copies `browser.study` api here.
+│   └── privileged/     # `npm run bundle-utils` copies `browser.study` api here.
 └── web-ext-config.js
 ```
 
@@ -49,6 +49,6 @@ npm start    # web-ext run
 
 ## Next Steps
 
-1.  Get help from the Weird Science Team
+1.  Get help from the Weird Science Team (#shield on Slack)
 2.  Move on to the more complete [mozilla/shield-studies-addon-template]
 3.  Edit things, goof around, try other aspects of the API.

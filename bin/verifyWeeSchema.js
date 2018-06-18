@@ -56,9 +56,7 @@ for (const i in proposed) {
     let valid = ajv.validateSchema(type);
     if (!valid) {
       clean = false;
-      console.error(
-        `# SCHEMA ERROR: ${ns.namespace}.${type.name} "${type.id}"`,
-      );
+      console.error(`# SCHEMA ERROR: ns:${ns.namespace} type:"${type.id}"`);
       console.error(ajv.errors);
     }
 
@@ -73,9 +71,7 @@ for (const i in proposed) {
       if (!valid) {
         clean = false;
         console.error(
-          `# testcase failed IN ${i}:${j} ${ns.namespace}.${type.name}  "${
-            type.id
-          }"
+          `# testcase failed IN ${i}:${j} ns:${ns.namespace} type:"${type.id}"
 
 ${full(tc)}
           `,
@@ -90,9 +86,9 @@ ${full(tc)}
       if (valid) {
         clean = false;
         console.error(
-          `# testcase should not validate IN ${i}:${j} ${ns.namespace}.${
-            type.name
-          }  "${type.id}"
+          `# testcase should not validate IN ${i}:${j} ns:${
+            ns.namespace
+          } type:"${type.id}"
 
 ${full(tc)}
           `,

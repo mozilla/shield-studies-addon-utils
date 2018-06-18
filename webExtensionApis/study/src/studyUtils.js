@@ -3,6 +3,7 @@
 "use strict";
 
 import sampling from "./sampling";
+import logger from "./logger";
 
 /*
 * Supports the `browser.study` webExtensionExperiment api.
@@ -26,7 +27,7 @@ import sampling from "./sampling";
 const UTILS_VERSION = require("../../../package.json").version;
 const PACKET_VERSION = 3;
 
-const Ajv = require("ajv/dist/ajv.min.js");
+const Ajv = require("ajv");
 
 const { Services } = ChromeUtils.import(
   "resource://gre/modules/Services.jsm",
@@ -45,8 +46,6 @@ const { ExtensionUtils } = ChromeUtils.import(
 );
 // eslint-disable-next-line no-undef
 const { ExtensionError } = ExtensionUtils;
-
-const logger = (this.logger = createShieldStudyLogger("shield-study-utils"));
 
 // telemetry utils
 const CID = ChromeUtils.import("resource://gre/modules/ClientID.jsm", {});
@@ -342,8 +341,14 @@ class StudyUtils {
   }
 
   getFirstRunTimestamp() {
-    return Number(
-      Services.prefs.getStringPref(this._internals.prefs.firstRunTimestamp, 0),
+    return (
+      this._internals.studySetup.testing.firstRunTimestamp ||
+      Number(
+        Services.prefs.getStringPref(
+          this._internals.prefs.firstRunTimestamp,
+          0,
+        ),
+      )
     );
   }
 
@@ -366,16 +371,19 @@ class StudyUtils {
    * @return {Number} delayInMinutes Either the time left or Number.MAX_SAFE_INTEGER
    */
   getDelayInMinutes() {
+    if (this._internals.studySetup.testing.expired === true) {
+      return 0;
+    }
     const toMinutes = 1 / (1000 * 60);
     const days = this._internals.studySetup.expire.days;
-    let delayInMinutes = Number.MAX_SAFE_INTEGER; // approx 286,000 years
+    let delayInMs = Number.MAX_SAFE_INTEGER; // approx 286,000 years
     if (days) {
       // days in ms
       const ms = days * 86400 * 1000;
       const firstrun = this.getFirstRunTimestamp();
-      delayInMinutes = Math.max(firstrun + ms - Date.now(), 0);
+      delayInMs = Math.max(firstrun + ms - Date.now(), 0);
     }
-    return delayInMinutes * toMinutes;
+    return delayInMs * toMinutes;
   }
 
   /**
@@ -751,28 +759,6 @@ class StudyUtils {
   telemetryError(errorReport) {
     return this._telemetry(errorReport, "shield-study-error");
   }
-}
-
-/**
- * Creates a logger for debugging.
- *
- * The pref to control this is "shieldStudy.logLevel"
- *
- * @param {string} logPrefix - the name of the Console instance
- * @param {string} level - level to use by default
- * @returns {Object} - the Console instance, see gre/modules/Console.jsm
- */
-function createShieldStudyLogger(logPrefix, level = "Warn") {
-  const prefName = "shieldStudy.logLevel";
-  const ConsoleAPI = ChromeUtils.import(
-    "resource://gre/modules/Console.jsm",
-    {},
-  ).ConsoleAPI;
-  return new ConsoleAPI({
-    maxLogLevel: level,
-    maxLogLevelPref: prefName,
-    prefix: logPrefix,
-  });
 }
 
 // TODO, use the usual es6 exports

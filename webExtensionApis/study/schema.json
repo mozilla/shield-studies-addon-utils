@@ -26,11 +26,34 @@
         "testcases": [null, "a string"]
       },
       {
+        "id": "NullableInteger",
+        "$schema": "http://json-schema.org/draft-04/schema",
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "integer"
+          }
+        ],
+        "choices": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "integer"
+          }
+        ],
+        "testcases": [null, 1234567890],
+        "failcases": ["1234567890", []]
+      },
+      {
         "id": "studyTypesEnum",
         "$schema": "http://json-schema.org/draft-04/schema",
         "type": "string",
         "enum": ["shield", "pioneer"],
-        "testcase": "shield"
+        "testcases": ["shield", "pioneer"],
+        "failcases": ["foo"]
       },
       {
         "id": "weightedVariationObject",
@@ -45,7 +68,11 @@
             "minimum": 0
           }
         },
-        "required": ["name", "weight"]
+        "required": ["name", "weight"],
+        "testcase": {
+          "name": "feature-active",
+          "weight": 1.5
+        }
       },
       {
         "id": "weightedVariationsArray",
@@ -67,6 +94,10 @@
         "testcase": [
           {
             "name": "feature-active",
+            "weight": 1.5
+          },
+          {
+            "name": "feature-inactive",
             "weight": 1.5
           }
         ]
@@ -209,7 +240,7 @@
           "activeExperimentName": {
             "type": "string"
           },
-          "timeUntilExpire": {
+          "delayInMinutes": {
             "type": "number"
           },
           "isFirstRun": {
@@ -241,7 +272,8 @@
                 "type": "integer"
               }
             },
-            "optional": true
+            "optional": true,
+            "additionalProperties": false
           },
           "endings": {
             "type": "object",
@@ -270,6 +302,10 @@
                 "$ref": "NullableString",
                 "optional": true
               },
+              "firstRunTimestamp": {
+                "$ref": "NullableInteger",
+                "optional": true
+              },
               "expired": {
                 "choices": [
                   {
@@ -290,7 +326,7 @@
                 "optional": true
               }
             },
-            "additionalProperties": true,
+            "additionalProperties": false,
             "optional": true
           }
         },
@@ -346,7 +382,11 @@
               "send": false,
               "removeTestingFlag": false
             },
-            "testing": {}
+            "testing": {
+              "variationName": "something",
+              "firstRunTimestamp": 1234567890,
+              "expired": true
+            }
           },
           {
             "activeExperimentName": "aStudy",
@@ -367,6 +407,8 @@
               "removeTestingFlag": true
             },
             "testing": {
+              "variationName": "something",
+              "firstRunTimestamp": 1234567890,
               "expired": true
             }
           },
@@ -515,12 +557,12 @@
         "type": "function",
         "async": true,
         "description":
-          "current study configuration, including\n- variation\n- activeExperimentName\n- timeUntilExpire\n- firstRunTimestamp\n- isFirstRun\n\nBut not:\n- telemetry clientId\n\nThrows Error if called before `browser.study.setup`\n",
+          "current study configuration, including\n- variation\n- activeExperimentName\n- delayInMinutes\n- firstRunTimestamp\n- isFirstRun\n\nBut not:\n- telemetry clientId\n\nThrows Error if called before `browser.study.setup`\n",
         "defaultReturn": {
           "variation": "styleA",
           "firstRunTimestamp": 1523968204184,
           "activeExperimentName": "some experiment",
-          "timeUntilExpire": 12
+          "delayInMinutes": 12
         },
         "parameters": [],
         "returns": [

@@ -79,7 +79,7 @@ module.exports.executeJs = {
     }
 
     // Execute the JavaScript in the context of the extension page
-    console.debug(passedArguments, passedArguments.length);
+    // console.debug(passedArguments, passedArguments.length);
     const returnValue =
       passedArguments.length > 0
         ? await driver.executeAsyncScript(callable, ...passedArguments)

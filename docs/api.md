@@ -300,7 +300,34 @@ Act on it by
 }
 ```
 
-### [1] studyTypesEnum
+### [1] NullableInteger
+
+```json
+{
+  "id": "NullableInteger",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "oneOf": [
+    {
+      "type": "null"
+    },
+    {
+      "type": "integer"
+    }
+  ],
+  "choices": [
+    {
+      "type": "null"
+    },
+    {
+      "type": "integer"
+    }
+  ],
+  "testcases": [null, 1234567890],
+  "failcases": ["1234567890", []]
+}
+```
+
+### [2] studyTypesEnum
 
 ```json
 {
@@ -308,11 +335,12 @@ Act on it by
   "$schema": "http://json-schema.org/draft-04/schema",
   "type": "string",
   "enum": ["shield", "pioneer"],
-  "testcase": "shield"
+  "testcases": ["shield", "pioneer"],
+  "failcases": ["foo"]
 }
 ```
 
-### [2] weightedVariationObject
+### [3] weightedVariationObject
 
 ```json
 {
@@ -328,11 +356,15 @@ Act on it by
       "minimum": 0
     }
   },
-  "required": ["name", "weight"]
+  "required": ["name", "weight"],
+  "testcase": {
+    "name": "feature-active",
+    "weight": 1.5
+  }
 }
 ```
 
-### [3] weightedVariationsArray
+### [4] weightedVariationsArray
 
 ```json
 {
@@ -356,12 +388,16 @@ Act on it by
     {
       "name": "feature-active",
       "weight": 1.5
+    },
+    {
+      "name": "feature-inactive",
+      "weight": 1.5
     }
   ]
 }
 ```
 
-### [4] anEndingRequest
+### [5] anEndingRequest
 
 ```json
 {
@@ -472,7 +508,7 @@ Act on it by
 }
 ```
 
-### [5] onEndStudyResponse
+### [6] onEndStudyResponse
 
 ```json
 {
@@ -494,7 +530,7 @@ Act on it by
 }
 ```
 
-### [6] studyInfoObject
+### [7] studyInfoObject
 
 ```json
 {
@@ -528,7 +564,7 @@ Act on it by
 }
 ```
 
-### [7] studySetup
+### [8] studySetup
 
 ```json
 {
@@ -577,6 +613,29 @@ Act on it by
       "properties": {
         "variationName": {
           "$ref": "NullableString",
+          "optional": true
+        },
+        "firstRunTimestamp": {
+          "$ref": "NullableInteger",
+          "optional": true
+        },
+        "expired": {
+          "choices": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
           "optional": true
         }
       },
@@ -636,7 +695,11 @@ Act on it by
         "send": false,
         "removeTestingFlag": false
       },
-      "testing": {}
+      "testing": {
+        "variationName": "something",
+        "firstRunTimestamp": 1234567890,
+        "expired": true
+      }
     },
     {
       "activeExperimentName": "aStudy",
@@ -657,7 +720,9 @@ Act on it by
         "removeTestingFlag": true
       },
       "testing": {
-        "variationName": "something"
+        "variationName": "something",
+        "firstRunTimestamp": 1234567890,
+        "expired": true
       }
     },
     {
@@ -711,7 +776,7 @@ Act on it by
 }
 ```
 
-### [8] telemetryPayload
+### [9] telemetryPayload
 
 ```json
 {
@@ -725,7 +790,7 @@ Act on it by
 }
 ```
 
-### [9] searchTelemetryQuery
+### [10] searchTelemetryQuery
 
 ```json
 {
@@ -763,7 +828,7 @@ Act on it by
 }
 ```
 
-### [10] anEndingAnswer
+### [11] anEndingAnswer
 
 ```json
 {
