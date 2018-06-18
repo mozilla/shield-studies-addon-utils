@@ -44,7 +44,7 @@ const { ui } = require("../../testUtils/ui");
 
 const studySchema = require("../../test-addon/src/privileged/study/schema.json");
 
-const Ajv = require("ajv/dist/ajv.min.js");
+const Ajv = require("ajv");
 const ajv = new Ajv({ schemaId: "auto" });
 
 /**
