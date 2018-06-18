@@ -154,7 +154,10 @@ browser.windows.create(createData);
 /**
  * Fired when the extension is first installed, when the extension is updated
  * to a new version, and when the browser is updated to a new version.
- * @param {object} details Unclear what a 'details' is TODO
+ *
+ * See:  https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/runtime/onInstalled
+ *
+ * @param {object} details webExtension details object
  * @returns {undefined} Nothing
  */
 function handleInstalled(details) {

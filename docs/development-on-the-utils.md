@@ -82,6 +82,8 @@
         │   ├── studyUtils.js # The former StudyUtils.in.jsm file from v4
         │   └── studyUtilsBootstrap.js # The logic that was previously addon/bootstrap.js in the template repo
         └── webpack.config.js # Webpack configuration for bundling/building the study API's api.js file
+
+>> tree -a -I 'node_modules|.git|.DS_Store'
 ```
 
 # Continuous Integration
