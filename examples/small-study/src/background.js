@@ -61,7 +61,6 @@ class StudyLifeCycleHandler {
    */
   async cleanup() {
     // do whatever work your addon needs to clean up
-    return true;
   }
 
   /**
