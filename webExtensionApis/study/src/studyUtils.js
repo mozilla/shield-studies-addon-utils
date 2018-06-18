@@ -376,14 +376,14 @@ class StudyUtils {
     }
     const toMinutes = 1 / (1000 * 60);
     const days = this._internals.studySetup.expire.days;
-    let delayInMinutes = Number.MAX_SAFE_INTEGER; // approx 286,000 years
+    let delayInMs = Number.MAX_SAFE_INTEGER; // approx 286,000 years
     if (days) {
       // days in ms
       const ms = days * 86400 * 1000;
       const firstrun = this.getFirstRunTimestamp();
-      delayInMinutes = Math.max(firstrun + ms - Date.now(), 0);
+      delayInMs = Math.max(firstrun + ms - Date.now(), 0);
     }
-    return delayInMinutes * toMinutes;
+    return delayInMs * toMinutes;
   }
 
   /**
