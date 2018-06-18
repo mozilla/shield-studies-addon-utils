@@ -304,7 +304,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert(!internals.isEnding, "should not be ending");
       assert(info.isFirstRun, "should be isFirstRun");
       assert(info.variation, "should be a variation");
-      assert.equal(info.variation.name, "control", "should be 'control'");
+      assert.strictEqual(info.variation.name, "control", "should be 'control'");
 
       assert(now - info.firstRunTimestamp < 5000, "less than 5 seconds old");
       assert(
@@ -349,9 +349,9 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert(!internals.isEnding, "should not be ending");
       assert(!info.isFirstRun, "should NOT be isFirstRun");
       assert(info.variation, "should be a variation");
-      assert.equal(info.variation.name, "control", "should be 'control'");
+      assert.strictEqual(info.variation.name, "control", "should be 'control'");
 
-      assert.equal(
+      assert.strictEqual(
         info.firstRunTimestamp,
         now,
         "firstRunTimestamp should be what we set",
@@ -397,7 +397,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert(internals.isEnding, "should be ending");
       assert(info.isFirstRun, "should NOT be isFirstRun");
       assert(info.variation, "should be a variation");
-      assert.equal(info.variation.name, "control", "should be 'control'");
+      assert.strictEqual(info.variation.name, "control", "should be 'control'");
 
       assert(now - info.firstRunTimestamp < 5000, "less than 5 seconds old");
       assert(
@@ -439,7 +439,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         cb({ info, internals });
       }, thisSetup);
       const { info } = data;
-      assert.equal(
+      assert.strictEqual(
         info.variation.name,
         "the-rare-one",
         "should be 'the-rare-one'",
@@ -460,7 +460,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
         }
         cb("This should be an error");
       }, thisSetup);
-      assert.equal(
+      assert.strictEqual(
         error,
         'Error: setup error: testing.variationName "not-there" not in [{"name":"control","weight":1}]',
         "should be an exception",
@@ -500,7 +500,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
 
     it("should fire the onReady event upon successful setup", async () => {
       console.debug(studyInfo);
-      assert.equal(
+      assert.strictEqual(
         studyInfo.activeExperimentName,
         overrides.activeExperimentName,
       );
@@ -597,10 +597,10 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       it("should have fire onEndStudy event with the endingResult", function() {
         console.debug(full(endingResult));
         assert(endingResult);
-        assert.equal(endingResult.endingName, "customEnding");
-        assert.equal(endingResult.queryArgs.fullreason, "customEnding");
+        assert.strictEqual(endingResult.endingName, "customEnding");
+        assert.strictEqual(endingResult.queryArgs.fullreason, "customEnding");
         assert(endingResult.shouldUninstall);
-        assert.equal(endingResult.urls.length, 1);
+        assert.strictEqual(endingResult.urls.length, 1);
       });
 
       it("should have set the experiment as inactive", async () => {
