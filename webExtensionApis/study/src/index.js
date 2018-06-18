@@ -90,6 +90,9 @@ this.study = class extends ExtensionAPI {
     // Load studyUtils
     const { studyUtils } = require("./studyUtils.js");
 
+    // Make studyUtils available for onShutdown handler
+    this.studyUtils = studyUtils;
+
     /* eslint no-shadow: off */
     const { studyApiEventEmitter } = this;
 
