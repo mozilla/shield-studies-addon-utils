@@ -3,13 +3,18 @@
 const path = require("path");
 const fs = require("fs-extra");
 
-const files = ["study/api.js", "study/schema.json"];
+const files = [
+  "study/api.js",
+  "study/schema.json",
+  "testingOverrides/api.js",
+  "testingOverrides/schema.json",
+];
 
 const customHelp = `
   # Additional hints
 
   ## cleanup
-  rm -rf <privilegedDirName>/{study,prefs}
+  rm -rf <privilegedDirName>/{study,testingOverrides}
 `;
 
 function correctOutputDir(privilegedDirname) {
@@ -43,7 +48,15 @@ function printTemplate(dirname) {
       "parent": {
         "scopes": ["addon_parent"],
         "script": "${dirname}/study/api.js",
-        "paths": [["study", "studyDebug"]]
+        "paths": [["study"]]
+      }
+    },
+    "testingOverrides": {
+      "schema": "${dirname}/testingOverrides/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "${dirname}/testingOverrides/api.js",
+        "paths": [["testingOverrides"]]
       }
     },
   },

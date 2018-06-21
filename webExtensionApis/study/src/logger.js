@@ -26,4 +26,4 @@ function createShieldStudyLogger(logPrefix, level = "Warn") {
 
 const logger = createShieldStudyLogger("shield-study-utils");
 
-export default logger;
+export { createShieldStudyLogger, logger };

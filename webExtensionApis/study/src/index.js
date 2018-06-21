@@ -7,7 +7,8 @@
  * 3.  Does NOT handle 'user-disable' surveys, see #194
  */
 
-import logger from "./logger";
+import { logger, createShieldStudyLogger } from "./logger";
+import makeWidgetId from "./makeWidgetId";
 
 ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
@@ -99,6 +100,11 @@ this.study = class extends ExtensionAPI {
     // once.  Used for pref naming, telemetry
     studyUtils.setExtensionManifest(extension.manifest);
     studyUtils.reset();
+
+    // for add-on logging via browser.study.log()
+    const addonLogger = createShieldStudyLogger(
+      makeWidgetId(extension.manifest.applications.gecko.id),
+    );
 
     async function endStudy(anEndingAlias) {
       logger.debug("called endStudy anEndingAlias");
@@ -334,6 +340,15 @@ this.study = class extends ExtensionAPI {
           return searchTelemetryArchive(TelemetryArchive, searchTelemetryQuery);
         },
 
+        /** Allows study add-ons to avoid console.log. Log messages will be prefixed with
+         * the add-on's widget id and the log level is controlled by the `shieldStudy.logLevel` preference.
+         *
+         * @returns {Promise<void>} A promise that resolves when the logging has been done
+         */
+        log: async function log(...args) {
+          addonLogger.log(...args);
+        },
+
         /* Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client. */
         validateJSON: async function validateJSON(someJson, jsonschema) {
           logger.debug("called validateJSON someJson, jsonschema");
@@ -385,16 +400,16 @@ this.study = class extends ExtensionAPI {
           throw new ExtensionError(message);
         },
 
-        async setFirstRunTimestamp(timestamp) {
-          return studyUtils.setFirstRunTimestamp(timestamp);
-        },
-
         async setActive() {
           return studyUtils.setActive();
         },
 
         async startup({ reason }) {
           return studyUtils.startup({ reason });
+        },
+
+        async setFirstRunTimestamp(timestamp) {
+          return studyUtils.setFirstRunTimestamp(timestamp);
         },
 
         async reset() {

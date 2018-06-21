@@ -478,24 +478,27 @@
 
   # utilities
 
-  - name: surveyUrl
+  - name: log
     type: function
     async: true
     description: |
-      Format url with study covariate queryArgs appended / mixed in.
-
-      Use this for constructing midpoint surveys.
-
-    defaultReturn: 'https://example.com?version=59.0&branch=studyA'
+      Allows study add-ons to avoid console.log. Log messages will be prefixed with
+      the add-on's widget id and the log level is controlled by the `shieldStudy.logLevel` preference.
     parameters:
-    - name: baseUrl
-      type: string
-    - name: additionalFields
-      type: object
+    - name: value1
+      type: 'any'
+    - name: value2
+      type: 'any'
       optional: true
-
-    returns:
-    - type: string
+    - name: value3
+      type: 'any'
+      optional: true
+    - name: value4
+      type: 'any'
+      optional: true
+    - name: value5
+      type: 'any'
+      optional: true
 
   - name: validateJSON
     type: function
@@ -519,17 +522,6 @@
       - type: boolean
       errors:
       - type: array
-
-  - name: uninstall
-    type: function
-    async: true
-    description: |
-
-      Uninstall this addon, using AddonManager.jsm.
-
-      No Telemetry.  No ending event triggered.  Just webExtenion removed.
-
-    parameters: []
 
   # things that would be 'listeners' are 'events' in webExtensions
   # https://github.com/motin/shield-studies-addon-template/blob/convert-to-webextension-experiments/src/privileged/introductionNotificationBar/api.js#L107
@@ -654,33 +646,3 @@
       - prefs: object of all created prefs and their names
 
     parameters: []
-
-
-
-# TODO, are we doing prefs?  Move to prefs file?
-- namespace: prefs
-  description: |
-    Temporary subset of `Services.prefs` API,
-    described at:  https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Services.jsm
-
-    See https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIPrefBranch
-
-    No attempt here to improve the api at all.
-
-    TODO: Convert observers to events.
-
-    If a true 'prefs' api lands in tree, this module will be removed.
-
-  # non-standard, for use with devs
-  apiVersion: 5
-  functions:
-  - name: getStringPref
-    type: 'function'
-    async: true
-    description: ''
-    parameters:
-    - name: aPrefName
-      type: 'string'
-    - name: aDefaultValue
-      type: 'string'
-      optional: true

@@ -42,7 +42,7 @@ class StudyLifeCycleHandler {
    * @returns {undefined}
    */
   async enableFeature(studyInfo) {
-    console.log("enabling feature", studyInfo);
+    await browser.study.log("Enabling experiment", studyInfo);
     const { delayInMinutes } = studyInfo;
     if (delayInMinutes !== undefined) {
       const alarmName = `${browser.runtime.id}:studyExpiration`;
@@ -70,19 +70,19 @@ class StudyLifeCycleHandler {
    * @returns {undefined}
    */
   async handleStudyEnding(ending) {
-    console.log(`study wants to end:`, ending);
+    await browser.study.log(`Study wants to end:`, ending);
     for (const url of ending.urls) {
       await browser.tabs.create({ url });
     }
     switch (ending.endingName) {
       // could have different actions depending on positive / ending names
       default:
-        console.log(`the ending: ${ending.endingName}`);
+        await browser.study.log(`The ending: ${ending.endingName}`);
         await this.cleanup();
         break;
     }
     // actually remove the addon.
-    console.log("about to actually uninstall");
+    await browser.study.log("About to actually uninstall");
     return browser.management.uninstallSelf();
   }
 }
@@ -105,13 +105,13 @@ class ButtonFeature {
         browser.study.endStudy("user-used-the-feature");
       }
     });
-    console.log(
+    await browser.study.log(
       `Setting the browser action title to the variation name: '${
         studyInfo.variation.name
       }'`,
     );
     await browser.browserAction.setTitle({ title: studyInfo.variation.name });
-    console.log(
+    await browser.study.log(
       "Feature is now enabled, sending 'test:onFeatureEnabled' event (for the tests)",
     );
     browser.runtime.sendMessage("test:onFeatureEnabled").catch(console.error);
@@ -130,7 +130,7 @@ async function onEveryExtensionLoad() {
   new StudyLifeCycleHandler();
 
   const studySetup = await getStudySetup();
-  console.log(`studySetup: ${JSON.stringify(studySetup)}`);
+  await browser.study.log("Study setup: ", studySetup);
   await browser.study.setup(studySetup);
 }
 

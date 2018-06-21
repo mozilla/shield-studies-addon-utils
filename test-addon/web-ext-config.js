@@ -13,7 +13,7 @@ const defaultConfig = {
     firefox: "firefox",
     browserConsole: true,
     startUrl: ["about:debugging"],
-    pref: ["shieldStudy.logLevel='All'"],
+    pref: ["shieldStudy.logLevel=All"],
   },
 };
 
