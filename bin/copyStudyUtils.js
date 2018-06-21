@@ -43,7 +43,7 @@ function printTemplate(dirname) {
       "parent": {
         "scopes": ["addon_parent"],
         "script": "${dirname}/study/api.js",
-        "paths": [["study", "studyDebug"]]
+        "paths": [["study"]]
       }
     },
   },
