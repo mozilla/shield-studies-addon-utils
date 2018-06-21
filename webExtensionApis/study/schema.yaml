@@ -478,25 +478,6 @@
 
   # utilities
 
-  - name: surveyUrl
-    type: function
-    async: true
-    description: |
-      Format url with study covariate queryArgs appended / mixed in.
-
-      Use this for constructing midpoint surveys.
-
-    defaultReturn: 'https://example.com?version=59.0&branch=studyA'
-    parameters:
-    - name: baseUrl
-      type: string
-    - name: additionalFields
-      type: object
-      optional: true
-
-    returns:
-    - type: string
-
   - name: validateJSON
     type: function
     async: true
@@ -654,33 +635,3 @@
       - prefs: object of all created prefs and their names
 
     parameters: []
-
-
-
-# TODO, are we doing prefs?  Move to prefs file?
-- namespace: prefs
-  description: |
-    Temporary subset of `Services.prefs` API,
-    described at:  https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Services.jsm
-
-    See https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIPrefBranch
-
-    No attempt here to improve the api at all.
-
-    TODO: Convert observers to events.
-
-    If a true 'prefs' api lands in tree, this module will be removed.
-
-  # non-standard, for use with devs
-  apiVersion: 5
-  functions:
-  - name: getStringPref
-    type: 'function'
-    async: true
-    description: ''
-    parameters:
-    - name: aPrefName
-      type: 'string'
-    - name: aDefaultValue
-      type: 'string'
-      optional: true

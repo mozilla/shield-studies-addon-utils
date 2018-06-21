@@ -196,25 +196,6 @@ Usage scenarios:
   * $ref:
   * optional: false
 
-### `browser.study.surveyUrl( baseUrl, additionalFields )`
-
-Format url with study covariate queryArgs appended / mixed in.
-
-Use this for constructing midpoint surveys.
-
-**Parameters**
-
-* `baseUrl`
-
-  * type: baseUrl
-  * $ref:
-  * optional: false
-
-* `additionalFields`
-  * type: additionalFields
-  * $ref:
-  * optional: true
-
 ### `browser.study.validateJSON( someJson, jsonschema )`
 
 Using AJV, do jsonschema validation of an object. Can be used to validate your arguments, packets at client.
@@ -921,46 +902,6 @@ About `this._internals`:
 * prefs: object of all created prefs and their names
 
 **Parameters**
-
-## Events
-
-(None)
-
-## Properties TBD
-
-## Data Types
-
-(None)
-
-# Namespace: `browser.prefs`
-
-Temporary subset of `Services.prefs` API,
-described at: https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Services.jsm
-
-See https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIPrefBranch
-
-No attempt here to improve the api at all.
-
-TODO: Convert observers to events.
-
-If a true 'prefs' api lands in tree, this module will be removed.
-
-## Functions
-
-### `browser.prefs.getStringPref( aPrefName, aDefaultValue )`
-
-**Parameters**
-
-* `aPrefName`
-
-  * type: aPrefName
-  * $ref:
-  * optional: false
-
-* `aDefaultValue`
-  * type: aDefaultValue
-  * $ref:
-  * optional: true
 
 ## Events
 
