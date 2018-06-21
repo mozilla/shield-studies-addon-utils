@@ -839,6 +839,84 @@ Act on it by
 }
 ```
 
+# Namespace: `browser.study.logger`
+
+For study developers to be able to log messages which are hidden by default but can
+be displayed via a preference (not currently possible with avoid console.{info,log,debug,warn,error}).
+Log messages will be prefixed with the add-on's widget id and the log level is controlled by the
+`shieldStudy.logLevel` preference.
+Note that since there is no way to handle an arbitrarily variable number of arguments in the schema,
+all values to log needs to be sent as a single variable.
+Usage example: await browser.study.logger.log("foo");
+Usage example (multiple things to log): await browser.study.logger.log(["foo", bar]);
+
+## Functions
+
+### `browser.study.logger.info( values )`
+
+Corresponds to console.info
+
+**Parameters**
+
+* `values`
+  * type: values
+  * $ref:
+  * optional: false
+
+### `browser.study.logger.log( values )`
+
+Corresponds to console.log
+
+**Parameters**
+
+* `values`
+  * type: values
+  * $ref:
+  * optional: false
+
+### `browser.study.logger.debug( values )`
+
+Corresponds to console.debug
+
+**Parameters**
+
+* `values`
+  * type: values
+  * $ref:
+  * optional: false
+
+### `browser.study.logger.warn( values )`
+
+Corresponds to console.warn
+
+**Parameters**
+
+* `values`
+  * type: values
+  * $ref:
+  * optional: false
+
+### `browser.study.logger.error( values )`
+
+Corresponds to console.error
+
+**Parameters**
+
+* `values`
+  * type: values
+  * $ref:
+  * optional: false
+
+## Events
+
+(None)
+
+## Properties TBD
+
+## Data Types
+
+(None)
+
 # Namespace: `browser.studyDebug`
 
 Interface for Test Utilities

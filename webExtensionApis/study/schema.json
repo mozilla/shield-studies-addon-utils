@@ -705,6 +705,73 @@
     ]
   },
   {
+    "namespace": "study.logger",
+    "description":
+      "For study developers to be able to log messages which are hidden by default but can\nbe displayed via a preference (not currently possible with avoid console.{info,log,debug,warn,error}).\nLog messages will be prefixed with the add-on's widget id and the log level is controlled by the\n`shieldStudy.logLevel` preference.\nNote that since there is no way to handle an arbitrarily variable number of arguments in the schema,\nall values to log needs to be sent as a single variable.\nUsage example: await browser.study.logger.log(\"foo\");\nUsage example (multiple things to log): await browser.study.logger.log([\"foo\", bar]);\n",
+    "functions": [
+      {
+        "name": "info",
+        "type": "function",
+        "async": true,
+        "description": "Corresponds to console.info",
+        "parameters": [
+          {
+            "name": "values",
+            "type": "any"
+          }
+        ]
+      },
+      {
+        "name": "log",
+        "type": "function",
+        "async": true,
+        "description": "Corresponds to console.log",
+        "parameters": [
+          {
+            "name": "values",
+            "type": "any"
+          }
+        ]
+      },
+      {
+        "name": "debug",
+        "type": "function",
+        "async": true,
+        "description": "Corresponds to console.debug",
+        "parameters": [
+          {
+            "name": "values",
+            "type": "any"
+          }
+        ]
+      },
+      {
+        "name": "warn",
+        "type": "function",
+        "async": true,
+        "description": "Corresponds to console.warn",
+        "parameters": [
+          {
+            "name": "values",
+            "type": "any"
+          }
+        ]
+      },
+      {
+        "name": "error",
+        "type": "function",
+        "async": true,
+        "description": "Corresponds to console.error",
+        "parameters": [
+          {
+            "name": "values",
+            "type": "any"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "namespace": "studyDebug",
     "description": "Interface for Test Utilities",
     "apiVersion": 5,
