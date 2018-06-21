@@ -1,0 +1,46 @@
+# Interface schema
+# https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/schema.html
+# possible types are here
+# - https://searchfox.org/mozilla-central/source/toolkit/components/extensions/Schemas.jsm#2418-2426
+#
+# - properties
+# - functions
+# - events
+# - types
+#
+# - type property:
+#   boolean, integer, number, string, array, object, or any.
+#
+
+---
+- namespace: prefs
+  description: |
+    Temporary subset of `Preferences` API (Preferences.jsm)
+
+    No attempt here to improve the api at all.
+
+    TODO: Convert observers to events.
+
+    If a true 'prefs' api lands in tree, this module will be removed.
+
+  apiVersion: 5
+  functions:
+  - name: get
+    type: 'function'
+    async: true
+    description: ''
+    parameters:
+    - name: prefName
+      type: 'string'
+    - name: defaultValue
+      type: 'string'
+      optional: true
+  - name: set
+    type: 'function'
+    async: true
+    description: ''
+    parameters:
+    - name: prefName
+      type: 'string'
+    - name: prefValue
+      type: 'string'
