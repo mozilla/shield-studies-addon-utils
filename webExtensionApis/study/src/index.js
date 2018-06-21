@@ -385,16 +385,16 @@ this.study = class extends ExtensionAPI {
           throw new ExtensionError(message);
         },
 
-        async setFirstRunTimestamp(timestamp) {
-          return studyUtils.setFirstRunTimestamp(timestamp);
-        },
-
         async setActive() {
           return studyUtils.setActive();
         },
 
         async startup({ reason }) {
           return studyUtils.startup({ reason });
+        },
+
+        async setFirstRunTimestamp(timestamp) {
+          return studyUtils.setFirstRunTimestamp(timestamp);
         },
 
         async reset() {
