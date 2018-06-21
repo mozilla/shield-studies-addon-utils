@@ -17,6 +17,14 @@
         "script": "./privileged/study/api.js",
         "paths": [["study"], ["studyDebug"]]
       }
+    },
+    "testingOverrides": {
+      "schema": "./privileged/testingOverrides/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "./privileged/testingOverrides/api.js",
+        "paths": [["testingOverrides"]]
+      }
     }
   },
   "permissions": ["storage", "alarms"],
