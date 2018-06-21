@@ -501,17 +501,6 @@
       errors:
       - type: array
 
-  - name: uninstall
-    type: function
-    async: true
-    description: |
-
-      Uninstall this addon, using AddonManager.jsm.
-
-      No Telemetry.  No ending event triggered.  Just webExtenion removed.
-
-    parameters: []
-
   # things that would be 'listeners' are 'events' in webExtensions
   # https://github.com/motin/shield-studies-addon-template/blob/convert-to-webextension-experiments/src/privileged/introductionNotificationBar/api.js#L107
   # https://github.com/motin/shield-studies-addon-template/blob/convert-to-webextension-experiments/src/privileged/introductionNotificationBar/schema.json#L15
