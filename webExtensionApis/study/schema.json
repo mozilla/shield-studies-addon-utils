@@ -605,6 +605,39 @@
         ]
       },
       {
+        "name": "log",
+        "type": "function",
+        "async": true,
+        "description":
+          "Allows study add-ons to avoid console.log. Log messages will be prefixed with\nthe add-on's widget id and the log level is controlled by the `shieldStudy.logLevel` preference.\n",
+        "parameters": [
+          {
+            "name": "value1",
+            "type": "any"
+          },
+          {
+            "name": "value2",
+            "type": "any",
+            "optional": true
+          },
+          {
+            "name": "value3",
+            "type": "any",
+            "optional": true
+          },
+          {
+            "name": "value4",
+            "type": "any",
+            "optional": true
+          },
+          {
+            "name": "value5",
+            "type": "any",
+            "optional": true
+          }
+        ]
+      },
+      {
         "name": "validateJSON",
         "type": "function",
         "async": true,

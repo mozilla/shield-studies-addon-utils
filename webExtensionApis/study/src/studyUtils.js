@@ -3,7 +3,8 @@
 "use strict";
 
 import sampling from "./sampling";
-import logger from "./logger";
+import { logger } from "./logger";
+import makeWidgetId from "./makeWidgetId";
 
 /*
 * Supports the `browser.study` webExtensionExperiment api.
@@ -210,12 +211,6 @@ class StudyUtils {
       throw new ExtensionError(
         "_createInternals needs `setExtensionManifest`. This should be done by `getApi`.",
       );
-    }
-    function makeWidgetId(id) {
-      id = id.toLowerCase();
-      // FIXME: This allows for collisions.
-      // WebExt hasn't ever had a problem.
-      return id.replace(/[^a-z0-9_-]/g, "_");
     }
 
     const widgetId = makeWidgetId(

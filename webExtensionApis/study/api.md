@@ -196,6 +196,42 @@ Usage scenarios:
   * $ref:
   * optional: false
 
+### `browser.study.log( value1, value2, value3, value4, value5 )`
+
+Allows study add-ons to avoid console.log. Log messages will be prefixed with
+the add-on's widget id and the log level is controlled by the `shieldStudy.logLevel` preference.
+
+**Parameters**
+
+* `value1`
+
+  * type: value1
+  * $ref:
+  * optional: false
+
+* `value2`
+
+  * type: value2
+  * $ref:
+  * optional: true
+
+* `value3`
+
+  * type: value3
+  * $ref:
+  * optional: true
+
+* `value4`
+
+  * type: value4
+  * $ref:
+  * optional: true
+
+* `value5`
+  * type: value5
+  * $ref:
+  * optional: true
+
 ### `browser.study.validateJSON( someJson, jsonschema )`
 
 Using AJV, do jsonschema validation of an object. Can be used to validate your arguments, packets at client.

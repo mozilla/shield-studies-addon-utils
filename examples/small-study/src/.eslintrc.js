@@ -7,7 +7,4 @@ module.exports = {
     es6: true,
     webextensions: true,
   },
-  rules: {
-    "no-console": "off",
-  },
 };
