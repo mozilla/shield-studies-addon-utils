@@ -70,12 +70,10 @@ version       ${p0.version}
 ` +
       pings
         .map(
-          (p, i) => `${i} ${p.creationDate} ${p.payload.type}
-${JSON.stringify(p.payload.data, null, 2)}
-
-`,
+          (p, i) => `${p.creationDate} ${p.payload.type}
+${JSON.stringify(p.payload.data, null, 2)}`,
         )
-        .join("\n");
+        .join("\n\n");
 
     return report;
   },
