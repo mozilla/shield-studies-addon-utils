@@ -98,7 +98,7 @@ this.study = class extends ExtensionAPI {
 
     // once.  Used for pref naming, telemetry
     studyUtils.setExtensionManifest(extension.manifest);
-    studyUtils.reset();
+    studyUtils._internals = studyUtils._createInternals();
 
     async function endStudy(anEndingAlias) {
       logger.debug("called endStudy anEndingAlias");
