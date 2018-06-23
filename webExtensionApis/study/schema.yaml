@@ -45,6 +45,17 @@
     testcases: [null, 1234567890]
     failcases: ['1234567890', []]
 
+  - id: NullableNumber
+    $schema: "http://json-schema.org/draft-04/schema"
+    oneOf: [
+      {type: 'null'},
+      {type: 'number'}]
+    choices: [
+      {type: 'null'},
+      {type: 'number'}]
+    testcases: [null, 1234567890, 1234567890.123]
+    failcases: ['1234567890', '1234567890.123', []]
+
   - id: studyTypesEnum
     $schema: "http://json-schema.org/draft-04/schema"
     type: string
@@ -144,11 +155,11 @@
       variation:
         $ref: "weightedVariationObject"
       firstRunTimestamp:
-        type: 'number'  # 1523968204184,
+        $ref: NullableInteger # 1523968204184, or null if the study has not started yet
       activeExperimentName:
         type: string    # some experiment"
       delayInMinutes:
-        type:  number
+        $ref: NullableNumber # 123.456, or null if the study has not started yet
       isFirstRun:
         type: 'boolean'
 

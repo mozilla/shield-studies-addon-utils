@@ -48,6 +48,28 @@
         "failcases": ["1234567890", []]
       },
       {
+        "id": "NullableNumber",
+        "$schema": "http://json-schema.org/draft-04/schema",
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "choices": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "testcases": [null, 1234567890, 1234567890.123],
+        "failcases": ["1234567890", "1234567890.123", []]
+      },
+      {
         "id": "studyTypesEnum",
         "$schema": "http://json-schema.org/draft-04/schema",
         "type": "string",
@@ -235,13 +257,13 @@
             "$ref": "weightedVariationObject"
           },
           "firstRunTimestamp": {
-            "type": "number"
+            "$ref": "NullableInteger"
           },
           "activeExperimentName": {
             "type": "string"
           },
           "delayInMinutes": {
-            "type": "number"
+            "$ref": "NullableNumber"
           },
           "isFirstRun": {
             "type": "boolean"

@@ -300,7 +300,34 @@ Act on it by
 }
 ```
 
-### [2] studyTypesEnum
+### [2] NullableNumber
+
+```json
+{
+  "id": "NullableNumber",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "oneOf": [
+    {
+      "type": "null"
+    },
+    {
+      "type": "number"
+    }
+  ],
+  "choices": [
+    {
+      "type": "null"
+    },
+    {
+      "type": "number"
+    }
+  ],
+  "testcases": [null, 1234567890, 1234567890.123],
+  "failcases": ["1234567890", "1234567890.123", []]
+}
+```
+
+### [3] studyTypesEnum
 
 ```json
 {
@@ -313,7 +340,7 @@ Act on it by
 }
 ```
 
-### [3] weightedVariationObject
+### [4] weightedVariationObject
 
 ```json
 {
@@ -337,7 +364,7 @@ Act on it by
 }
 ```
 
-### [4] weightedVariationsArray
+### [5] weightedVariationsArray
 
 ```json
 {
@@ -370,7 +397,7 @@ Act on it by
 }
 ```
 
-### [5] anEndingRequest
+### [6] anEndingRequest
 
 ```json
 {
@@ -481,7 +508,7 @@ Act on it by
 }
 ```
 
-### [6] onEndStudyResponse
+### [7] onEndStudyResponse
 
 ```json
 {
@@ -503,7 +530,7 @@ Act on it by
 }
 ```
 
-### [7] studyInfoObject
+### [8] studyInfoObject
 
 ```json
 {
@@ -516,13 +543,13 @@ Act on it by
       "$ref": "weightedVariationObject"
     },
     "firstRunTimestamp": {
-      "type": "number"
+      "$ref": "NullableInteger"
     },
     "activeExperimentName": {
       "type": "string"
     },
     "delayInMinutes": {
-      "type": "number"
+      "$ref": "NullableNumber"
     },
     "isFirstRun": {
       "type": "boolean"
@@ -537,7 +564,7 @@ Act on it by
 }
 ```
 
-### [8] studySetup
+### [9] studySetup
 
 ```json
 {
@@ -749,7 +776,7 @@ Act on it by
 }
 ```
 
-### [9] telemetryPayload
+### [10] telemetryPayload
 
 ```json
 {
@@ -763,7 +790,7 @@ Act on it by
 }
 ```
 
-### [10] searchTelemetryQuery
+### [11] searchTelemetryQuery
 
 ```json
 {
@@ -801,7 +828,7 @@ Act on it by
 }
 ```
 
-### [11] anEndingAnswer
+### [12] anEndingAnswer
 
 ```json
 {
