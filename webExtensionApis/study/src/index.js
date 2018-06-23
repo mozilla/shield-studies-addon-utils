@@ -175,7 +175,7 @@ this.study = class extends ExtensionAPI {
               // 1. uses studySetup.endings.ineligible.url if any,
               // 2. sends UT for "ineligible"
               // 3. then uninstalls add-on
-              await studyUtils.endStudy("ineligible");
+              await endStudy("ineligible");
               return studyUtils.info();
             }
           }
