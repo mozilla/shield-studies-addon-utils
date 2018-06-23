@@ -264,7 +264,7 @@ class StudyUtils {
    */
   async setup(studySetup) {
     if (!this._internals) {
-      this._internals = this._createInternals();
+      throw new ExtensionError("StudyUtils internals are not initiated");
     }
 
     logger.debug(`setting up! -- ${JSON.stringify(studySetup)}`);

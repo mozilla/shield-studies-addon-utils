@@ -160,9 +160,6 @@ this.study = class extends ExtensionAPI {
             studySetup.testing = {};
           }
 
-          // 1. add-on info for prefs etc.
-          studyUtils.setExtensionManifest(extension.manifest);
-
           // Setup and sets the variation / _internals
           // includes possible 'firstRun' handling.
           await studyUtils.setup(studySetup);
