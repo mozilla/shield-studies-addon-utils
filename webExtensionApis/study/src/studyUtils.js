@@ -264,7 +264,7 @@ class StudyUtils {
    */
   async setup(studySetup) {
     if (!this._internals) {
-      this._internals = this._createInternals();
+      throw new ExtensionError("StudyUtils internals are not initiated");
     }
 
     logger.debug(`setting up! -- ${JSON.stringify(studySetup)}`);
@@ -305,7 +305,7 @@ class StudyUtils {
     // isFirstRun?  ever seen before?
     const firstRunTimestamp = this.getFirstRunTimestamp();
     // 'firstSeen' is the first telemetry we attempt to send.  needs 'isSetup'
-    if (firstRunTimestamp) {
+    if (firstRunTimestamp !== null) {
       this._internals.isFirstRun = false;
     } else {
       // 'enter' telemetry, and firstSeen
@@ -340,16 +340,19 @@ class StudyUtils {
     this._extensionManifest = extensionManifest;
   }
 
+  /**
+   * @returns {any} the firstRunTimestamp as a number in case the preference is set, or null if the preference is not set
+   */
   getFirstRunTimestamp() {
-    return (
+    const firstRunTimestampPreferenceValue =
       this._internals.studySetup.testing.firstRunTimestamp ||
-      Number(
-        Services.prefs.getStringPref(
-          this._internals.prefs.firstRunTimestamp,
-          0,
-        ),
-      )
-    );
+      Services.prefs.getStringPref(
+        this._internals.prefs.firstRunTimestamp,
+        null,
+      );
+    return firstRunTimestampPreferenceValue !== null
+      ? Number(firstRunTimestampPreferenceValue)
+      : null;
   }
 
   setFirstRunTimestamp(timestamp) {
@@ -357,7 +360,7 @@ class StudyUtils {
     return Services.prefs.setStringPref(pref, "" + timestamp);
   }
 
-  resetFirstRunTimestamp(timestamp) {
+  resetFirstRunTimestamp() {
     const pref = this._internals.prefs.firstRunTimestamp;
     Preferences.reset(pref);
   }
@@ -381,6 +384,9 @@ class StudyUtils {
       // days in ms
       const ms = days * 86400 * 1000;
       const firstrun = this.getFirstRunTimestamp();
+      if (firstrun === null) {
+        return null;
+      }
       delayInMs = Math.max(firstrun + ms - Date.now(), 0);
     }
     return delayInMs * toMinutes;
@@ -479,7 +485,7 @@ class StudyUtils {
     logger.debug(`attempting firstSeen`);
     this._internals.isFirstRun = true;
     await this._telemetry({ study_state: "enter" }, "shield-study");
-    this.setFirstRunTimestamp("" + Date.now());
+    this.setFirstRunTimestamp(Date.now());
   }
 
   /**
@@ -636,9 +642,13 @@ class StudyUtils {
 
     out.queryArgs = qa;
 
-    // 3. Tidy up the internals.
+    // 3. Temporarily store information about the ending for test purposes
     this._internals.endingReturned = out;
     this._internals.isEnded = true; // done!
+
+    // 4. Make sure that future add-on installations are treated as new studies rather than a continuation of the previous one
+    this.resetFirstRunTimestamp();
+
     return out;
   }
 

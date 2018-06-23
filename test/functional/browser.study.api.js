@@ -320,6 +320,11 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert(info.variation, "should be a variation");
       assert.strictEqual(info.variation.name, "control", "should be 'control'");
 
+      assert.notStrictEqual(
+        info.firstRunTimestamp,
+        null,
+        "firstRunTimestamp should not be null since the study should be running",
+      );
       assert(now - info.firstRunTimestamp < 5000, "less than 5 seconds old");
       assert(
         info.delayInMinutes > 13 * MINUTES_PER_DAY,
@@ -367,6 +372,11 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert(info.variation, "should be a variation");
       assert.strictEqual(info.variation.name, "control", "should be 'control'");
 
+      assert.notStrictEqual(
+        info.firstRunTimestamp,
+        null,
+        "firstRunTimestamp should not be null since the study should be running",
+      );
       assert.strictEqual(
         info.firstRunTimestamp,
         now,
@@ -390,7 +400,6 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
 
     it("3. firstRun, expire.days, !allowEnroll, !testing.expired should end ineligible, pings enter,ineligible,exit", async function() {
       // console.debug("doing test 3");
-      const now = Number(Date.now());
       const thisSetup = studySetupForTests({
         allowEnroll: false,
       });
@@ -416,14 +425,15 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert(info.variation, "should be a variation");
       assert.strictEqual(info.variation.name, "control", "should be 'control'");
 
-      assert(now - info.firstRunTimestamp < 5000, "less than 5 seconds old");
-      assert(
-        info.delayInMinutes > 13 * MINUTES_PER_DAY,
-        "should not expire within 13 days",
+      assert.strictEqual(
+        info.firstRunTimestamp,
+        null,
+        "firstRunTimestamp should be null (the study was never run)",
       );
-      assert(
-        info.delayInMinutes < 15 * MINUTES_PER_DAY,
-        "should expire within 15 days",
+      assert.strictEqual(
+        info.delayInMinutes,
+        null,
+        "delayInMinutes should be null (the study was never run)",
       );
       assert.deepStrictEqual(
         seenTelemetryStates,

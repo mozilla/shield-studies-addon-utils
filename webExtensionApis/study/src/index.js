@@ -98,7 +98,7 @@ this.study = class extends ExtensionAPI {
 
     // once.  Used for pref naming, telemetry
     studyUtils.setExtensionManifest(extension.manifest);
-    studyUtils.reset();
+    studyUtils._internals = studyUtils._createInternals();
 
     async function endStudy(anEndingAlias) {
       logger.debug("called endStudy anEndingAlias");
@@ -160,9 +160,6 @@ this.study = class extends ExtensionAPI {
             studySetup.testing = {};
           }
 
-          // 1. add-on info for prefs etc.
-          studyUtils.setExtensionManifest(extension.manifest);
-
           // Setup and sets the variation / _internals
           // includes possible 'firstRun' handling.
           await studyUtils.setup(studySetup);
@@ -178,7 +175,7 @@ this.study = class extends ExtensionAPI {
               // 1. uses studySetup.endings.ineligible.url if any,
               // 2. sends UT for "ineligible"
               // 3. then uninstalls add-on
-              await studyUtils.endStudy("ineligible");
+              await endStudy("ineligible");
               return studyUtils.info();
             }
           }
@@ -385,16 +382,16 @@ this.study = class extends ExtensionAPI {
           throw new ExtensionError(message);
         },
 
-        async setFirstRunTimestamp(timestamp) {
-          return studyUtils.setFirstRunTimestamp(timestamp);
-        },
-
         async setActive() {
           return studyUtils.setActive();
         },
 
         async startup({ reason }) {
           return studyUtils.startup({ reason });
+        },
+
+        async setFirstRunTimestamp(timestamp) {
+          return studyUtils.setFirstRunTimestamp(timestamp);
         },
 
         async reset() {

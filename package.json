@@ -43,7 +43,11 @@
     "testUtils",
     "webExtensionApis/study/api.js",
     "webExtensionApis/study/schema.json",
-    "webExtensionApis/study/src/telemetry.js"
+    "webExtensionApis/study/src/telemetry.js",
+    "weeUtils/documentSchema.js",
+    "weeUtils/generateStubApi.js",
+    "weeUtils/verifyWeeSchema.js",
+    "weeUtils/wee-schema-schema.json"
   ],
   "homepage": "https://github.com/mozilla/shield-studies-addon-utils#readme",
   "keywords": [
@@ -64,17 +68,17 @@
     "url": "git://github.com/mozilla/shield-studies-addon-utils.git"
   },
   "scripts": {
-    "build": "npm-run-all -s -n build:schema build:docs build:code",
-    "build:code": "cd webExtensionApis/study && webpack",
-    "build:docs": "node ./bin/documentSchema.js ./webExtensionApis/study/schema.json > docs/api.md",
-    "build:schema": "cd webExtensionApis/study && yaml2json schema.yaml -p > schema.json && node ../../bin/verifyWeeSchema.js schema.json",
+    "build": "npm run generate && cd webExtensionApis/study && webpack",
     "clean": "rm -rf examples/*/{src/privileged/,dist/}",
     "docformat": "doctoc --title '**Contents**' docs/*.md && prettier '**/*.md' --write",
     "eslint": "eslint . --ext js --ext json",
     "eslint-fix": "npm run eslint -- --fix",
-    "fakeApi": "cd webExtensionApis/study && node ../../bin/schemaToInterface.js ./schema.json > fakeApi.js",
     "fast-build": "npm run-all build:*  # no pre and post checks",
     "format": "prettier '**/*.{css,js,jsm,json,md}' --trailing-comma=all --ignore-path=.eslintignore --write",
+    "generate": "npm-run-all -s -n generate:schema:* generate:docs:* generate:stubApi:*",
+    "generate:docs:study": "cd webExtensionApis/study && node ../../weeUtils/documentSchema.js schema.json > api.md",
+    "generate:schema:study": "cd webExtensionApis/study && yaml2json schema.yaml -p > schema.json && node ../../weeUtils/verifyWeeSchema.js schema.json",
+    "generate:stubApi:study": "cd webExtensionApis/study && node ../../weeUtils/generateStubApi.js ./schema.json > stubApi.js",
     "lint": "npm-run-all lint:*",
     "lint:eslint": "npm run eslint",
     "lint:fixpack": "fixpack  # cleans up package.json",
