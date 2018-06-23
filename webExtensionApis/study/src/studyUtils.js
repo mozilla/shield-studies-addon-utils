@@ -642,9 +642,13 @@ class StudyUtils {
 
     out.queryArgs = qa;
 
-    // 3. Tidy up the internals.
+    // 3. Temporarily store information about the ending for test purposes
     this._internals.endingReturned = out;
     this._internals.isEnded = true; // done!
+
+    // 4. Make sure that future add-on installations are treated as new studies rather than a continuation of the previous one
+    this.resetFirstRunTimestamp();
+
     return out;
   }
 
