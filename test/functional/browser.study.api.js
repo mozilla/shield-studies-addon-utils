@@ -499,7 +499,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       );
     });
 
-    it("6. testing.firstRunTimestamp override works as expected", async function() {
+    it("6a. testing.firstRunTimestamp override can be set to an integer", async function() {
       // console.debug("doing test 6");
       const thisSetup = studySetupForTests({
         testing: {
@@ -518,6 +518,29 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       assert.strictEqual(
         info.firstRunTimestamp,
         123,
+        "should be the same as our override",
+      );
+    });
+
+    it("6b. testing.firstRunTimestamp override can be set to 0", async function() {
+      // console.debug("doing test 6");
+      const thisSetup = studySetupForTests({
+        testing: {
+          firstRunTimestamp: 0,
+        },
+      });
+      const data = await addonExec(async (setup, cb) => {
+        // this is what runs in the webExtension scope.
+        const info = await browser.study.setup(setup);
+        const internals = await browser.studyDebug.getInternals();
+        // call back with all the data we care about to Mocha / node
+        cb({ info, internals });
+      }, thisSetup);
+      // console.debug(full(data));
+      const { info } = data;
+      assert.strictEqual(
+        info.firstRunTimestamp,
+        0,
         "should be the same as our override",
       );
     });
