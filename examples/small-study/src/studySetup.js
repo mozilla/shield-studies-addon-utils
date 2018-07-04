@@ -105,7 +105,7 @@ const baseStudySetup = {
 async function cachingFirstRunShouldAllowEnroll() {
   // Cached answer.  Used on 2nd run
   let allowed = await browser.storage.local.get("allowEnroll");
-  if (allowed) return true;
+  if (allowed.allowEnroll === true) return true;
 
   /*
   First run, we must calculate the answer.
