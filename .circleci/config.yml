@@ -3,6 +3,11 @@ jobs:
   build:
     docker:
       - image: circleci/node:latest-browsers
+        environment:
+          FIREFOX_BIN: /home/circleci/checkout/firefox-release/firefox-bin
+          FIREFOX_AURORA_BIN: /home/circleci/checkout/firefox-beta/firefox-bin
+          FIREFOX_DEVELOPER_BIN: /home/circleci/checkout/firefox-devedition/firefox-bin
+          FIREFOX_NIGHTLY_BIN: /home/circleci/checkout/firefox-nightly/firefox-bin
 
     working_directory: ~/checkout
 
@@ -69,7 +74,7 @@ jobs:
 
       - run:
           name: Test with Firefox Developer Edition
-          command: FIREFOX_BINARY=/home/circleci/checkout/firefox-devedition/firefox-bin FIREFOX_DEVELOPER_BIN=/home/circleci/checkout/firefox-devedition/firefox-bin npm run test-only
+          command: FIREFOX_BINARY=/home/circleci/checkout/firefox-devedition/firefox-bin npm run test-only
 
       - run:
           name: Test with Firefox Nightly
