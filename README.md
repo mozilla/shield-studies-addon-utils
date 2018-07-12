@@ -47,11 +47,11 @@ Allows writing [Shield and Pioneer](https://wiki.mozilla.org/Firefox/Shield/Shie
 
       Notice the `experiment_apis` section. This maps `browser.study` to the privileged api code. (See details below)
 
-    * [`study.js`](./examples/small-study/src/study.js)
+    * [`studySetup.js`](./examples/small-study/src/studySetup.js)
 
       Construct a `studySetup` usable by `browser.study.setup`
 
-    * [`background.js`](./examples/small-study/src/backaround.js)
+    * [`background.js`](./examples/small-study/src/background.js)
 
       Using the `browser.study` api within a small instrumented feature.
 
@@ -234,30 +234,24 @@ Goal: Use `webdriver` to exercise the `browser.study` API to prove correctness.
 4.  Do tests:
 
     1.  `mocha` test runner uses files in `testUtils/` to
-    2.  install the addon (using `webdriver`)
-    3.  switch context to the panel, so that we can exercise `browser.study`. The function that does this: `setupWebDriver`
+    2.  Install the addon (using `webdriver`)
+    3.  Switch context to the panel, so that we can exercise `browser.study`. The function that does this: `setupWebDriver`
     4.  Run all tests. Most API tests are at: `test/functional/browser.study.api.js`
     5.  Most tests are of this `Selenium`/`WebDriver`/`GeckoDriver` form:
 
         * run some async code in the panel context using `addonExec`
         * in that code, exercise the `browser.study` api.
-        * callback with the results, `study.getInfo`, and/or `browser.studyDebug.getInternals()` as needful.
+        * callback with the results of `browser.study.setup()`, and/or `browser.studyDebug.getInternals()` as necessary.
         * use `node` `assert` to check the called back result.
 
 **Note**: `browser.studyDebug.getInternals()` gets internals of the `studyUtils` singleton as needful. `browser.studyDebug` also allows other manipulation of the studyUtils singleton, for use by tests, and to induce states and reactions.
-
-## Known issues
-
-* Utils v5.0.0-v5.0.1 does not work with Firefox Beta (#200)
-
-In general, see https://github.com/mozilla/shield-studies-addon-utils/issues
 
 ## FAQ
 
 * What's the deal with Webpack?
 
-  * we want `api.js` to be one file, for ease of use by study authors
-  * we want the source to be broken up into logical pieces
+  * We want `api.js` to be one file, for ease of use by study authors
+  * We want the source to be broken up into logical pieces
   * Firefox doens't come with a usable JSONSchema library (`Schema.jsm` isn't very usable.
   * We want Jsonschema validation to guard args, and to send Telemetry
   * we use `webpack` to bundle src and AJV (jsonschema) into `api.js`
@@ -309,12 +303,12 @@ In general, see https://github.com/mozilla/shield-studies-addon-utils/issues
 
   * studies end when
 
-    1.  you call `browser.endStudy`
-    2.  studies hit their `expire.days` after `firstRunTimestamp
+    1.  you call `browser.study.endStudy`
+    2.  studies hit their `expire.days` after `firstRunTimestamp`
     3.  user disables the study from `about:addons`
-    4.  Normandy revokes a study (which looks like `user-disable, see #194)
+    4.  Normandy revokes a study (which looks like `user-disable`, see #194)
 
-  * In all cases (excect the 'user-disable'), the webExtension will see an `onEndStudy` if registered. It's up to the add-on to then open all endingUrls, and actually uninstall the study.
+  * In all cases (except the 'user-disable', see #194), the webExtension will see an `onEndStudy` if registered. It's up to the add-on to then open all endingUrls, and actually uninstall the study.
 
 - QA
 
@@ -332,6 +326,7 @@ In general, see https://github.com/mozilla/shield-studies-addon-utils/issues
   * `KEEPOPEN=1 npm run test` keeps Firefox open
   * `SKIPLINT=1 npm run test` skips linting
   * `npm run test-only` skips build steps.
+* Read [./docs/development-on-the-utils.md](./docs/development-on-the-utils.md) for more in-depth development documentation.
 
 ## History of major versions
 

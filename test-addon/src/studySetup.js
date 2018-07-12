@@ -42,9 +42,7 @@ const baseStudySetup = {
       ],
     },
     ineligible: {
-      baseUrls: [
-        "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=ineligible",
-      ],
+      baseUrls: [],
     },
     expired: {
       baseUrls: [
@@ -106,8 +104,8 @@ const baseStudySetup = {
  */
 async function cachingFirstRunShouldAllowEnroll() {
   // Cached answer.  Used on 2nd run
-  let allowed = await browser.storage.local.get("allowEnroll");
-  if (allowed) return true;
+  let allowed = await browser.storage.local.get("allowedEnrollOnFirstRun");
+  if (allowed.allowedEnrollOnFirstRun === true) return true;
 
   /*
   First run, we must calculate the answer.
@@ -118,7 +116,7 @@ async function cachingFirstRunShouldAllowEnroll() {
   allowed = true;
 
   // cache the answer
-  await browser.storage.local.set({ allowEnroll: allowed });
+  await browser.storage.local.set({ allowedEnrollOnFirstRun: allowed });
   return allowed;
 }
 

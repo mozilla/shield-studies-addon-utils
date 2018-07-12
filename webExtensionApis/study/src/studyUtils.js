@@ -344,12 +344,17 @@ class StudyUtils {
    * @returns {any} the firstRunTimestamp as a number in case the preference is set, or null if the preference is not set
    */
   getFirstRunTimestamp() {
-    const firstRunTimestampPreferenceValue =
-      this._internals.studySetup.testing.firstRunTimestamp ||
-      Services.prefs.getStringPref(
-        this._internals.prefs.firstRunTimestamp,
-        null,
-      );
+    if (
+      typeof this._internals.studySetup.testing.firstRunTimestamp !==
+        "undefined" &&
+      this._internals.studySetup.testing.firstRunTimestamp !== null
+    ) {
+      return Number(this._internals.studySetup.testing.firstRunTimestamp);
+    }
+    const firstRunTimestampPreferenceValue = Services.prefs.getStringPref(
+      this._internals.prefs.firstRunTimestamp,
+      null,
+    );
     return firstRunTimestampPreferenceValue !== null
       ? Number(firstRunTimestampPreferenceValue)
       : null;

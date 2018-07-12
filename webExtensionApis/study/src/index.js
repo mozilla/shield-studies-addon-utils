@@ -17,7 +17,10 @@ logger.debug("loading web extension experiment study/api.js");
 // eslint-disable-next-line no-undef
 const { EventManager } = ExtensionCommon;
 // eslint-disable-next-line no-undef
-const { EventEmitter, ExtensionError } = ExtensionUtils;
+const { ExtensionError } = ExtensionUtils;
+
+const EventEmitter =
+  ExtensionCommon.EventEmitter || ExtensionUtils.EventEmitter;
 
 /** Event emitter to handle Events defined in the API
  *

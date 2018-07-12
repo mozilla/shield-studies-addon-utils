@@ -14,7 +14,7 @@ ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 // eslint-disable-next-line no-undef
 const { EventManager } = ExtensionCommon;
 // eslint-disable-next-line no-undef
-const { EventEmitter } = ExtensionUtils;
+const EventEmitter = ExtensionCommon.EventEmitter || ExtensionUtils.EventEmitter
 `;
 
 function schema2fakeApi(schemaApiJSON) {

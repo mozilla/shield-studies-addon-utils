@@ -3,8 +3,8 @@ dist/
 webExtensionApis/study/api.js
 package-lock.json
 # do not lint/format bundled util libraries
-examples/test-addon/src/privileged/prefs/
-examples/test-addon/src/privileged/study/
+test-addon/src/privileged/prefs/
+test-addon/src/privileged/study/
 # makes sure that eslintrc.js gets linted/formatted
 !.eslintrc.js
 # don't lint/format code the directory where get-firefox stores the Firefox binaries
