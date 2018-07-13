@@ -237,6 +237,8 @@ class StudyUtils {
       },
       prefs: {
         firstRunTimestamp: `shield.${widgetId}.firstRunTimestamp`,
+        expireSeconds:  `shieldStudy.expireSeconds`,
+        logLevel:  `shieldStudy.logLevel`,
       },
       endingRequested: undefined,
       endingReturned: undefined,
@@ -376,24 +378,57 @@ class StudyUtils {
    *
    * A value of 0 means "the past / now".
    *
+   * Note: see code for a full details of the algorithm
+   *
    * @return {Number} delayInMinutes Either the time left or Number.MAX_SAFE_INTEGER
    */
   getDelayInMinutes() {
-    if (this._internals.studySetup.testing.expired === true) {
-      return 0;
-    }
     const toMinutes = 1 / (1000 * 60);
+
+    const forever = Number.MAX_SAFE_INTEGER; // approx 286,000 years
+    const immediate = 0;
     const days = this._internals.studySetup.expire.days;
-    let delayInMs = Number.MAX_SAFE_INTEGER; // approx 286,000 years
+
+    // 1. no expire.days in config => never expire, return a large number
+    if (!days ) {
+      logger.debug("getDelayInMinutes: No expire days in setup, return FOREVER.");
+      return forever;
+    }
+
+    // 2.  if days, then calculate the diff
+    // NOTE: Always calcuate this to catch errors with the 'real' path.
+    let delayInMs;
+
     if (days) {
-      // days in ms
-      const ms = days * 86400 * 1000;
+      const msToRun = days * 86400 * 1000;
       const firstrun = this.getFirstRunTimestamp();
       if (firstrun === null) {
-        return null;
+        //  TODO glind: Why would this happen?  This makes me uneasy
+        console.debug(`getDelayInMinutes: for unclear reasons, getFirstRunTimestamp() is null`);
+        delayInMs = null;
+        //throw new ExtensionError(`getDelayInMinutes: for unclear reasons, getFirstRunTimestamp() is null`);
+      } else {
+        delayInMs = Math.max(firstrun + msToRun - Date.now(), immediate);
       }
-      delayInMs = Math.max(firstrun + ms - Date.now(), 0);
     }
+
+    // 3. if testing.expired, return immediate.
+    // TODO, deprecate this, as unneeded, if the pref below works well.
+    if (this._internals.studySetup.testing.expired === true) {
+      logger.debug(`getDelayInMinutes: testing.expired TRUE, give IMMEDIATE instead of ${delayInMs} ms`);
+      return immediate * toMinutes;
+    }
+
+    // 4. if special "expire soon" pref, use that.
+    // TODO we use seconds because 1 second is a useful value to qa
+    const prefExpireSeconds = Services.prefs.getFloatPref(this._internals.prefs.expireMinutes, 0);
+    if (prefExpireSeconds) {
+      logger.debug(`getDelayInMinutes: over by ${this._internals.prefs.expireMinutes}, return ${prefExpireSeconds} seconds, instead of ${delayInMs} ms.`);
+      return prefExpireSeconds / 60;
+    }
+
+    // actually log and retrun the 'calculated' value.
+    logger.debug(`getDelayInMinutes: use calculation:  return ${delayInMs} ms.`);
     return delayInMs * toMinutes;
   }
 
@@ -489,8 +524,8 @@ class StudyUtils {
     this.throwIfNotSetup("firstSeen uses telemetry.");
     logger.debug(`attempting firstSeen`);
     this._internals.isFirstRun = true;
-    await this._telemetry({ study_state: "enter" }, "shield-study");
     this.setFirstRunTimestamp(Date.now());
+    await this._telemetry({ study_state: "enter" }, "shield-study");
   }
 
   /**

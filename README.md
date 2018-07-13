@@ -290,12 +290,13 @@ Goal: Use `webdriver` to exercise the `browser.study` API to prove correctness.
 
   (See telemetry above)
 
-  * IsFirstRun => user doesn't have the pref set for `{id}.firstRunTimestamp`
+  * IsFirstRun => user doesn't have the pref set for `shield.{id}.firstRunTimestamp`
 
   * IIF first run, then allowEnroll can make the user `ineligible`
 
 * Expiration
 
+  * see [docs/expiration.md]
   * use [`browser.alarms`](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/alarms/create). See the `examples/small-study`.
   * `browser.study.setup({expire: {days: 1}})` will help to calculate when to fire the alarm
 

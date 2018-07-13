@@ -78,6 +78,7 @@ this.study = class extends ExtensionAPI {
       logger.debug("definitely uninstall | disable", shutdownReason);
       const anEndingAlias = "user-disable";
       const endingResponse = await this.studyUtils.endStudy(anEndingAlias);
+
       // See #194, getApi is already torn down, so cannot hear it.
       await this.studyApiEventEmitter.emitEndStudy(endingResponse);
     }

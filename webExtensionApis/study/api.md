@@ -4,250 +4,235 @@ Interface for Shield and Pioneer studies.
 
 ## Functions
 
-### `browser.study.setup( studySetup )`
+### `browser.study.setup( studySetup )` 
 
-Attempt an setup/enrollment, with these effects:
-
-* sets 'studyType' as Shield or Pioneer
-
-  * affects telemetry
-  * (5.1 TODO) watches for dataPermission changes that should _always_
-    stop that kind of study
-
-* Use or choose variation
-
-  * `testing.variation` if present
-  * OR (internal) deterministicVariation
-    from `weightedVariations`
-    based on hash of
-
-    * activeExperimentName
-    * clientId
-
-* During firstRun[1] only:
-
-  * set firstRunTimestamp pref value
-  * send 'enter' ping
-  * if `allowEnroll`, send 'install' ping
-  * else endStudy("ineligible") and return
-
-* Every Run
-  * setActiveExperiment(studySetup)
-  * monitor shield | pioneer permission endings
-  * suggests alarming if `expire` is set.
-
-Returns:
-
-* studyInfo object (see `getStudyInfo`)
-
-Telemetry Sent (First run only)
-
+  Attempt an setup/enrollment, with these effects:
+  
+  - sets 'studyType' as Shield or Pioneer
+    - affects telemetry
+    - (5.1 TODO) watches for dataPermission changes that should *always*
+      stop that kind of study
+  
+  - Use or choose variation
+    - `testing.variation` if present
+    - OR (internal) deterministicVariation
+      from `weightedVariations`
+      based on hash of
+  
+      - activeExperimentName
+      - clientId
+  
+  - During firstRun[1] only:
+    - set firstRunTimestamp pref value
+    - send 'enter' ping
+    - if `allowEnroll`, send 'install' ping
+    - else endStudy("ineligible") and return
+  
+  - Every Run
+    - setActiveExperiment(studySetup)
+    - monitor shield | pioneer permission endings
+    - suggests alarming if `expire` is set.
+  
+  Returns:
+  - studyInfo object (see `getStudyInfo`)
+  
+  Telemetry Sent (First run only)
+  
     - enter
     - install
-
-Fires Events
-
-(At most one of)
-
-* study:onReady OR
-* study:onEndStudy
-
-Preferences set
-
-* `shield.${runtime.id}.firstRunTimestamp`
-
-Note:
-
-1.  allowEnroll is ONLY used during first run (install)
+  
+  Fires Events
+  
+  (At most one of)
+  - study:onReady  OR
+  - study:onEndStudy
+  
+  Preferences set
+  - `shield.${runtime.id}.firstRunTimestamp`
+  
+  Note:
+  1. allowEnroll is ONLY used during first run (install)
+  
 
 **Parameters**
 
-* `studySetup`
-  * type: studySetup
-  * $ref:
-  * optional: false
+- `studySetup`
+  - type: studySetup
+  - $ref: 
+  - optional: false
 
-### `browser.study.endStudy( anEndingAlias )`
+### `browser.study.endStudy( anEndingAlias )` 
 
-Signal to browser.study that it should end.
-
-Usage scenarios:
-
-* addons defined
-  * postive endings (tried feature)
-  * negative endings (client clicked 'no thanks')
-  * expiration / timeout (feature should last for 14 days then uninstall)
-
-Logic:
-
-* If study has already ended, do nothing.
-* Else: END
-
-END:
-
-* record internally that study is ended.
-* disable all methods that rely on configuration / setup.
-* clear all prefs stored by `browser.study`
-* fire telemetry pings for:
-
-  * 'exit'
-  * the ending, one of:
-
-    "ineligible",
-    "expired",
-    "user-disable",
-    "ended-positive",
-    "ended-neutral",
-    "ended-negative",
-
-* augment all ending urls with query urls
-* fire 'study:end' event to `browser.study.onEndStudy` handlers.
-
-Addon should then do
-
-* open returned urls
-* feature specific cleanup
-* uninstall the addon
-
-Note:
-
-1.  calling this function multiple time is safe.
-    `browser.study` will choose the
+  Signal to browser.study that it should end.
+  
+  Usage scenarios:
+  - addons defined
+    - postive endings (tried feature)
+    - negative endings (client clicked 'no thanks')
+    - expiration / timeout (feature should last for 14 days then uninstall)
+  
+  Logic:
+  - If study has already ended, do nothing.
+  - Else: END
+  
+  END:
+  - record internally that study is ended.
+  - disable all methods that rely on configuration / setup.
+  - clear all prefs stored by `browser.study`
+  - fire telemetry pings for:
+    - 'exit'
+    - the ending, one of:
+  
+      "ineligible",
+      "expired",
+      "user-disable",
+      "ended-positive",
+      "ended-neutral",
+      "ended-negative",
+  
+  - augment all ending urls with query urls
+  - fire 'study:end' event to `browser.study.onEndStudy` handlers.
+  
+  Addon should then do
+  - open returned urls
+  - feature specific cleanup
+  - uninstall the addon
+  
+  Note:
+  1.  calling this function multiple time is safe.
+  `browser.study` will choose the
+  
 
 **Parameters**
 
-* `anEndingAlias`
-  * type: anEndingAlias
-  * $ref:
-  * optional: false
+- `anEndingAlias`
+  - type: anEndingAlias
+  - $ref: 
+  - optional: false
 
-### `browser.study.getStudyInfo( )`
+### `browser.study.getStudyInfo(  )` 
 
-current study configuration, including
-
-* variation
-* activeExperimentName
-* delayInMinutes
-* firstRunTimestamp
-* isFirstRun
-
-But not:
-
-* telemetry clientId
-
-Throws Error if called before `browser.study.setup`
-
-**Parameters**
-
-### `browser.study.sendTelemetry( payload )`
-
-Send Telemetry using appropriate shield or pioneer methods.
-
-shield:
-
-* `shield-study-addon` ping, requires object string keys and string values
-
-pioneer:
-
-* TBD
-
-Note:
-
-* no conversions / coercion of data happens.
-
-Note:
-
-* undefined what happens if validation fails
-* undefined what happens when you try to send 'shield' from 'pioneer'
-
-TBD fix the parameters here.
+  current study configuration, including
+  - variation
+  - activeExperimentName
+  - delayInMinutes
+  - firstRunTimestamp
+  - isFirstRun
+  
+  But not:
+  - telemetry clientId
+  
+  Throws Error if called before `browser.study.setup`
+  
 
 **Parameters**
 
-* `payload`
-  * type: payload
-  * $ref:
-  * optional: false
+### `browser.study.sendTelemetry( payload )` 
 
-### `browser.study.searchSentTelemetry( searchTelemetryQuery )`
-
-Search locally stored telemetry pings using these fields (if set)
-
-n:
-if set, no more than `n` pings.
-type:
-Array of 'ping types' (e.g., main, crash, shield-study-addon) to filter
-minimumTimestamp:
-only pings after this timestamp.
-headersOnly:
-boolean. If true, only the 'headers' will be returned.
-
-Pings will be returned sorted by timestamp with most recent first.
-
-Usage scenarios:
-
-* enrollment / eligiblity using recent Telemetry behaviours or client environment
-* addon testing scenarios
+  Send Telemetry using appropriate shield or pioneer methods.
+  
+  shield:
+  - `shield-study-addon` ping, requires object string keys and string values
+  
+  pioneer:
+  - TBD
+  
+  Note:
+  - no conversions / coercion of data happens.
+  
+  Note:
+  - undefined what happens if validation fails
+  - undefined what happens when you try to send 'shield' from 'pioneer'
+  
+  TBD fix the parameters here.
+  
 
 **Parameters**
 
-* `searchTelemetryQuery`
-  * type: searchTelemetryQuery
-  * $ref:
-  * optional: false
+- `payload`
+  - type: payload
+  - $ref: 
+  - optional: false
 
-### `browser.study.validateJSON( someJson, jsonschema )`
+### `browser.study.searchSentTelemetry( searchTelemetryQuery )` 
 
-Using AJV, do jsonschema validation of an object. Can be used to validate your arguments, packets at client.
+  Search locally stored telemetry pings using these fields (if set)
+  
+  n:
+    if set, no more than `n` pings.
+  type:
+    Array of 'ping types' (e.g., main, crash, shield-study-addon) to filter
+  minimumTimestamp:
+    only pings after this timestamp.
+  headersOnly:
+    boolean.  If true, only the 'headers' will be returned.
+  
+  Pings will be returned sorted by timestamp with most recent first.
+  
+  Usage scenarios:
+  - enrollment / eligiblity using recent Telemetry behaviours or client environment
+  - addon testing scenarios
+  
 
 **Parameters**
 
-* `someJson`
+- `searchTelemetryQuery`
+  - type: searchTelemetryQuery
+  - $ref: 
+  - optional: false
 
-  * type: someJson
-  * $ref:
-  * optional: false
+### `browser.study.validateJSON( someJson, jsonschema )` 
 
-* `jsonschema`
-  * type: jsonschema
-  * $ref:
-  * optional: false
+  Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client.
+
+**Parameters**
+
+- `someJson`
+  - type: someJson
+  - $ref: 
+  - optional: false
+
+- `jsonschema`
+  - type: jsonschema
+  - $ref: 
+  - optional: false
 
 ## Events
 
-### `browser.study.onReady ()` Event
+### `browser.study.onReady () ` Event
 
-Fires when the study is 'ready' for the feature to startup.
-
-**Parameters**
-
-* `studyInfo`
-  * type: studyInfo
-  * $ref:
-  * optional: false
-
-### `browser.study.onEndStudy ()` Event
-
-Listen for when the study wants to end.
-
-Act on it by
-
-* opening surveyUrls
-* tearing down your feature
-* uninstalling the addon
+  Fires when the study is 'ready' for the feature to startup.
 
 **Parameters**
 
-* `ending`
-  * type: ending
-  * $ref:
-  * optional: false
+- `studyInfo`
+  - type: studyInfo
+  - $ref: 
+  - optional: false
+
+### `browser.study.onEndStudy () ` Event
+
+  Listen for when the study wants to end.
+  
+  Act on it by
+  - opening surveyUrls
+  - tearing down your feature
+  - uninstalling the addon
+  
+
+**Parameters**
+
+- `ending`
+  - type: ending
+  - $ref: 
+  - optional: false
 
 ## Properties TBD
 
 ## Data Types
 
 ### [0] NullableString
+
 
 ```json
 {
@@ -269,11 +254,16 @@ Act on it by
       "type": "string"
     }
   ],
-  "testcases": [null, "a string"]
+  "testcases": [
+    null,
+    "a string"
+  ]
 }
 ```
 
+
 ### [1] NullableInteger
+
 
 ```json
 {
@@ -295,12 +285,20 @@ Act on it by
       "type": "integer"
     }
   ],
-  "testcases": [null, 1234567890],
-  "failcases": ["1234567890", []]
+  "testcases": [
+    null,
+    1234567890
+  ],
+  "failcases": [
+    "1234567890",
+    []
+  ]
 }
 ```
 
+
 ### [2] NullableNumber
+
 
 ```json
 {
@@ -322,25 +320,45 @@ Act on it by
       "type": "number"
     }
   ],
-  "testcases": [null, 1234567890, 1234567890.123],
-  "failcases": ["1234567890", "1234567890.123", []]
+  "testcases": [
+    null,
+    1234567890,
+    1234567890.123
+  ],
+  "failcases": [
+    "1234567890",
+    "1234567890.123",
+    []
+  ]
 }
 ```
 
+
 ### [3] studyTypesEnum
+
 
 ```json
 {
   "id": "studyTypesEnum",
   "$schema": "http://json-schema.org/draft-04/schema",
   "type": "string",
-  "enum": ["shield", "pioneer"],
-  "testcases": ["shield", "pioneer"],
-  "failcases": ["foo"]
+  "enum": [
+    "shield",
+    "pioneer"
+  ],
+  "testcases": [
+    "shield",
+    "pioneer"
+  ],
+  "failcases": [
+    "foo"
+  ]
 }
 ```
 
+
 ### [4] weightedVariationObject
+
 
 ```json
 {
@@ -356,7 +374,10 @@ Act on it by
       "minimum": 0
     }
   },
-  "required": ["name", "weight"],
+  "required": [
+    "name",
+    "weight"
+  ],
   "testcase": {
     "name": "feature-active",
     "weight": 1.5
@@ -364,7 +385,9 @@ Act on it by
 }
 ```
 
+
 ### [5] weightedVariationsArray
+
 
 ```json
 {
@@ -382,7 +405,10 @@ Act on it by
         "minimum": 0
       }
     },
-    "required": ["name", "weight"]
+    "required": [
+      "name",
+      "weight"
+    ]
   },
   "testcase": [
     {
@@ -397,7 +423,9 @@ Act on it by
 }
 ```
 
+
 ### [6] anEndingRequest
+
 
 ```json
 {
@@ -416,7 +444,11 @@ Act on it by
         },
         {
           "type": "string",
-          "enum": ["ended-positive", "ended-neutral", "ended-negative"]
+          "enum": [
+            "ended-positive",
+            "ended-neutral",
+            "ended-negative"
+          ]
         }
       ],
       "choices": [
@@ -425,7 +457,11 @@ Act on it by
         },
         {
           "type": "string",
-          "enum": ["ended-positive", "ended-neutral", "ended-negative"]
+          "enum": [
+            "ended-positive",
+            "ended-neutral",
+            "ended-negative"
+          ]
         }
       ],
       "optional": true
@@ -485,13 +521,17 @@ Act on it by
   "additionalProperties": true,
   "testcases": [
     {
-      "baseUrls": ["some.url"],
+      "baseUrls": [
+        "some.url"
+      ],
       "fullname": "anEnding",
       "category": "ended-positive"
     },
     {},
     {
-      "baseUrls": ["some.url"]
+      "baseUrls": [
+        "some.url"
+      ]
     },
     {
       "baseUrls": [],
@@ -508,7 +548,9 @@ Act on it by
 }
 ```
 
+
 ### [7] onEndStudyResponse
+
 
 ```json
 {
@@ -530,7 +572,9 @@ Act on it by
 }
 ```
 
+
 ### [8] studyInfoObject
+
 
 ```json
 {
@@ -564,7 +608,9 @@ Act on it by
 }
 ```
 
+
 ### [9] studySetup
+
 
 ```json
 {
@@ -660,7 +706,9 @@ Act on it by
       },
       "endings": {
         "anEnding": {
-          "baseUrls": ["some.url"]
+          "baseUrls": [
+            "some.url"
+          ]
         }
       },
       "weightedVariations": [
@@ -682,7 +730,9 @@ Act on it by
       },
       "endings": {
         "anEnding": {
-          "baseUrls": ["some.url"]
+          "baseUrls": [
+            "some.url"
+          ]
         }
       },
       "weightedVariations": [
@@ -706,7 +756,9 @@ Act on it by
       "studyType": "pioneer",
       "endings": {
         "anEnding": {
-          "baseUrls": ["some.url"]
+          "baseUrls": [
+            "some.url"
+          ]
         }
       },
       "weightedVariations": [
@@ -734,13 +786,19 @@ Act on it by
       },
       "endings": {
         "user-disable": {
-          "baseUrls": ["http://www.example.com/?reason=user-disable"]
+          "baseUrls": [
+            "http://www.example.com/?reason=user-disable"
+          ]
         },
         "ineligible": {
-          "baseUrls": ["http://www.example.com/?reason=ineligible"]
+          "baseUrls": [
+            "http://www.example.com/?reason=ineligible"
+          ]
         },
         "expired": {
-          "baseUrls": ["http://www.example.com/?reason=expired"]
+          "baseUrls": [
+            "http://www.example.com/?reason=expired"
+          ]
         },
         "some-study-defined-ending": {
           "category": "ended-neutral"
@@ -776,7 +834,9 @@ Act on it by
 }
 ```
 
+
 ### [10] telemetryPayload
+
 
 ```json
 {
@@ -790,7 +850,9 @@ Act on it by
 }
 ```
 
+
 ### [11] searchTelemetryQuery
+
 
 ```json
 {
@@ -799,7 +861,9 @@ Act on it by
   "type": "object",
   "properties": {
     "type": {
-      "type": ["array"],
+      "type": [
+        "array"
+      ],
       "items": {
         "type": "string"
       },
@@ -820,7 +884,10 @@ Act on it by
   },
   "additionalProperties": false,
   "testcase": {
-    "type": ["shield-study-addon", "shield-study"],
+    "type": [
+      "shield-study-addon",
+      "shield-study"
+    ],
     "n": 100,
     "minimumTimestamp": 1523968204184,
     "headersOnly": false
@@ -828,7 +895,9 @@ Act on it by
 }
 ```
 
+
 ### [12] anEndingAnswer
+
 
 ```json
 {
@@ -839,86 +908,95 @@ Act on it by
 }
 ```
 
+
 # Namespace: `browser.studyDebug`
 
 Interface for Test Utilities
 
 ## Functions
 
-### `browser.studyDebug.throwAnException( message )`
+### `browser.studyDebug.throwAnException( message )` 
 
-Throws an exception from a privileged function - for making sure that we can catch these in our web extension
-
-**Parameters**
-
-* `message`
-  * type: message
-  * $ref:
-  * optional: false
-
-### `browser.studyDebug.throwAnExceptionAsync( message )`
-
-Throws an exception from a privileged async function - for making sure that we can catch these in our web extension
+  Throws an exception from a privileged function - for making sure that we can catch these in our web extension
 
 **Parameters**
 
-* `message`
-  * type: message
-  * $ref:
-  * optional: false
+- `message`
+  - type: message
+  - $ref: 
+  - optional: false
 
-### `browser.studyDebug.firstSeen( )`
+### `browser.studyDebug.throwAnExceptionAsync( message )` 
 
-**Parameters**
-
-### `browser.studyDebug.setActive( )`
+  Throws an exception from a privileged async function - for making sure that we can catch these in our web extension
 
 **Parameters**
 
-### `browser.studyDebug.startup( details )`
+- `message`
+  - type: message
+  - $ref: 
+  - optional: false
+
+### `browser.studyDebug.firstSeen(  )` 
+
+  
 
 **Parameters**
 
-* `details`
-  * type: details
-  * $ref:
-  * optional: false
+### `browser.studyDebug.setActive(  )` 
 
-### `browser.studyDebug.setFirstRunTimestamp( timestamp )`
-
-Set the pref for firstRunTimestamp, to simulate:
-
-* 2nd run
-* other useful tests around expiration and states.
+  
 
 **Parameters**
 
-* `timestamp`
-  * type: timestamp
-  * $ref:
-  * optional: false
+### `browser.studyDebug.startup( details )` 
 
-### `browser.studyDebug.reset( )`
-
-Reset the studyUtils \_internals, for debugging purposes.
+  
 
 **Parameters**
 
-### `browser.studyDebug.getInternals( )`
+- `details`
+  - type: details
+  - $ref: 
+  - optional: false
 
-Return `_internals` of the studyUtils object.
+### `browser.studyDebug.setFirstRunTimestamp( timestamp )` 
 
-Use this for debugging state.
+  Set the pref for firstRunTimestamp, to simulate:
+  - 2nd run
+  - other useful tests around expiration and states.
+  
 
-About `this._internals`:
+**Parameters**
 
-* variation: (chosen variation, `setup` )
-* isEnding: bool `endStudy`
-* isSetup: bool `setup`
-* isFirstRun: bool `setup`, based on pref
-* studySetup: bool `setup` the config
-* seenTelemetry: object of lists of seen telemetry by bucket
-* prefs: object of all created prefs and their names
+- `timestamp`
+  - type: timestamp
+  - $ref: 
+  - optional: false
+
+### `browser.studyDebug.reset(  )` 
+
+  
+  Reset the studyUtils _internals, for debugging purposes.
+  
+
+**Parameters**
+
+### `browser.studyDebug.getInternals(  )` 
+
+  Return `_internals` of the studyUtils object.
+  
+  Use this for debugging state.
+  
+  About `this._internals`:
+  - variation:  (chosen variation, `setup` )
+  - isEnding: bool  `endStudy`
+  - isSetup: bool   `setup`
+  - isFirstRun: bool `setup`, based on pref
+  - studySetup: bool  `setup` the config
+  - seenTelemetry: object of lists of seen telemetry by bucket
+  - prefs: object of all created prefs and their names
+  
 
 **Parameters**
 
@@ -931,3 +1009,4 @@ About `this._internals`:
 ## Data Types
 
 (None)
+

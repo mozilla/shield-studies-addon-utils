@@ -561,6 +561,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       }, thisSetup);
       // console.debug(full(data));
       const { info } = data;
+      console.log(info);
       assert.strictEqual(info.delayInMinutes, 0, "should be zero");
     });
   });
