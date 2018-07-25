@@ -33,7 +33,7 @@ Allows writing [Shield and Pioneer](https://wiki.mozilla.org/Firefox/Shield/Shie
 
 ## Learn the API
 
-0.  **Read** the API: [study api.md](./docs/study/api.md)
+0.  **Read** the API: [study api.md](./docs/api.md)
 
     Documentation of the API. Notice that there are
 
@@ -154,7 +154,7 @@ To use, copy and adjust the files as per the `study` API above.
 ### Hints and opinions.
 
 1.  We put all the privileged code in `src/privileged` to make it easy for QA
-2.  The 'Firefox privileged' modules cannot use webExtension apis (`browserAction`, `management`, etc.). Use a `background.js` script (usong messages and events) to co-ordinate multiple privileged modules.
+2.  The 'Firefox privileged' modules cannot use webExtension apis (`browserAction`, `management`, etc.). Use a `background.js` script (using messages and events) to co-ordinate multiple privileged modules.
 3.  Our toolchain for making schemas: `schema.yaml => {schema.json, api.md}`
 
 ## Directory Highlights
