@@ -14,11 +14,9 @@ ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 
 logger.debug("loading web extension experiment study/api.js");
 
-// eslint-disable-next-line no-undef
+/* eslint-disable no-undef */
 const { EventManager } = ExtensionCommon;
-// eslint-disable-next-line no-undef
 const { ExtensionError } = ExtensionUtils;
-
 const EventEmitter =
   ExtensionCommon.EventEmitter || ExtensionUtils.EventEmitter;
 
