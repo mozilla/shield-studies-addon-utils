@@ -56,6 +56,11 @@ module.exports.setupWebdriver = {
       .forBrowser("firefox")
       .setFirefoxOptions(options);
 
+    // Use standalone geckodriver server, launched by `npm-run-all -p test:func:*`
+    if (process.env.GECKODRIVER_URL) {
+      builder.usingServer(process.env.GECKODRIVER_URL);
+    }
+
     const binaryLocation = await promiseActualBinary(
       process.env.FIREFOX_BINARY || "firefox",
     );
