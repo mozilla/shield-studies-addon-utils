@@ -16,6 +16,12 @@ Thinking about building a Shield/Study Add-on? Go to #shield in Slack and discus
 
 If you haven't checked out [the template](https://github.com/mozilla/shield-studies-addon-template) yet, do it. It contains a lot of best practices that helps study add-ons pass QA quicker.
 
+## Links
+
+* [Shield article on Mozilla Wiki](https://wiki.mozilla.org/Firefox/Shield)
+* [Shield Studies article on Mozilla Wiki](https://wiki.mozilla.org/Firefox/Shield/Shield_Studies)
+* [WebExtension Experiment documentation](https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/index.html)
+
 ## Writing tests for your study add-on
 
 [The template](https://github.com/mozilla/shield-studies-addon-template) includes examples of unit tests and functional tests. After cloning the template, remove the example tests except https://github.com/mozilla/shield-studies-addon-template/blob/develop/test/functional/0-study_utils_integration.js, which is meant to remain in your study-specific add-on since it verifies that the study utils integration is working as expected.
@@ -38,6 +44,6 @@ A: Use custom telemetry events if you have to roll your own pings. The fastest w
 
 ## Other hints / guidelines
 
-### Use empty constructors in feature.js
-
-No study-specific code should be instantiated in feature.js constructor methods. Leave constructurs empty and instead instantiate feature logic feature.configure(). This way, we can ensure that there are no side-effects of the study add-on unless the study is confirmed to be eligible to run for the client.
+* Use empty constructors in feature.js. No study-specific code should be instantiated in feature.js constructor methods. Leave constructurs empty and instead instantiate feature logic feature.configure(). This way, we can ensure that there are no side-effects of the study add-on unless the study is confirmed to be eligible to run for the client.
+* We put all the privileged code in `src/privileged` to make it easy for QA
+* The 'Firefox privileged' modules cannot use webExtension apis (`browserAction`, `management`, etc.). Use a `background.js` script (using messages and events) to co-ordinate multiple privileged modules.
