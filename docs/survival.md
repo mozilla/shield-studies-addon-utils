@@ -20,17 +20,17 @@
   * [side-by-side deployment](#side-by-side-deployment)
   * [building 2 buttons.](#building-2-buttons)
 * [Full List of All Shield Telemetry Spoilers](#full-list-of-all-shield-telemetry-spoilers)
-* [Shield Study Utils Api](#shield-study-utils-api)
+* [Shield Study Utils API](#shield-study-utils-api)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Prologue
 
-You are a wizened and skillful dev. Perhaps you have built a 99.99% uptime website serving millions of users, or you built the firefox awesomebar.... but can you SURVIVE SHIELD ISLAND?
+You are a wizened and skillful dev. Perhaps you have built a 99.99% uptime website serving millions of users, or you built the Firefox awesomebar.... but can you SURVIVE SHIELD ISLAND?
 
 > Inventory
 
-* Firefox nightly, firefox beta, firefox (release)
+* Firefox nightly, Firefox beta, Firefox (release)
 * npm
 * git / github
 * shield-studies-addon-utils (StudyUtils.jsm)
@@ -139,7 +139,7 @@ the file tree
 
 ### Action and Probes
 
-Pretend story: which of several buttons is the most compelling to firefox users.
+Pretend story: which of several buttons is the most compelling to Firefox users.
 
 Good news: probes are mostly plain-old-javascrpt-objects.
 
@@ -153,7 +153,7 @@ This part is EASY using the webExtension
 
 `manifest.json`
 
-Getting the probes to firefox
+Getting the probes to Firefox
 
 "At least both branches are equally bad": A plea for experimental controls
 
@@ -169,4 +169,4 @@ A monkey appears. It is curious about you
 
 ## Full List of All Shield Telemetry Spoilers
 
-## Shield Study Utils Api
+## Shield Study Utils API

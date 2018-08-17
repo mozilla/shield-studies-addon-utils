@@ -1,8 +1,8 @@
-| [`browser.study` api](./docs/api.md) | [small example](./examples/small-study/) | [(Full) WebExtension template](https://github.com/mozilla/shield-studies-addon-template/) | [Engineering hints](#engineering-and-process) | [Shield - Mozilla Wiki](https://wiki.mozilla.org/Firefox/Shield) |
+| [`browser.study` API](./docs/api.md) | [small example](./examples/small-study/) | [(Full) WebExtension template](https://github.com/mozilla/shield-studies-addon-template/) | [Engineering hints](#engineering-and-process) | [Shield - Mozilla Wiki](https://wiki.mozilla.org/Firefox/Shield) |
 | ------------------------------------ | ---------------------------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------- |
 
 
-# Shield Studies Addon Utils
+# Shield Studies Add-on Utils
 
 [![CircleCI badge](https://img.shields.io/circleci/project/github/mozilla/shield-studies-addon-utils/master.svg?label=CircleCI)](https://circleci.com/gh/mozilla/shield-studies-addon-utils/)
 
@@ -27,7 +27,7 @@ Allows writing [Shield and Pioneer](https://wiki.mozilla.org/Firefox/Shield/Shie
 * **expiration**: helps handle study expiration by storing first run timestamp in a preference
 * **eligibility**: consistent handling of post-install / first run eligiblity
 * **telemetry helpers** make it easier to send correctly formatted `shield-study`, `shield-study-addon` Telemetry.
-* **format survey urls** and other 'post' and 'mid-study' urls to have correct appended query arguments, to
+* **format survey URLs** and other 'post' and 'mid-study' URLs to have correct appended query arguments, to
   * create flow-control logic during surveys
   * proper version, study and other tracking variables
 
@@ -45,7 +45,7 @@ Allows writing [Shield and Pioneer](https://wiki.mozilla.org/Firefox/Shield/Shie
 
     * [`manifest.json`](./examples/small-study/src/manifest.json)
 
-      Notice the `experiment_apis` section. This maps `browser.study` to the privileged api code. (See details below)
+      Notice the `experiment_apis` section. This maps `browser.study` to the privileged API code. (See details below)
 
     * [`studySetup.js`](./examples/small-study/src/studySetup.js)
 
@@ -53,29 +53,29 @@ Allows writing [Shield and Pioneer](https://wiki.mozilla.org/Firefox/Shield/Shie
 
     * [`background.js`](./examples/small-study/src/background.js)
 
-      Using the `browser.study` api within a small instrumented feature.
+      Using the `browser.study` API within a small instrumented feature.
 
 1.  **Create magic** using [mozilla/shield-studies-addon-template/](https://github.com/mozilla/shield-studies-addon-template/) to get started with an example study where `shield-studies-addon-utils` is already installed and configured.
 
-## Installing the Shield Studies Addon Utils in your add-on
+## Installing the Shield Studies Add-on Utils in your add-on
 
 1.  Install the Package
 
     **Stable version.**
 
-    ```
+    ```sh
     npm install --save shield-studies-addon-utils
     ```
 
     **V5.1 develop branch**
 
-    ```
+    ```sh
     npm install --save mozilla/shield-studies-addon-utils#develop
     ```
 
 2.  Copy the files to your 'privileged' src directory
 
-    ```
+    ```sh
     # copyStudyUtils is installed in `node_modules/.bin`
     copyStudyUtils ./privileged --example
     ```
@@ -89,7 +89,7 @@ Allows writing [Shield and Pioneer](https://wiki.mozilla.org/Firefox/Shield/Shie
     values: All|Trace|Debug|Info|Warn|Error
     ```
 
-## WebExtension APIs Provided by Shield Studies Addon Utils
+## WebExtension APIs Provided by Shield Studies Add-on Utils
 
 ### `browser.study.*`
 
@@ -107,7 +107,7 @@ Provides these capabilities:
 To use in your study (long-version):
 
 * `copyStudyUtils yourAddonSrc/privileged/` which copies `webExtensionApis/study/api.js` and `webExtensionApis/study/schema.json` to your add-on's source directory under `yourAddonSrc/privileged/study`,
-* addthe following to your add-on's manifest.json:
+* add the following to your add-on's manifest.json:
 
 ```
   "experiment_apis": {
@@ -134,7 +134,7 @@ Depending on which data processing pipeline the study add-on is configured to us
 
 [`browser.studyDebug` API documentation](./docs/study/api.md)
 
-Tools for writing tests, getting and resetting StudyUtils iternals.
+Tools for writing tests, getting and resetting StudyUtils internals.
 
 ### `browser.prefs.*`
 
@@ -154,7 +154,7 @@ To use, copy and adjust the files as per the `study` API above.
 ### Hints and opinions.
 
 1.  We put all the privileged code in `src/privileged` to make it easy for QA
-2.  The 'Firefox privileged' modules cannot use webExtension apis (`browserAction`, `management`, etc.). Use a `background.js` script (using messages and events) to co-ordinate multiple privileged modules.
+2.  The 'Firefox privileged' modules cannot use WebExtension APIs (`browserAction`, `management`, etc.). Use a `background.js` script (using messages and events) to co-ordinate multiple privileged modules.
 3.  Our toolchain for making schemas: `schema.yaml => {schema.json, api.md}`
 
 ## Directory Highlights
@@ -163,7 +163,7 @@ To use, copy and adjust the files as per the `study` API above.
 
 * `webExtensionApis/study`
 
-Firefox WebExtension Experiments APIs providing capabilities for study add-ons that are yet not available in the built-in WebExtension APIs
+Firefox WebExtension Experiments (WEE) APIs providing capabilities for study add-ons that are yet not available in the built-in WebExtension APIs
 
 * `testUtils/`
 
@@ -201,7 +201,7 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
 
 Goal: create the `study/api.js` and `study/schema.json` files that implement the `browser.study` WEE interface, for use by WebExtension Add-ons.
 
-1.  **Format** `eslint`, `prettier` all javascript code in all directories
+1.  **Format** `eslint`, `prettier` all JavaScript code in all directories
 2.  **Bundle** `webExtensionApis/study/api.js`, the `browser.study` WEE interface.
 
 * `webpack` `study/src/*` into `study/api.js`
@@ -215,7 +215,7 @@ Goal: create the `study/api.js` and `study/schema.json` files that implement the
 
 3.  **Derive** `webExtensionApis/study/schema.json`, the `browser.study` WEE interface.
 
-* `webExtensionApis/study/schema.yaml` is the canonical source. Using Yaml allows easily multiline comments
+* `webExtensionApis/study/schema.yaml` is the canonical source. Using YAML allows easily multi-line comments
 * `npm run build:schema`
 
       - converts `schema.yaml => schema.json`
@@ -224,7 +224,7 @@ Goal: create the `study/api.js` and `study/schema.json` files that implement the
 
 ## Testing overview: `npm run test`
 
-(If you are looking for ideas about QA for your study addon, see the FAQ.)
+(If you are looking for ideas about QA for your study add-on, see the FAQ.)
 
 Goal: Use `webdriver` to exercise the `browser.study` API to prove correctness.
 
@@ -234,17 +234,17 @@ Goal: Use `webdriver` to exercise the `browser.study` API to prove correctness.
 4.  Do tests:
 
     1.  `mocha` test runner uses files in `testUtils/` to
-    2.  Install the addon (using `webdriver`)
+    2.  Install the add-on (using `webdriver`)
     3.  Switch context to the panel, so that we can exercise `browser.study`. The function that does this: `setupWebDriver`
     4.  Run all tests. Most API tests are at: `test/functional/browser.study.api.js`
     5.  Most tests are of this `Selenium`/`WebDriver`/`GeckoDriver` form:
 
         * run some async code in the panel context using `addonExec`
-        * in that code, exercise the `browser.study` api.
+        * in that code, exercise the `browser.study` API.
         * callback with the results of `browser.study.setup()`, and/or `browser.studyDebug.getInternals()` as necessary.
         * use `node` `assert` to check the called back result.
 
-**Note**: `browser.studyDebug.getInternals()` gets internals of the `studyUtils` singleton as needful. `browser.studyDebug` also allows other manipulation of the studyUtils singleton, for use by tests, and to induce states and reactions.
+**Note**: `browser.studyDebug.getInternals()` gets internals of the `studyUtils` singleton as needful. `browser.studyDebug` also allows other manipulation of the `studyUtils` singleton, for use by tests, and to induce states and reactions.
 
 ## FAQ
 
@@ -252,7 +252,7 @@ Goal: Use `webdriver` to exercise the `browser.study` API to prove correctness.
 
   * We want `api.js` to be one file, for ease of use by study authors
   * We want the source to be broken up into logical pieces
-  * Firefox doens't come with a usable JSONSchema library (`Schema.jsm` isn't very usable.
+  * Firefox doesn't come with a usable JSONSchema library (`Schema.jsm` isn't very usable.
   * We want Jsonschema validation to guard args, and to send Telemetry
   * we use `webpack` to bundle src and AJV (jsonschema) into `api.js`
 
@@ -263,8 +263,8 @@ Goal: Use `webdriver` to exercise the `browser.study` API to prove correctness.
     * We are ignorant about Mochitest,
     * so we rebuilt a lot of things in Selenium / webDriver
 
-  * The things we are testing are mostly weird / hard addon edge cases
-    * a lot of the code is to simulate weird things like add-on install / unintall / startup / setup under weird combinations of conditions
+  * The things we are testing are mostly weird / hard add-on edge cases
+    * a lot of the code is to simulate weird things like add-on install / uninstall / startup / setup under weird combinations of conditions
 
 * What Telemetry is sent when?
 
@@ -313,9 +313,9 @@ Goal: Use `webdriver` to exercise the `browser.study` API to prove correctness.
 - QA
 
   * put your 'jsm' files in `privileged` by convention.
-  * your addon can use prefs to override the `testing` fields in a `studySetup` (to choose a variation).
+  * your add-on can use prefs to override the `testing` fields in a `studySetup` (to choose a variation).
   * exercising all the study endings is hard. Ideas welcome.
-  * proving that your addon doesn't regress performance is hard. Ideas welcome.
+  * proving that your add-on doesn't regress performance is hard. Ideas welcome.
 
 ## Development on the Shield-Studies-Addon-Utils
 
@@ -343,4 +343,4 @@ Goal: Use `webdriver` to exercise the `browser.study` API to prove correctness.
 Repositories that should not be used as templates for new studies:
 
 * NO. <https://github.com/benmiroglio/shield-study-embedded-webextension-hello-world-example> - A repository that was created in 2017 to help new Shield/Pioneer engineers to quickly get up and running with a Shield add-on, built upon an older and much more verbose add-on template. It's documentation has been ported to the official template repo.
-* NO. <https://github.com/johngruen/shield-template> - Despite its name, this repo is for static amo consent pages and does not contain any template for Shield studies
+* NO. <https://github.com/johngruen/shield-template> - Despite its name, this repo is for static AMO consent pages and does not contain any template for Shield studies
