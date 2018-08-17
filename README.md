@@ -29,7 +29,7 @@ Allows writing [Shield and Pioneer](https://wiki.mozilla.org/Firefox/Shield/Shie
 * **expiration**: helps handle study expiration by storing first run timestamp in a preference
 * **eligibility**: consistent handling of post-install / first run eligiblity
 * **telemetry helpers** make it easier to send correctly formatted `shield-study`, `shield-study-addon` Telemetry.
-* **format survey urls** and other 'post' and 'mid-study' urls to have correct appended query arguments, to
+* **format survey URLs** and other 'post' and 'mid-study' URLs to have correct appended query arguments, to
   * create flow-control logic during surveys
   * proper version, study and other tracking variables
 
@@ -53,7 +53,7 @@ If you haven't checked out [the template](https://github.com/mozilla/shield-stud
 
     * [`manifest.json`](./examples/small-study/src/manifest.json)
 
-      Notice the `experiment_apis` section. This maps `browser.study` to the privileged api code. (See details below)
+      Notice the `experiment_apis` section. This maps `browser.study` to the privileged API code. (See details below)
 
     * [`studySetup.js`](./examples/small-study/src/studySetup.js)
 
@@ -61,29 +61,29 @@ If you haven't checked out [the template](https://github.com/mozilla/shield-stud
 
     * [`background.js`](./examples/small-study/src/background.js)
 
-      Using the `browser.study` api within a small instrumented feature.
+      Using the `browser.study` API within a small instrumented feature.
 
 1.  **Create magic** using [mozilla/shield-studies-addon-template/](https://github.com/mozilla/shield-studies-addon-template/) to get started with an example study where `shield-studies-addon-utils` is already installed and configured.
 
-## Installing the Shield Studies Addon Utils in your add-on
+## Installing the Shield Studies Add-on Utils in your add-on
 
 1.  Install the Package
 
     **Stable version.**
 
-    ```
+    ```sh
     npm install --save shield-studies-addon-utils
     ```
 
     **V5.1 develop branch**
 
-    ```
+    ```sh
     npm install --save mozilla/shield-studies-addon-utils#develop
     ```
 
 2.  Copy the files to your 'privileged' src directory
 
-    ```
+    ```sh
     # copyStudyUtils is installed in `node_modules/.bin`
     copyStudyUtils ./privileged --example
     ```
@@ -97,7 +97,7 @@ If you haven't checked out [the template](https://github.com/mozilla/shield-stud
     values: All|Trace|Debug|Info|Warn|Error
     ```
 
-## WebExtension APIs Provided by Shield Studies Addon Utils
+## WebExtension APIs Provided by Shield Studies Add-on Utils
 
 ### `browser.study.*`
 
@@ -115,7 +115,7 @@ Provides these capabilities:
 To use in your study (long-version):
 
 * `copyStudyUtils yourAddonSrc/privileged/` which copies `webExtensionApis/study/api.js` and `webExtensionApis/study/schema.json` to your add-on's source directory under `yourAddonSrc/privileged/study`,
-* addthe following to your add-on's manifest.json:
+* add the following to your add-on's manifest.json:
 
 ```
   "experiment_apis": {
@@ -142,7 +142,7 @@ Depending on which data processing pipeline the study add-on is configured to us
 
 [`browser.studyDebug` API documentation](./webExtensionApis/study/api.md)
 
-Tools for writing tests, getting and resetting StudyUtils iternals.
+Tools for writing tests, getting and resetting StudyUtils internals.
 
 ### `browser.prefs.*`
 
