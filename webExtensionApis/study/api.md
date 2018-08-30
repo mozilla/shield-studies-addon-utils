@@ -1011,6 +1011,15 @@ About `this._internals`:
 
 **Parameters**
 
+### `browser.studyDebug.getInternalTestingOverrides( )`
+
+Returns an object with the following keys:
+studyType - to be able to test add-ons with different studyType configurations
+Used to override study testing flags in getStudySetup().
+The values are set by the corresponding preference under the `extensions.${widgetId}.test.*` preference branch.
+
+**Parameters**
+
 ## Events
 
 (None)

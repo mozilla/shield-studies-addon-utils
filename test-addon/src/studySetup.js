@@ -22,8 +22,8 @@ const baseStudySetup = {
   // used for activeExperiments tagging (telemetryEnvironment.setActiveExperiment)
   activeExperimentName: browser.runtime.id,
 
-  // uses shield sampling and telemetry semantics.  Future: will support "pioneer"
-  studyType: "shield",
+  // use either "shield" or "pioneer" telemetry semantics and data pipelines
+  studyType: null, // set by internal test override below in getStudySetup()
 
   // telemetry
   telemetry: {
@@ -137,5 +137,10 @@ async function getStudySetup() {
     firstRunTimestamp: testingOverrides.firstRunTimestamp,
     expired: testingOverrides.expired,
   };
+
+  // internal testing override necessary to be able to test all study types
+  const internalTestingOverrides = await browser.studyDebug.getInternalTestingOverrides();
+  studySetup.studyType = internalTestingOverrides.studyType;
+
   return studySetup;
 }

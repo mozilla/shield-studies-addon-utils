@@ -4,7 +4,7 @@
 const KEEPOPEN = process.env.KEEPOPEN;
 /** Complete list of tests for testing
  *
- * - the public api for `browser.study`
+ * - the public api for `browser.study` not specific to any add-on background logic
  */
 
 /** About webdriver extension based tests
@@ -56,55 +56,56 @@ function merge(...sources) {
   return Object.assign({}, ...sources);
 }
 
-/** return a studySetup, shallow merged from overrides
- *
- * @return {object} mergedStudySetup
- */
-function studySetupForTests(...overrides) {
-  // Minimal configuration to pass schema validation
-  const studySetup = {
-    activeExperimentName: "shield-utils-test-addon@shield.mozilla.org",
-    studyType: "shield",
-    endings: {
-      ineligible: {
-        baseUrls: [
-          "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=ineligible",
-        ],
+const publicApiTests = function(studyType) {
+  /** return a studySetup, shallow merged from overrides
+   *
+   * @return {object} mergedStudySetup
+   */
+  function studySetupForTests(...overrides) {
+    // Minimal configuration to pass schema validation
+    const studySetup = {
+      activeExperimentName: `shield-utils-test-addon@${studyType}.mozilla.org`,
+      studyType,
+      endings: {
+        ineligible: {
+          baseUrls: [
+            "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=ineligible",
+          ],
+        },
+        BrowserStudyApiEnding: {
+          baseUrls: [
+            "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=BrowserStudyApiEnding",
+          ],
+        },
       },
-      BrowserStudyApiEnding: {
-        baseUrls: [
-          "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=BrowserStudyApiEnding",
-        ],
+      telemetry: {
+        send: false, // assumed false. Actually send pings if true
+        removeTestingFlag: false, // Marks pings to be discarded, set true for to have the pings processed in the pipeline
       },
-    },
-    telemetry: {
-      send: false, // assumed false. Actually send pings if true
-      removeTestingFlag: false, // Marks pings to be discarded, set true for to have the pings processed in the pipeline
-    },
-    logLevel: 10,
-    weightedVariations: [
-      {
-        name: "control",
-        weight: 1,
+      logLevel: 10,
+      weightedVariations: [
+        {
+          name: "control",
+          weight: 1,
+        },
+      ],
+      expire: {
+        days: 14,
       },
-    ],
-    expire: {
-      days: 14,
-    },
-    // Dynamic study configuration flags
-    allowEnroll: true,
-    testing: {},
-  };
+      // Dynamic study configuration flags
+      allowEnroll: true,
+      testing: {},
+    };
 
-  return merge(studySetup, ...overrides);
-}
+    return merge(studySetup, ...overrides);
+  }
 
-describe("PUBLIC API `browser.study` (not specific to any add-on background logic)", function() {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
   this.timeout(15000 + KEEPOPEN * 1000 * 2);
 
   let driver;
   let addonId;
+
   // run in the extension page
   let addonExec;
 
@@ -112,7 +113,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
     driver = await utils.setupWebdriver.promiseSetupDriver(
       utils.FIREFOX_PREFERENCES,
     );
-    addonId = await utils.setupWebdriver.installAddon(driver);
+    installAddon();
     await utils.ui.openBrowserConsole(driver);
 
     // make a shorter alias
@@ -122,9 +123,11 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
     );
   }
 
-  async function reinstallAddon() {
-    await utils.setupWebdriver.uninstallAddon(driver, addonId);
-    await utils.setupWebdriver.installAddon(driver);
+  async function installAddon() {
+    if (addonId) {
+      await utils.setupWebdriver.uninstallAddon(driver, addonId);
+    }
+    addonId = await utils.setupWebdriver.installAddon(driver);
   }
 
   before(createAddonExec);
@@ -590,7 +593,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       };
 
       before(async function reinstallSetupDoTelemetryAndWait() {
-        await reinstallAddon();
+        await installAddon();
         studyInfo = await addonExec(async (_studySetupForTests, callback) => {
           // Ensure we have a configured study and are supposed to run our feature
           browser.study.onReady.addListener(async _studyInfo => {
@@ -796,7 +799,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       };
 
       before(async function reinstallSetupAndAwaitEndStudy() {
-        await reinstallAddon();
+        await installAddon();
         endingResult = await addonExec(
           async (_studySetupForTests, callback) => {
             // Ensure we have a configured study and are supposed to run our feature
@@ -906,7 +909,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       };
 
       before(async function reinstallSetupAndAwaitEndStudy() {
-        await reinstallAddon();
+        await installAddon();
         endingResult = await addonExec(
           async (_studySetupForTests, callback) => {
             // Ensure we have a configured study and are supposed to run our feature
@@ -1021,7 +1024,7 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       };
 
       before(async function reinstallSetupAndConfigureAlarm() {
-        await reinstallAddon();
+        await installAddon();
         endingResult = await addonExec(
           async (_studySetupForTests, callback) => {
             console.log(
@@ -1206,4 +1209,12 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
       it("log level works?");
     });
   });
+};
+
+describe("PUBLIC API `browser.study` (studyType: shield)", function() {
+  publicApiTests.bind(this)("shield");
+});
+
+describe("PUBLIC API `browser.study` (studyType: pioneer)", function() {
+  publicApiTests.bind(this)("pioneer");
 });

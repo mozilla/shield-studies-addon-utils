@@ -866,6 +866,14 @@
         "description":
           "Return `_internals` of the studyUtils object.\n\nUse this for debugging state.\n\nAbout `this._internals`:\n- variation:  (chosen variation, `setup` )\n- isEnding: bool  `endStudy`\n- isSetup: bool   `setup`\n- isFirstRun: bool `setup`, based on pref\n- studySetup: bool  `setup` the config\n- seenTelemetry: object of lists of seen telemetry by bucket\n- prefs: object of all created prefs and their names\n",
         "parameters": []
+      },
+      {
+        "name": "getInternalTestingOverrides",
+        "type": "function",
+        "async": true,
+        "description":
+          "Returns an object with the following keys:\n  studyType - to be able to test add-ons with different studyType configurations\nUsed to override study testing flags in getStudySetup().\nThe values are set by the corresponding preference under the `extensions.${widgetId}.test.*` preference branch.\n",
+        "parameters": []
       }
     ]
   }
