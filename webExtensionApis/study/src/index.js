@@ -448,6 +448,10 @@ this.study = class extends ExtensionAPI {
         async getInternals() {
           return studyUtils._internals;
         },
+
+        getInternalTestingOverrides: async function getInternalTestingOverrides() {
+          return testingOverrides.getInternalTestingOverrides(widgetId);
+        },
       },
     };
   }

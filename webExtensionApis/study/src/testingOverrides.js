@@ -25,3 +25,10 @@ export function listPreferences(widgetId) {
     `extensions.${widgetId}.test.expired`,
   ];
 }
+
+export function getInternalTestingOverrides(widgetId) {
+  const internalTestingOverrides = {};
+  internalTestingOverrides.studyType =
+    Preferences.get(`extensions.${widgetId}.test.studyType`) || null;
+  return internalTestingOverrides;
+}

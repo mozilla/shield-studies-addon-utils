@@ -12,7 +12,7 @@ const KEEPOPEN = process.env.KEEPOPEN;
 const assert = require("assert");
 const utils = require("./utils");
 
-describe("Tests verifying that the test add-on works as expected", function() {
+const testAddonTests = function(studyType) {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
   this.timeout(15000 + KEEPOPEN * 1000 * 3);
 
@@ -21,6 +21,14 @@ describe("Tests verifying that the test add-on works as expected", function() {
   before(async () => {
     driver = await utils.setupWebdriver.promiseSetupDriver(
       utils.FIREFOX_PREFERENCES,
+    );
+    const widgetId = utils.ui.makeWidgetId(
+      "shield-utils-test-addon@shield.mozilla.org",
+    );
+    await utils.preferences.set(
+      driver,
+      `extensions.${widgetId}.test.studyType`,
+      studyType,
     );
     await utils.setupWebdriver.installAddon(driver);
     await utils.ui.openBrowserConsole(driver);
@@ -147,4 +155,12 @@ describe("Tests verifying that the test add-on works as expected", function() {
       */
     });
   });
+};
+
+describe("Tests verifying that the test add-on works as expected (studyType=shield)", function() {
+  testAddonTests.bind(this)("shield");
+});
+
+describe("Tests verifying that the test add-on works as expected (studyType=pioneer)", function() {
+  testAddonTests.bind(this)("pioneer");
 });
