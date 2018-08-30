@@ -13,6 +13,7 @@
     "ajv": "^6.5.0",
     "commander": "^2.15.1",
     "fs-extra": "^6.0.1",
+    "pioneer-utils": "^1.0.10",
     "shield-study-schemas": "^0.8.3"
   },
   "devDependencies": {
