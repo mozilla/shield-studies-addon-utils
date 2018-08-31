@@ -1186,24 +1186,6 @@ const publicApiTests = function(studyType) {
     });
   });
 
-  describe("endStudy", function() {
-    it("see the browser.study.endStudy() side effects above", () =>
-      assert(true));
-  });
-
-  describe("getStudyInfo", function() {
-    describe("correctness: see browser.study.setup() tests", function() {
-      // tests
-      it("during first run, isFirstRun is true", function() {});
-      it("during second run, isFirstRun is false", function() {});
-      it("if duration.days in studySetup(), have a delayInMinutes in studyInfo", async function() {});
-    });
-  });
-
-  describe("searchSentTelemetry (light testing)", function() {
-    it("searches get results, see the endStudy() and other test", function() {});
-  });
-
   describe("uninstall by users?", function() {});
 
   // TODO 5.1
