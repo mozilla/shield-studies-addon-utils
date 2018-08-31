@@ -6,6 +6,11 @@ const Context = firefox.Context;
 module.exports.preferences = {
   /**
    * Expose Preferences.get() so that tests can assert the value of preferences
+   *
+   * @param {object} driver See Preferences.get()
+   * @param {string} prefName See Preferences.get()
+   * @param {any} defaultValue See Preferences.get()
+   * @returns {Promise<*>} See Preferences.get()
    */
   get: async (driver, prefName, defaultValue) => {
     driver.setContext(Context.CHROME);
