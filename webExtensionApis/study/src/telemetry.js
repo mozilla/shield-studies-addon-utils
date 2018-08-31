@@ -53,7 +53,7 @@ async function searchTelemetryArchive(TelemetryArchive, searchTelemetryQuery) {
   return Promise.all(pingData);
 }
 
-// TODO pings report, from the utility addon
+// TODO pings report, from the utility add-on
 
 module.exports = {
   searchTelemetryArchive,

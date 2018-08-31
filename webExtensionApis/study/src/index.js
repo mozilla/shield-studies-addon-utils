@@ -82,7 +82,7 @@ this.study = class extends ExtensionAPI {
   }
 
   /**
-   * @param {object} context the addon context
+   * @param {object} context the add-on context
    * @returns {object} api with study, studyDebug keys
    */
   getAPI(context) {
