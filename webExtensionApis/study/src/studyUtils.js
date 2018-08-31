@@ -5,6 +5,8 @@
 import sampling from "./sampling";
 import { utilsLogger } from "./logger";
 import makeWidgetId from "./makeWidgetId";
+import ShieldStudyType from "./studyTypes/shield";
+import PioneerStudyType from "./studyTypes/pioneer";
 
 /*
 * Supports the `browser.study` webExtensionExperiment api.
@@ -49,11 +51,6 @@ const { ExtensionUtils } = ChromeUtils.import(
 const { ExtensionError } = ExtensionUtils;
 
 // telemetry utils
-const CID = ChromeUtils.import("resource://gre/modules/ClientID.jsm", {});
-const { TelemetryController } = ChromeUtils.import(
-  "resource://gre/modules/TelemetryController.jsm",
-  null,
-);
 const { TelemetryEnvironment } = ChromeUtils.import(
   "resource://gre/modules/TelemetryEnvironment.jsm",
   null,
@@ -269,6 +266,14 @@ class StudyUtils {
     }
     guard.it("studySetup", studySetup, "(in studySetup)");
 
+    // Different study types treat data and configuration differently
+    if (studySetup.studyType === "shield") {
+      this.studyType = new ShieldStudyType(this);
+    }
+    if (studySetup.studyType === "pioneer") {
+      this.studyType = new PioneerStudyType(this);
+    }
+
     function getVariationByName(name, variations) {
       if (!name) return null;
       const chosen = variations.filter(x => x.name === name)[0];
@@ -318,6 +323,7 @@ class StudyUtils {
    */
   reset() {
     this._internals = this._createInternals();
+    this.studyType = null;
     this.resetFirstRunTimestamp();
   }
 
@@ -399,12 +405,7 @@ class StudyUtils {
    * @returns {string} - the telemetry client ID
    */
   async getTelemetryId() {
-    const id = TelemetryController.clientID;
-    /* istanbul ignore next */
-    if (id === undefined) {
-      return CID.ClientIDImpl._doLoadClientID();
-    }
-    return id;
+    return this.studyType.getTelemetryId();
   }
 
   /**
@@ -457,8 +458,7 @@ class StudyUtils {
     weightedVariations,
     fraction = null,
   ) {
-    // this is the standard arm choosing method
-    // TODO, allow 'pioneer' algorithm
+    // this is the standard arm choosing method, used by both shield and pioneer studies
     if (fraction === null) {
       // hash the studyName and telemetryId to get the same branch every time.
       const clientId = await this.getTelemetryId();
@@ -744,8 +744,7 @@ class StudyUtils {
       return false;
     }
 
-    const telOptions = { addClientId: true, addEnvironment: true };
-    return TelemetryController.submitExternalPing(bucket, payload, telOptions);
+    return this.studyType.sendTelemetry(bucket, payload);
   }
 
   /**
