@@ -641,6 +641,10 @@ Act on it by
         },
         "removeTestingFlag": {
           "type": "boolean"
+        },
+        "internalTelemetryArchive": {
+          "optional": true,
+          "type": "boolean"
         }
       }
     },
@@ -729,7 +733,8 @@ Act on it by
       ],
       "telemetry": {
         "send": false,
-        "removeTestingFlag": false
+        "removeTestingFlag": false,
+        "internalTelemetryArchive": false
       },
       "testing": {
         "variationName": "something",
@@ -753,7 +758,8 @@ Act on it by
       ],
       "telemetry": {
         "send": false,
-        "removeTestingFlag": true
+        "removeTestingFlag": true,
+        "internalTelemetryArchive": true
       },
       "testing": {
         "variationName": "something",
@@ -1031,7 +1037,7 @@ About `this._internals`:
 * isSetup: bool `setup`
 * isFirstRun: bool `setup`, based on pref
 * studySetup: bool `setup` the config
-* seenTelemetry: object of lists of seen telemetry by bucket
+* seenTelemetry: array of seen telemetry. Fully populated only if studySetup.telemetry.internalTelemetryArchive is true
 * prefs: object of all created prefs and their names
 
 **Parameters**

@@ -43,6 +43,7 @@ const MINUTES_PER_DAY = 60 * 24;
 
 // node's util, for printing a deeply nested object to node console
 const { inspect } = require("util");
+
 // eslint-disable-next-line no-unused-vars
 function full(myObject) {
   return inspect(myObject, { showHidden: false, depth: null });
@@ -79,8 +80,9 @@ const publicApiTests = function(studyType) {
         },
       },
       telemetry: {
-        send: false, // assumed false. Actually send pings if true
-        removeTestingFlag: false, // Marks pings to be discarded, set true for to have the pings processed in the pipeline
+        send: false,
+        removeTestingFlag: false,
+        internalTelemetryArchive: true,
       },
       logLevel: 10,
       weightedVariations: [
@@ -321,9 +323,9 @@ const publicApiTests = function(studyType) {
 
       // tests
       const now = Number(Date.now());
-      const seenTelemetryStates = internals.seenTelemetry["shield-study"].map(
-        x => x.data.study_state,
-      );
+      const seenTelemetryStates = internals.seenTelemetry
+        .filter(ping => ping.type === "shield-study")
+        .map(x => x.data.study_state);
       assert(internals.isSetup, "should be isSetup");
       assert(!internals.isEnded, "should not be ended");
       assert(!internals.isEnding, "should not be ending");
@@ -372,9 +374,9 @@ const publicApiTests = function(studyType) {
       const { info, internals } = data;
 
       // tests
-      const seenTelemetryStates = internals.seenTelemetry["shield-study"].map(
-        x => x.data.study_state,
-      );
+      const seenTelemetryStates = internals.seenTelemetry
+        .filter(ping => ping.type === "shield-study")
+        .map(x => x.data.study_state);
 
       assert(internals.isSetup, "should be isSetup");
       assert(!internals.isEnded, "should not be ended");
@@ -425,9 +427,9 @@ const publicApiTests = function(studyType) {
       const { info, internals } = data;
 
       // tests
-      const seenTelemetryStates = internals.seenTelemetry["shield-study"].map(
-        x => x.data.study_state,
-      );
+      const seenTelemetryStates = internals.seenTelemetry
+        .filter(ping => ping.type === "shield-study")
+        .map(x => x.data.study_state);
 
       assert(internals.isSetup, "should be isSetup");
       assert(internals.isEnded, "should be ended");
@@ -584,6 +586,7 @@ const publicApiTests = function(studyType) {
         telemetry: {
           send: true,
           removeTestingFlag: false,
+          internalTelemetryArchive: true,
         },
         endings: {
           customEnding: {
@@ -621,13 +624,18 @@ const publicApiTests = function(studyType) {
         before(async () => {
           studyPings = await addonExec(async callback => {
             const _studyPings = await browser.study.searchSentTelemetry({
-              type: ["shield-study", "shield-study-addon"],
+              type: [
+                "shield-study",
+                "shield-study-addon",
+                "shield-study-error",
+                "pioneer-study",
+              ],
             });
             callback(_studyPings);
           });
-          // console.debug(full(studyPings.map(x => x.payload)));
           // For debugging tests
           // console.debug("Pings report: ", utils.telemetry.pingsReport(studyPings));
+          // console.debug("Pings with id and payload: ", utils.telemetry.pingsDebug(studyPings));
         });
 
         it("should have set the experiment to active in Telemetry", async () => {
@@ -641,14 +649,15 @@ const publicApiTests = function(studyType) {
         });
 
         it("shield-study-addon telemetry should be working (as seen by telemetry)", async () => {
-          const shieldTelemetryPings = await addonExec(async callback => {
-            const _studyPings = await browser.study.searchSentTelemetry({
-              type: ["shield-study-addon"],
-            });
-            callback(_studyPings.map(x => x.payload));
-          });
-          // console.debug("pings", full(shieldTelemetryPings));
-          assert(shieldTelemetryPings[0].data.attributes.foo === "bar");
+          const filteredPings = studyPings.filter(
+            ping => ping.type === "shield-study-addon",
+          );
+          assert(
+            filteredPings.length > 0,
+            "at least one shield-study-addon telemetry ping",
+          );
+          // console.debug("shield-study-addon pings", full(filteredPings));
+          assert(filteredPings[0].payload.data.attributes.foo === "bar");
         });
 
         it("should have sent at least one shield telemetry ping", async () => {
@@ -752,8 +761,8 @@ const publicApiTests = function(studyType) {
               type: ["shield-study", "shield-study-addon"],
             });
             // For debugging tests
-            // console.debug(full(studyPings.map(x => [x.type, x.payload])));
             // console.debug("Final pings report: ", utils.telemetry.pingsReport(studyPings));
+            // console.debug("Final pings with id and payload: ", utils.telemetry.pingsDebug(studyPings));
           });
 
           it("one shield-study telemetry ping with study_state=exit", async () => {
@@ -791,6 +800,7 @@ const publicApiTests = function(studyType) {
         telemetry: {
           send: true,
           removeTestingFlag: false,
+          internalTelemetryArchive: true,
         },
         endings: {
           ineligible: {
@@ -860,8 +870,8 @@ const publicApiTests = function(studyType) {
               type: ["shield-study", "shield-study-addon"],
             });
             // For debugging tests
-            // console.debug(full(studyPings.map(x => [x.type, x.payload])));
             // console.debug("Final pings report: ", utils.telemetry.pingsReport(studyPings));
+            // console.debug("Final pings with id and payload: ", utils.telemetry.pingsDebug(studyPings));
           });
 
           it("one shield-study telemetry ping with study_state=exit", async () => {
@@ -898,6 +908,7 @@ const publicApiTests = function(studyType) {
         telemetry: {
           send: true,
           removeTestingFlag: false,
+          internalTelemetryArchive: true,
         },
         endings: {
           expired: {
@@ -970,8 +981,8 @@ const publicApiTests = function(studyType) {
               type: ["shield-study", "shield-study-addon"],
             });
             // For debugging tests
-            // console.debug(full(studyPings.map(x => [x.type, x.payload])));
             // console.debug("Final pings report: ", utils.telemetry.pingsReport(studyPings));
+            // console.debug("Final pings with id and payload: ", utils.telemetry.pingsDebug(studyPings));
           });
 
           it("one shield-study telemetry ping with study_state=exit", async () => {
@@ -1010,6 +1021,7 @@ const publicApiTests = function(studyType) {
         telemetry: {
           send: true,
           removeTestingFlag: false,
+          internalTelemetryArchive: true,
         },
         expire: {
           days: 1,
@@ -1105,8 +1117,8 @@ const publicApiTests = function(studyType) {
               type: ["shield-study", "shield-study-addon"],
             });
             // For debugging tests
-            // console.debug(full(studyPings.map(x => [x.type, x.payload])));
             // console.debug("Final pings report: ", utils.telemetry.pingsReport(studyPings));
+            // console.debug("Final pings with id and payload: ", utils.telemetry.pingsDebug(studyPings));
           });
 
           it("one shield-study telemetry ping with study_state=exit", async () => {

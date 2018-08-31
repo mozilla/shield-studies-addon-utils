@@ -175,7 +175,7 @@ class StudyUtils {
    * - isSetup: bool   `setup`
    * - isFirstRun: bool `setup`, based on pref
    * - studySetup: bool  `setup` the config
-   * - seenTelemetry: object of lists of seen telemetry by bucket
+   * - seenTelemetry: array of seen telemetry. Fully populated only if studySetup.telemetry.internalTelemetryArchive is true
    * - prefs: object of all created prefs and their names
    * - endingRequested: string of ending name
    * - endingReturns: object with useful ending instructions
@@ -222,11 +222,7 @@ class StudyUtils {
       isSetup: false,
       isEnding: false,
       isEnded: false,
-      seenTelemetry: {
-        "shield-study": [],
-        "shield-study-addon": [],
-        "shield-study-error": [],
-      },
+      seenTelemetry: [],
       prefs: {
         firstRunTimestamp: `shield.${widgetId}.firstRunTimestamp`,
       },
@@ -733,9 +729,13 @@ class StudyUtils {
     }
     utilsLogger.debug(`telemetry: ${JSON.stringify(payload)}`);
 
-    // IF it's a shield-study or error ping, which are few in number
-    if (bucket === "shield-study" || bucket === "shield-study-error") {
-      this._internals.seenTelemetry[bucket].push(payload);
+    // Store a copy of the ping if it's a shield-study or error ping, which are few in number, or if we have activated the internal telemetry archive configuration
+    if (
+      bucket === "shield-study" ||
+      bucket === "shield-study-error" ||
+      this.telemetryConfig.internalTelemetryArchive
+    ) {
+      this._internals.seenTelemetry.push(payload);
     }
 
     // during development, don't actually send
