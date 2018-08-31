@@ -56,11 +56,16 @@ describe("Tests verifying that the test add-on works as expected", function() {
   });
 
   describe('test the test add-on\'s "onEveryExtensionLoad" process', function() {
+    // For unknown reasons, whenever we query browser.studyDebug.getInternals() or browser.study.getStudyInfo()
+    // from this test, a clean state is encountered. Instead, we let the relevant information be sent via messaging
+    // to test, stored in the following variable:
+    let informationFromAddon;
+
     /**
      * Before running the tests in this group, trigger onEveryExtensionLoad and wait for the study to be running
      */
     before(async () => {
-      await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+      informationFromAddon = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
         driver,
         async callback => {
           // Let the test add-on know it is time to load the background logic
@@ -69,13 +74,24 @@ describe("Tests verifying that the test add-on works as expected", function() {
             .catch(console.error);
 
           // Wait for the feature to be enabled before continuing with the test assertions
-          browser.runtime.onMessage.addListener(request => {
+          browser.runtime.onMessage.addListener(async request => {
             console.log("test:onFeatureEnabled listener - request:", request);
-            if (request === "test:onFeatureEnabled") {
-              callback();
+            if (request.message === "test:onFeatureEnabled") {
+              callback(request);
             }
           });
         },
+      );
+      // console.log("informationFromAddon", informationFromAddon);
+    });
+
+    it("should have chosen one of the study's variations", async () => {
+      const chosenVariation = informationFromAddon.studyInfo.variation;
+      assert(chosenVariation);
+      assert(
+        chosenVariation.name === "feature-active" ||
+          chosenVariation.name === "feature-passive" ||
+          chosenVariation.name === "control",
       );
     });
 
