@@ -248,6 +248,33 @@ const publicApiTests = function(studyType) {
     });
   });
 
+  describe("getDataPermissions", function() {
+    it("returns correct and current list of permissions", async () => {
+      const thisSetup = studySetupForTests();
+      const dataPermissions = await addonExec(async (setup, cb) => {
+        // this is what runs in the webExtension scope.
+        const $dataPermissions = await browser.study.getDataPermissions();
+        // call back with all the data we care about to Mocha / node
+        cb($dataPermissions);
+      }, thisSetup);
+      // console.debug(full(dataPermissions));
+
+      // tests
+      assert(dataPermissions.shield, "shield should be enabled");
+      if (studyType === "pioneer") {
+        assert(
+          dataPermissions.pioneer,
+          "user should have opted in for pioneer",
+        );
+      } else {
+        assert(
+          !dataPermissions.pioneer,
+          "user should not have opted in for pioneer",
+        );
+      }
+    });
+  });
+
   describe("test the setup requirement", function() {
     it("should not be able to send telemetry before setup", async () => {
       const caughtError = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
@@ -1190,9 +1217,6 @@ const publicApiTests = function(studyType) {
 
   // TODO 5.1
   describe.skip("possible 5.1 future tests.", function() {
-    describe("getDataPermissions", function() {
-      it("returns correct and current list of permissions");
-    });
 
     describe("surveyUrl", function() {
       describe("needs setup", function() {
