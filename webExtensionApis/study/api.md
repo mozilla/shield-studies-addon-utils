@@ -11,7 +11,7 @@ Attempt an setup/enrollment, with these effects:
 * sets 'studyType' as Shield or Pioneer
 
   * affects telemetry
-  * (5.1 TODO) watches for dataPermission changes that should _always_
+  * (5.2+ TODO) watches for dataPermission changes that should _always_
     stop that kind of study
 
 * Use or choose variation
@@ -136,6 +136,12 @@ But not:
 * telemetry clientId
 
 Throws Error if called before `browser.study.setup`
+
+**Parameters**
+
+### `browser.study.getDataPermissions( )`
+
+Object of current dataPermissions (shield enabled true/false, pioneer enabled true/false)
 
 **Parameters**
 
@@ -575,7 +581,26 @@ Act on it by
 }
 ```
 
-### [9] studySetup
+### [9] dataPermissionsObject
+
+```json
+{
+  "id": "dataPermissionsObject",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "shield": {
+      "type": "boolean"
+    },
+    "pioneer": {
+      "type": "boolean"
+    }
+  },
+  "required": ["shield", "pioneer"]
+}
+```
+
+### [10] studySetup
 
 ```json
 {
@@ -787,7 +812,7 @@ Act on it by
 }
 ```
 
-### [10] telemetryPayload
+### [11] telemetryPayload
 
 ```json
 {
@@ -801,7 +826,7 @@ Act on it by
 }
 ```
 
-### [11] searchTelemetryQuery
+### [12] searchTelemetryQuery
 
 ```json
 {
@@ -839,7 +864,7 @@ Act on it by
 }
 ```
 
-### [12] anEndingAnswer
+### [13] anEndingAnswer
 
 ```json
 {

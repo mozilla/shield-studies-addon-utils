@@ -277,6 +277,20 @@
         ]
       },
       {
+        "id": "dataPermissionsObject",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "shield": {
+            "type": "boolean"
+          },
+          "pioneer": {
+            "type": "boolean"
+          }
+        },
+        "required": ["shield", "pioneer"]
+      },
+      {
         "id": "studySetup",
         "$schema": "http://json-schema.org/draft-04/schema",
         "type": "object",
@@ -539,7 +553,7 @@
         "type": "function",
         "async": true,
         "description":
-          "Attempt an setup/enrollment, with these effects:\n\n- sets 'studyType' as Shield or Pioneer\n  - affects telemetry\n  - (5.1 TODO) watches for dataPermission changes that should *always*\n    stop that kind of study\n\n- Use or choose variation\n  - `testing.variation` if present\n  - OR (internal) deterministicVariation\n    from `weightedVariations`\n    based on hash of\n\n    - activeExperimentName\n    - clientId\n\n- During firstRun[1] only:\n  - set firstRunTimestamp pref value\n  - send 'enter' ping\n  - if `allowEnroll`, send 'install' ping\n  - else endStudy(\"ineligible\") and return\n\n- Every Run\n  - setActiveExperiment(studySetup)\n  - monitor shield | pioneer permission endings\n  - suggests alarming if `expire` is set.\n\nReturns:\n- studyInfo object (see `getStudyInfo`)\n\nTelemetry Sent (First run only)\n\n  - enter\n  - install\n\nFires Events\n\n(At most one of)\n- study:onReady  OR\n- study:onEndStudy\n\nPreferences set\n- `shield.${runtime.id}.firstRunTimestamp`\n\nNote:\n1. allowEnroll is ONLY used during first run (install)\n",
+          "Attempt an setup/enrollment, with these effects:\n\n- sets 'studyType' as Shield or Pioneer\n  - affects telemetry\n  - (5.2+ TODO) watches for dataPermission changes that should *always*\n    stop that kind of study\n\n- Use or choose variation\n  - `testing.variation` if present\n  - OR (internal) deterministicVariation\n    from `weightedVariations`\n    based on hash of\n\n    - activeExperimentName\n    - clientId\n\n- During firstRun[1] only:\n  - set firstRunTimestamp pref value\n  - send 'enter' ping\n  - if `allowEnroll`, send 'install' ping\n  - else endStudy(\"ineligible\") and return\n\n- Every Run\n  - setActiveExperiment(studySetup)\n  - monitor shield | pioneer permission endings\n  - suggests alarming if `expire` is set.\n\nReturns:\n- studyInfo object (see `getStudyInfo`)\n\nTelemetry Sent (First run only)\n\n  - enter\n  - install\n\nFires Events\n\n(At most one of)\n- study:onReady  OR\n- study:onEndStudy\n\nPreferences set\n- `shield.${runtime.id}.firstRunTimestamp`\n\nNote:\n1. allowEnroll is ONLY used during first run (install)\n",
         "parameters": [
           {
             "name": "studySetup",
@@ -590,6 +604,23 @@
         "returns": [
           {
             "$ref": "studyInfoObject"
+          }
+        ]
+      },
+      {
+        "name": "getDataPermissions",
+        "type": "function",
+        "async": true,
+        "description":
+          "Object of current dataPermissions (shield enabled true/false, pioneer enabled true/false)",
+        "defaultReturn": {
+          "shield": true,
+          "pioneer": false
+        },
+        "parameters": [],
+        "returns": [
+          {
+            "$ref": "dataPermissionsObject"
           }
         ]
       },

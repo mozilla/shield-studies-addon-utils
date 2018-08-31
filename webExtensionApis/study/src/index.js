@@ -10,6 +10,7 @@
 import { utilsLogger, createLogger } from "./logger";
 import makeWidgetId from "./makeWidgetId";
 import * as testingOverrides from "./testingOverrides";
+import * as dataPermissions from "./dataPermissions";
 
 ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
@@ -269,6 +270,11 @@ this.study = class extends ExtensionAPI {
         getStudyInfo: async function getStudyInfo() {
           utilsLogger.debug("called getStudyInfo ");
           return studyUtils.info();
+        },
+
+        /* Object of current dataPermissions (shield enabled true/false, pioneer enabled true/false) */
+        getDataPermissions: async function getDataPermissions() {
+          return dataPermissions.getDataPermissions();
         },
 
         /** Send Telemetry using appropriate shield or pioneer methods.
