@@ -733,12 +733,12 @@ class StudyUtils {
     }
     utilsLogger.debug(`telemetry: ${JSON.stringify(payload)}`);
 
-    // IFF it's a shield-study or error ping, which are few in number
+    // IF it's a shield-study or error ping, which are few in number
     if (bucket === "shield-study" || bucket === "shield-study-error") {
       this._internals.seenTelemetry[bucket].push(payload);
     }
 
-    // during developement, don't actually send
+    // during development, don't actually send
     if (!this.telemetryConfig.send) {
       utilsLogger.debug("NOT sending.  `telemetryConfig.send` is false");
       return false;

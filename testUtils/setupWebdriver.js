@@ -71,13 +71,13 @@ module.exports.setupWebdriver = {
     return driver;
   },
 
-  /** Install addon from (guessed or explicit) path
+  /** Install add-on from (guessed or explicit) path
    *
    * ADDON_ZIP
    *
    * @param {object} driver Configured Firefox webdriver
-   * @param {string} fileLocation location for addon xpi/zip
-   * @returns {Promise<void>} returns addon id)
+   * @param {string} fileLocation location for add-on xpi/zip
+   * @returns {Promise<void>} returns add-on id)
    */
   installAddon: async (driver, fileLocation) => {
     // references:
