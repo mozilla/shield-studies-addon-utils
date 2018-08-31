@@ -25,4 +25,25 @@ module.exports.preferences = {
       defaultValue,
     );
   },
+  /**
+   * Expose Preferences.set() so that tests can set the value of preferences
+   *
+   * @param {object} driver See Preferences.set()
+   * @param {string} prefName See Preferences.set()
+   * @param {any} prefValue See Preferences.set()
+   * @returns {Promise<*>} See Preferences.set()
+   */
+  set: async (driver, prefName, prefValue) => {
+    driver.setContext(Context.CHROME);
+    return driver.executeAsyncScript(
+      async ($prefName, $prefValue, callback) => {
+        ChromeUtils.import("resource://gre/modules/Preferences.jsm");
+        // eslint-disable-next-line no-undef
+        const result = Preferences.set($prefName, $prefValue);
+        callback(result);
+      },
+      prefName,
+      prefValue,
+    );
+  },
 };
