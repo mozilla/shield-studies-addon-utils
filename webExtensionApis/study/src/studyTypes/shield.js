@@ -35,7 +35,7 @@ class ShieldStudyType {
    * @param payload
    * @returns {*|Promise}
    */
-  sendTelemetry(bucket, payload) {
+  async sendTelemetry(bucket, payload) {
     const telOptions = { addClientId: true, addEnvironment: true };
     return TelemetryController.submitExternalPing(bucket, payload, telOptions);
   }
