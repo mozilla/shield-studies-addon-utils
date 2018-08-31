@@ -127,6 +127,9 @@ const publicApiTests = function(studyType) {
     if (addonId) {
       await utils.setupWebdriver.uninstallAddon(driver, addonId);
     }
+    if (studyType === "pioneer") {
+      await utils.setupWebdriver.installPioneerOptInAddon(driver);
+    }
     addonId = await utils.setupWebdriver.installAddon(driver);
   }
 

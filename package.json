@@ -86,6 +86,7 @@
     "lint:fixpack": "fixpack  # cleans up package.json",
     "postbuild": "if [ -z ${SKIPLINT} ]; then npm run format; fi",
     "postformat": "run-p lint:fixpack eslint-fix",
+    "postinstall": "bin/import-pioneer-opt-in.sh",
     "prebuild": "if [ -z ${SKIPLINT} ]; then npm run lint; fi",
     "prepare": "export SKIPLINT=1 && fixpack && npm run build",
     "pretest": "npm run build && npm run test-addon:bundle-utils && npm run test-addon:build",

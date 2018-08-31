@@ -30,6 +30,9 @@ const testAddonTests = function(studyType) {
       `extensions.${widgetId}.test.studyType`,
       studyType,
     );
+    if (studyType === "pioneer") {
+      await utils.setupWebdriver.installPioneerOptInAddon(driver);
+    }
     await utils.setupWebdriver.installAddon(driver);
     await utils.ui.openBrowserConsole(driver);
   });
