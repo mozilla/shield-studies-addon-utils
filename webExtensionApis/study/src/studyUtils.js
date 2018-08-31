@@ -265,6 +265,7 @@ class StudyUtils {
       throw new ExtensionError("StudyUtils is already setup");
     }
     guard.it("studySetup", studySetup, "(in studySetup)");
+    this._internals.studySetup = studySetup;
 
     // Different study types treat data and configuration differently
     if (studySetup.studyType === "shield") {
@@ -299,7 +300,6 @@ class StudyUtils {
     utilsLogger.debug(`setting up: variation ${variation.name}`);
 
     this._internals.variation = variation;
-    this._internals.studySetup = studySetup;
     this._internals.isSetup = true;
 
     // isFirstRun?  ever seen before?
