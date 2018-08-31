@@ -212,6 +212,9 @@
             type: boolean
           removeTestingFlag:
             type: boolean
+          internalTelemetryArchive:
+            optional: true
+            type: boolean
       testing:
         type: object
         properties:
@@ -250,7 +253,7 @@
         expire: { "days": 10},
         endings: {anEnding: {baseUrls: ['some.url']}},
         weightedVariations: [{name: feature-active, weight: 1.5}],
-        telemetry: {  send: false, removeTestingFlag: false},
+        telemetry: {  send: false, removeTestingFlag: false, internalTelemetryArchive: false},
         testing: {
           variationName: "something",
           firstRunTimestamp: 1234567890,
@@ -262,7 +265,7 @@
         studyType: 'pioneer',
         endings: {anEnding: {baseUrls: ['some.url']}},
         weightedVariations: [{name: feature-active, weight: 1.5}],
-        telemetry: {  send: false, removeTestingFlag: true},
+        telemetry: {  send: false, removeTestingFlag: true, internalTelemetryArchive: true},
         testing: {
           variationName: "something",
           firstRunTimestamp: 1234567890,
@@ -698,7 +701,7 @@
       - isSetup: bool   `setup`
       - isFirstRun: bool `setup`, based on pref
       - studySetup: bool  `setup` the config
-      - seenTelemetry: object of lists of seen telemetry by bucket
+      - seenTelemetry: array of seen telemetry. Fully populated only if studySetup.telemetry.internalTelemetryArchive is true
       - prefs: object of all created prefs and their names
 
     parameters: []

@@ -328,6 +328,10 @@
               },
               "removeTestingFlag": {
                 "type": "boolean"
+              },
+              "internalTelemetryArchive": {
+                "optional": true,
+                "type": "boolean"
               }
             }
           },
@@ -416,7 +420,8 @@
             ],
             "telemetry": {
               "send": false,
-              "removeTestingFlag": false
+              "removeTestingFlag": false,
+              "internalTelemetryArchive": false
             },
             "testing": {
               "variationName": "something",
@@ -440,7 +445,8 @@
             ],
             "telemetry": {
               "send": false,
-              "removeTestingFlag": true
+              "removeTestingFlag": true,
+              "internalTelemetryArchive": true
             },
             "testing": {
               "variationName": "something",
@@ -895,7 +901,7 @@
         "type": "function",
         "async": true,
         "description":
-          "Return `_internals` of the studyUtils object.\n\nUse this for debugging state.\n\nAbout `this._internals`:\n- variation:  (chosen variation, `setup` )\n- isEnding: bool  `endStudy`\n- isSetup: bool   `setup`\n- isFirstRun: bool `setup`, based on pref\n- studySetup: bool  `setup` the config\n- seenTelemetry: object of lists of seen telemetry by bucket\n- prefs: object of all created prefs and their names\n",
+          "Return `_internals` of the studyUtils object.\n\nUse this for debugging state.\n\nAbout `this._internals`:\n- variation:  (chosen variation, `setup` )\n- isEnding: bool  `endStudy`\n- isSetup: bool   `setup`\n- isFirstRun: bool `setup`, based on pref\n- studySetup: bool  `setup` the config\n- seenTelemetry: array of seen telemetry. Fully populated only if studySetup.telemetry.internalTelemetryArchive is true\n- prefs: object of all created prefs and their names\n",
         "parameters": []
       },
       {
