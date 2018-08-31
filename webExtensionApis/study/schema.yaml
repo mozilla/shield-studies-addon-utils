@@ -169,16 +169,20 @@
     - activeExperimentName
     - isFirstRun
 
-  #- id: dataPermissionsObject
-  #  type: object
-  #  additionalProperties: true
-  #  properties:
-  #    shield:
-  #      type:
-  #        boolean
-  #
-  #  required:
-  #  - shield
+  - id: dataPermissionsObject
+    type: object
+    additionalProperties: false
+    properties:
+      shield:
+        type:
+          boolean
+      pioneer:
+        type:
+          boolean
+
+    required:
+    - shield
+    - pioneer
 
   - id: studySetup
     $schema: "http://json-schema.org/draft-04/schema"
@@ -299,7 +303,7 @@
 
       - sets 'studyType' as Shield or Pioneer
         - affects telemetry
-        - (5.1 TODO) watches for dataPermission changes that should *always*
+        - (5.2+ TODO) watches for dataPermission changes that should *always*
           stop that kind of study
 
       - Use or choose variation
@@ -423,14 +427,14 @@
     returns:
     - $ref: studyInfoObject
 
-  # - name: getDataPermissions
-  #   type: function
-  #   async: true
-  #   description: object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'
-  #   defaultReturn: {shield: true, pioneer: false, telemetry: true, alwaysPrivateBrowsing: false}
-  #   parameters: []
-  #   returns:
-  #   - $ref: dataPermissionsObject
+  - name: getDataPermissions
+    type: function
+    async: true
+    description: Object of current dataPermissions (shield enabled true/false, pioneer enabled true/false)
+    defaultReturn: {shield: true, pioneer: false}
+    parameters: []
+    returns:
+    - $ref: dataPermissionsObject
 
   # telemetry related things
   - name: sendTelemetry
@@ -557,7 +561,7 @@
     - name: ending
       type: object
 
-  # TODO 5.1
+  # TODO 5.2+
   # - name: onDataPermissionsChange
   #   type: function
   #   defaultReturn: {shield: true, pioneer: false}
