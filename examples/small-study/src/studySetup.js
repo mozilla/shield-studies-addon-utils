@@ -99,10 +99,11 @@ const baseStudySetup = {
  *
  * This implementation caches in local storage to speed up second run.
  *
+ * @param {object} studySetup A complete study setup object
  * @returns {Promise<boolean>} answer An boolean answer about whether the user should be
  *       allowed to enroll in the study
  */
-async function cachingFirstRunShouldAllowEnroll() {
+async function cachingFirstRunShouldAllowEnroll(studySetup) {
   // Cached answer.  Used on 2nd run
   let allowed = await browser.storage.local.get("allowedEnrollOnFirstRun");
   if (allowed.allowedEnrollOnFirstRun === true) return true;
@@ -113,7 +114,13 @@ async function cachingFirstRunShouldAllowEnroll() {
   */
 
   // could have other reasons to be eligible, such add-ons, prefs
-  allowed = true;
+  const dataPermissions = await browser.study.getDataPermissions();
+  if (studySetup.studyType === "shield") {
+    allowed = dataPermissions.shield;
+  }
+  if (studySetup.studyType === "pioneer") {
+    allowed = dataPermissions.pioneer;
+  }
 
   // cache the answer
   await browser.storage.local.set({ allowedEnrollOnFirstRun: allowed });
@@ -129,7 +136,7 @@ async function getStudySetup() {
   // shallow copy
   const studySetup = Object.assign({}, baseStudySetup);
 
-  studySetup.allowEnroll = await cachingFirstRunShouldAllowEnroll();
+  studySetup.allowEnroll = await cachingFirstRunShouldAllowEnroll(studySetup);
 
   const testingOverrides = await browser.study.getTestingOverrides();
   studySetup.testing = {
@@ -137,5 +144,6 @@ async function getStudySetup() {
     firstRunTimestamp: testingOverrides.firstRunTimestamp,
     expired: testingOverrides.expired,
   };
+
   return studySetup;
 }
