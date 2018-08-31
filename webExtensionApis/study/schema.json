@@ -627,6 +627,14 @@
         ]
       },
       {
+        "name": "getTestingOverrides",
+        "type": "function",
+        "async": true,
+        "description":
+          "Returns an object with the following keys:\n  variationName - to be able to test specific variations\n  firstRunTimestamp - to be able to test the expiration event\n  expired - to be able to test the behavior of an already expired study\nUsed to override study testing flags in getStudySetup().\nThe values are set by the corresponding preference under the `extensions.${widgetId}.test.*` preference branch.\n",
+        "parameters": []
+      },
+      {
         "name": "validateJSON",
         "type": "function",
         "async": true,

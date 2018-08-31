@@ -9,6 +9,7 @@
 
 import { utilsLogger, createLogger } from "./logger";
 import makeWidgetId from "./makeWidgetId";
+import * as testingOverrides from "./testingOverrides";
 
 ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
@@ -342,6 +343,19 @@ this.study = class extends ExtensionAPI {
           utilsLogger.debug("called validateJSON someJson, jsonschema");
           return studyUtils.jsonschema.validate(someJson, jsonschema);
           // return { valid: true, errors: [] };
+        },
+
+        /* Returns an object with the following keys:
+    variationName - to be able to test specific variations
+    firstRunTimestamp - to be able to test the expiration event
+    expired - to be able to test the behavior of an already expired study
+  The values are set by the corresponding preference under the `extensions.${widgetId}.test.*` preference branch. */
+        getTestingOverrides: async function getTestingOverrides() {
+          utilsLogger.info(
+            "The preferences that can be used to override study testing flags: ",
+            testingOverrides.listPreferences(widgetId),
+          );
+          return testingOverrides.getTestingOverrides(widgetId);
         },
 
         /**

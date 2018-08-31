@@ -196,6 +196,17 @@ Usage scenarios:
   * $ref:
   * optional: false
 
+### `browser.study.getTestingOverrides( )`
+
+Returns an object with the following keys:
+variationName - to be able to test specific variations
+firstRunTimestamp - to be able to test the expiration event
+expired - to be able to test the behavior of an already expired study
+Used to override study testing flags in getStudySetup().
+The values are set by the corresponding preference under the `extensions.${widgetId}.test.*` preference branch.
+
+**Parameters**
+
 ### `browser.study.validateJSON( someJson, jsonschema )`
 
 Using AJV, do jsonschema validation of an object. Can be used to validate your arguments, packets at client.
