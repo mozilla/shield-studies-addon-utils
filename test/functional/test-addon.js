@@ -1,6 +1,7 @@
 /* eslint-env node, mocha */
 /* global browser */
 
+const KEEPOPEN = process.env.KEEPOPEN;
 /** Tests for
  *
  * - selenium/webdriver
@@ -13,7 +14,7 @@ const utils = require("./utils");
 
 describe("Tests verifying that the test add-on works as expected", function() {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
-  this.timeout(15000);
+  this.timeout(15000 + KEEPOPEN * 1000 * 3);
 
   let driver;
 
@@ -27,7 +28,12 @@ describe("Tests verifying that the test add-on works as expected", function() {
 
   // hint: skipping driver.quit() may be useful when debugging failed tests,
   // leaving the browser open allowing inspection of the ui and browser logs
-  after(() => driver.quit());
+  after(async () => {
+    if (KEEPOPEN) {
+      await driver.sleep(KEEPOPEN * 1000); // wait for KEEPOPEN seconds
+    }
+    driver.quit();
+  });
 
   it("should be able to access window.browser from the extension page for tests", async () => {
     const hasAccessToWebExtensionApi = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
