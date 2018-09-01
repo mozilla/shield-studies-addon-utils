@@ -331,6 +331,7 @@ class PioneerStudyType {
         JSON.stringify(payload),
       );
     }
+    return pingId;
   }
 }
 

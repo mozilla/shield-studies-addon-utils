@@ -729,22 +729,26 @@ class StudyUtils {
     }
     utilsLogger.debug(`telemetry: ${JSON.stringify(payload)}`);
 
+    let pingId;
+
+    // during development, don't actually send
+    if (!this.telemetryConfig.send) {
+      utilsLogger.debug("NOT sending.  `telemetryConfig.send` is false");
+      pingId = false;
+    } else {
+      pingId = await this.studyType.sendTelemetry(bucket, payload);
+    }
+
     // Store a copy of the ping if it's a shield-study or error ping, which are few in number, or if we have activated the internal telemetry archive configuration
     if (
       bucket === "shield-study" ||
       bucket === "shield-study-error" ||
       this.telemetryConfig.internalTelemetryArchive
     ) {
-      this._internals.seenTelemetry.push(payload);
+      this._internals.seenTelemetry.push({ id: pingId, payload });
     }
 
-    // during development, don't actually send
-    if (!this.telemetryConfig.send) {
-      utilsLogger.debug("NOT sending.  `telemetryConfig.send` is false");
-      return false;
-    }
-
-    return this.studyType.sendTelemetry(bucket, payload);
+    return pingId;
   }
 
   /**
