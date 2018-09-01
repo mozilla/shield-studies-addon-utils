@@ -665,8 +665,8 @@ const publicApiTests = function(studyType) {
             }); // Using reverse() to mimic the default sorting of telemetry archive results
           });
           // For debugging tests
-          // console.debug("Pings report: ", utils.telemetry.pingsReport(studyPings.sent));
-          // console.debug("Pings with id and payload: ", utils.telemetry.pingsDebug(studyPings.sent));
+          // console.debug("Pings report: ", utils.telemetry.pingsReport(studyPings.seen));
+          // console.debug("Pings with id and payload: ", utils.telemetry.pingsDebug(studyPings.seen));
         });
 
         it("should have set the experiment to active in Telemetry", async () => {
@@ -679,18 +679,6 @@ const publicApiTests = function(studyType) {
           );
         });
 
-        it("shield-study-addon telemetry should be working (as seen by telemetry)", async () => {
-          const filteredPings = studyPings.sent.filter(
-            ping => ping.type === "shield-study-addon",
-          );
-          assert(
-            filteredPings.length > 0,
-            "at least one shield-study-addon telemetry ping",
-          );
-          // console.debug("shield-study-addon pings", full(filteredPings));
-          assert(filteredPings[0].payload.data.attributes.foo === "bar");
-        });
-
         it("should have sent at least one shield telemetry ping", async () => {
           assert(
             studyPings.sent.length > 0,
@@ -698,52 +686,55 @@ const publicApiTests = function(studyType) {
           );
         });
 
-        it("should have sent one shield-study telemetry ping with study_state=enter", async () => {
-          const filteredPings = studyPings.sent.filter(
-            ping =>
-              ping.type === "shield-study" &&
-              ping.payload.data.study_state === "enter",
+        it("should have sent expected telemetry", async () => {
+          const observed = utils.telemetry.summarizePings(
+            studyType === "shield" ? studyPings.sent : studyPings.seen,
           );
-          assert(
-            filteredPings.length > 0,
-            "at least one shield-study telemetry ping with study_state=enter",
-          );
-        });
-
-        it("should have sent one shield-study telemetry ping with study_state=installed", async () => {
-          const filteredPings = studyPings.sent.filter(
-            ping =>
-              ping.type === "shield-study" &&
-              ping.payload.data.study_state === "installed",
-          );
-          assert(
-            filteredPings.length > 0,
-            "at least one shield-study telemetry ping with study_state=installed",
-          );
-        });
-
-        it("should have sent one shield-study-addon telemetry ping with payload.data.attributes.foo=bar", async () => {
-          const filteredPings = studyPings.sent.filter(
-            ping =>
-              ping.type === "shield-study-addon" &&
-              ping.payload.data.attributes.foo === "bar",
-          );
-          assert(
-            filteredPings.length > 0,
-            "at least one shield-study-addon telemetry ping with payload.data.attributes.foo=bar",
+          const expected = [
+            [
+              "shield-study-addon",
+              {
+                attributes: {
+                  foo: "bar",
+                },
+              },
+            ],
+            [
+              "shield-study",
+              {
+                study_state: "installed",
+              },
+            ],
+            [
+              "shield-study",
+              {
+                study_state: "enter",
+              },
+            ],
+          ];
+          assert.deepStrictEqual(
+            expected,
+            observed,
+            "telemetry pings as as expected",
           );
         });
       });
 
       describe("browser.study.endStudy() side effects for first time called", function() {
-        let endingResult;
+        let endingResult, endingInternals;
         before(async () => {
-          endingResult = await addonExec(async callback => {
+          const _ = await addonExec(async callback => {
             browser.study.onEndStudy.addListener(async _endingResult => {
-              callback(_endingResult);
+              const internals = await browser.studyDebug.getInternals();
+              callback({
+                endingResult: _endingResult,
+                endingInternals: internals,
+              });
             });
             await browser.study.endStudy("customEnding");
           });
+          endingResult = _.endingResult;
+          endingInternals = _.endingInternals;
           // let telemetry and disk/files sync up
           await delay(1000);
         });
@@ -792,6 +783,7 @@ const publicApiTests = function(studyType) {
 
           before(async () => {
             studyPings = {};
+            studyPings.seen = endingInternals.seenTelemetry.reverse();
             studyPings.sent = await utils.telemetry.searchSentTelemetry(
               driver,
               {
@@ -804,32 +796,60 @@ const publicApiTests = function(studyType) {
               },
             );
             // For debugging tests
-            // console.debug("Final pings report: ", utils.telemetry.pingsReport(studyPings));
-            // console.debug("Final pings with id and payload: ", utils.telemetry.pingsDebug(studyPings));
+            // console.debug("Final pings report: ", utils.telemetry.pingsReport(studyPings.seen));
+            // console.debug("Final pings with id and payload: ", utils.telemetry.pingsDebug(studyPings.seen));
           });
 
-          it("one shield-study telemetry ping with study_state=exit", async () => {
-            const filteredPings = studyPings.sent.filter(
-              ping =>
-                ping.type === "shield-study" &&
-                ping.payload.data.study_state === "exit",
-            );
+          it("should have sent at least one shield telemetry ping", async () => {
             assert(
-              filteredPings.length > 0,
-              "at least one shield-study telemetry ping with study_state=exit",
+              studyPings.sent.length > 0,
+              "at least one shield telemetry ping",
             );
           });
 
-          it("one shield-study telemetry ping with study_state_fullname=customEnding", async () => {
-            const filteredPings = studyPings.sent.filter(
-              ping =>
-                ping.type === "shield-study" &&
-                ping.payload.data.study_state === "ended-positive" &&
-                ping.payload.data.study_state_fullname === "customEnding",
+          it("should have sent expected telemetry", async () => {
+            const observed = utils.telemetry.summarizePings(
+              studyType === "shield" ? studyPings.sent : studyPings.seen,
             );
-            assert(
-              filteredPings.length > 0,
-              "at least one shield-study telemetry ping with study_state_fullname=customEnding",
+            const expected = [
+              [
+                "shield-study",
+                {
+                  study_state: "exit",
+                },
+              ],
+              [
+                "shield-study",
+                {
+                  study_state: "ended-positive",
+                  study_state_fullname: "customEnding",
+                },
+              ],
+              [
+                "shield-study-addon",
+                {
+                  attributes: {
+                    foo: "bar",
+                  },
+                },
+              ],
+              [
+                "shield-study",
+                {
+                  study_state: "installed",
+                },
+              ],
+              [
+                "shield-study",
+                {
+                  study_state: "enter",
+                },
+              ],
+            ];
+            assert.deepStrictEqual(
+              expected,
+              observed,
+              "telemetry pings as as expected",
             );
           });
         });
@@ -837,7 +857,7 @@ const publicApiTests = function(studyType) {
     });
 
     describe("setup of an ineligible study should result in endStudy('ineligible') without even emitting onReady", function() {
-      let endingResult;
+      let endingResult, endingInternals;
       const overrides = {
         activeExperimentName: "test:browser.study.api",
         telemetry: {
@@ -856,30 +876,30 @@ const publicApiTests = function(studyType) {
 
       before(async function reinstallSetupAndAwaitEndStudy() {
         await installAddon();
-        endingResult = await addonExec(
-          async (_studySetupForTests, callback) => {
-            // Ensure we have a configured study and are supposed to run our feature
-            browser.study.onEndStudy.addListener(async _endingResult => {
-              console.log(
-                "In resetSetupAndAwaitEndStudy - onEndStudy listener",
-                _endingResult,
-              );
-              callback(_endingResult);
+        const _ = await addonExec(async (_studySetupForTests, callback) => {
+          // Ensure we have a configured study and are supposed to run our feature
+          browser.study.onEndStudy.addListener(async _endingResult => {
+            console.log(
+              "In resetSetupAndAwaitEndStudy - onEndStudy listener",
+              _endingResult,
+            );
+            const internals = await browser.studyDebug.getInternals();
+            callback({
+              endingResult: _endingResult,
+              endingInternals: internals,
             });
-            browser.study.onReady.addListener(async _studyInfo => {
-              console.log(
-                "In resetSetupAndAwaitEndStudy - onReady listener",
-                _studyInfo,
-              );
-              throw new Error(
-                "onReady should not have been emitted",
-                _studyInfo,
-              );
-            });
-            await browser.study.setup(_studySetupForTests);
-          },
-          studySetupForTests(overrides),
-        );
+          });
+          browser.study.onReady.addListener(async _studyInfo => {
+            console.log(
+              "In resetSetupAndAwaitEndStudy - onReady listener",
+              _studyInfo,
+            );
+            throw new Error("onReady should not have been emitted", _studyInfo);
+          });
+          await browser.study.setup(_studySetupForTests);
+        }, studySetupForTests(overrides));
+        endingResult = _.endingResult;
+        endingInternals = _.endingInternals;
       });
 
       describe("browser.study.endStudy() side effects", function() {
@@ -910,6 +930,7 @@ const publicApiTests = function(studyType) {
 
           before(async () => {
             studyPings = {};
+            studyPings.seen = endingInternals.seenTelemetry.reverse();
             studyPings.sent = await utils.telemetry.searchSentTelemetry(
               driver,
               {
@@ -922,31 +943,46 @@ const publicApiTests = function(studyType) {
               },
             );
             // For debugging tests
-            // console.debug("Final pings report: ", utils.telemetry.pingsReport(studyPings));
-            // console.debug("Final pings with id and payload: ", utils.telemetry.pingsDebug(studyPings));
+            // console.debug("Final pings report: ", utils.telemetry.pingsReport(studyPings.seen));
+            // console.debug("Final pings with id and payload: ", utils.telemetry.pingsDebug(studyPings.seen));
           });
 
-          it("one shield-study telemetry ping with study_state=exit", async () => {
-            const filteredPings = studyPings.sent.filter(
-              ping =>
-                ping.type === "shield-study" &&
-                ping.payload.data.study_state === "exit",
-            );
+          it("should have sent at least one shield telemetry ping", async () => {
             assert(
-              filteredPings.length > 0,
-              "at least one shield-study telemetry ping with study_state=exit",
+              studyPings.sent.length > 0,
+              "at least one shield telemetry ping",
             );
           });
 
-          it("one shield-study telemetry ping with study_state=ineligible", async () => {
-            const filteredPings = studyPings.sent.filter(
-              ping =>
-                ping.type === "shield-study" &&
-                ping.payload.data.study_state === "ineligible",
+          it("should have sent expected telemetry", async () => {
+            const observed = utils.telemetry.summarizePings(
+              studyType === "shield" ? studyPings.sent : studyPings.seen,
             );
-            assert(
-              filteredPings.length > 0,
-              "at least one shield-study telemetry ping with study_state=ineligible",
+            const expected = [
+              [
+                "shield-study",
+                {
+                  study_state: "exit",
+                },
+              ],
+              [
+                "shield-study",
+                {
+                  study_state: "ineligible",
+                  study_state_fullname: "ineligible",
+                },
+              ],
+              [
+                "shield-study",
+                {
+                  study_state: "enter",
+                },
+              ],
+            ];
+            assert.deepStrictEqual(
+              expected,
+              observed,
+              "telemetry pings as as expected",
             );
           });
         });
@@ -954,7 +990,7 @@ const publicApiTests = function(studyType) {
     });
 
     describe("setup of an already expired study should result in endStudy('expired') without even emitting onReady", function() {
-      let endingResult;
+      let endingResult, endingInternals;
       const overrides = {
         activeExperimentName: "test:browser.study.api",
         telemetry: {
@@ -976,30 +1012,30 @@ const publicApiTests = function(studyType) {
 
       before(async function reinstallSetupAndAwaitEndStudy() {
         await installAddon();
-        endingResult = await addonExec(
-          async (_studySetupForTests, callback) => {
-            // Ensure we have a configured study and are supposed to run our feature
-            browser.study.onEndStudy.addListener(async _endingResult => {
-              console.log(
-                "In resetSetupAndAwaitEndStudy - onEndStudy listener",
-                _endingResult,
-              );
-              callback(_endingResult);
+        const _ = await addonExec(async (_studySetupForTests, callback) => {
+          // Ensure we have a configured study and are supposed to run our feature
+          browser.study.onEndStudy.addListener(async _endingResult => {
+            console.log(
+              "In resetSetupAndAwaitEndStudy - onEndStudy listener",
+              _endingResult,
+            );
+            const internals = await browser.studyDebug.getInternals();
+            callback({
+              endingResult: _endingResult,
+              endingInternals: internals,
             });
-            browser.study.onReady.addListener(async _studyInfo => {
-              console.log(
-                "In resetSetupAndAwaitEndStudy - onReady listener",
-                _studyInfo,
-              );
-              throw new Error(
-                "onReady should not have been emitted",
-                _studyInfo,
-              );
-            });
-            await browser.study.setup(_studySetupForTests);
-          },
-          studySetupForTests(overrides),
-        );
+          });
+          browser.study.onReady.addListener(async _studyInfo => {
+            console.log(
+              "In resetSetupAndAwaitEndStudy - onReady listener",
+              _studyInfo,
+            );
+            throw new Error("onReady should not have been emitted", _studyInfo);
+          });
+          await browser.study.setup(_studySetupForTests);
+        }, studySetupForTests(overrides));
+        endingResult = _.endingResult;
+        endingInternals = _.endingInternals;
       });
 
       describe("browser.study.endStudy() side effects", function() {
@@ -1030,6 +1066,7 @@ const publicApiTests = function(studyType) {
 
           before(async () => {
             studyPings = {};
+            studyPings.seen = endingInternals.seenTelemetry.reverse();
             studyPings.sent = await utils.telemetry.searchSentTelemetry(
               driver,
               {
@@ -1042,31 +1079,46 @@ const publicApiTests = function(studyType) {
               },
             );
             // For debugging tests
-            // console.debug("Final pings report: ", utils.telemetry.pingsReport(studyPings));
-            // console.debug("Final pings with id and payload: ", utils.telemetry.pingsDebug(studyPings));
+            // console.debug("Final pings report: ", utils.telemetry.pingsReport(studyPings.seen));
+            // console.debug("Final pings with id and payload: ", utils.telemetry.pingsDebug(studyPings.seen));
           });
 
-          it("one shield-study telemetry ping with study_state=exit", async () => {
-            const filteredPings = studyPings.sent.filter(
-              ping =>
-                ping.type === "shield-study" &&
-                ping.payload.data.study_state === "exit",
-            );
+          it("should have sent at least one shield telemetry ping", async () => {
             assert(
-              filteredPings.length > 0,
-              "at least one shield-study telemetry ping with study_state=exit",
+              studyPings.sent.length > 0,
+              "at least one shield telemetry ping",
             );
           });
 
-          it("one shield-study telemetry ping with study_state=expired", async () => {
-            const filteredPings = studyPings.sent.filter(
-              ping =>
-                ping.type === "shield-study" &&
-                ping.payload.data.study_state === "expired",
+          it("should have sent expected telemetry", async () => {
+            const observed = utils.telemetry.summarizePings(
+              studyType === "shield" ? studyPings.sent : studyPings.seen,
             );
-            assert(
-              filteredPings.length > 0,
-              "at least one shield-study telemetry ping with study_state=expired",
+            const expected = [
+              [
+                "shield-study",
+                {
+                  study_state: "exit",
+                },
+              ],
+              [
+                "shield-study",
+                {
+                  study_state: "expired",
+                  study_state_fullname: "expired",
+                },
+              ],
+              [
+                "shield-study",
+                {
+                  study_state: "enter",
+                },
+              ],
+            ];
+            assert.deepStrictEqual(
+              expected,
+              observed,
+              "telemetry pings as as expected",
             );
           });
         });
@@ -1074,7 +1126,7 @@ const publicApiTests = function(studyType) {
     });
 
     describe("setup of a study that expires within a few seconds should result in endStudy('expired') after a few seconds", function() {
-      let endingResult;
+      let endingResult, endingInternals;
       const now = Number(Date.now());
       const msInOneDay = 60 * 60 * 24 * 1000;
       const overrides = {
@@ -1101,50 +1153,54 @@ const publicApiTests = function(studyType) {
 
       before(async function reinstallSetupAndConfigureAlarm() {
         await installAddon();
-        endingResult = await addonExec(
-          async (_studySetupForTests, callback) => {
+        const _ = await addonExec(async (_studySetupForTests, callback) => {
+          console.log(
+            "In resetSetupAndConfigureAlarm - addonExec",
+            _studySetupForTests,
+          );
+          // Ensure we have a configured study and are supposed to run our feature
+          browser.study.onEndStudy.addListener(async _endingResult => {
             console.log(
-              "In resetSetupAndConfigureAlarm - addonExec",
-              _studySetupForTests,
+              "In resetSetupAndConfigureAlarm - onEndStudy listener",
+              _endingResult,
             );
-            // Ensure we have a configured study and are supposed to run our feature
-            browser.study.onEndStudy.addListener(async _endingResult => {
-              console.log(
-                "In resetSetupAndConfigureAlarm - onEndStudy listener",
-                _endingResult,
-              );
-              callback(_endingResult);
+            const internals = await browser.studyDebug.getInternals();
+            callback({
+              endingResult: _endingResult,
+              endingInternals: internals,
             });
-            browser.study.onReady.addListener(async _studyInfo => {
-              console.log(
-                "In resetSetupAndConfigureAlarm - onReady listener",
-                _studyInfo,
-              );
-              const { delayInMinutes } = _studyInfo;
-              if (delayInMinutes !== undefined) {
-                const alarmName = `${browser.runtime.id}:studyExpiration`;
-                const alarmListener = async alarm => {
-                  console.log(
-                    "In resetSetupAndConfigureAlarm - alarmListener",
-                    alarm,
-                  );
-                  if (alarm.name === alarmName) {
-                    browser.alarms.onAlarm.removeListener(alarmListener);
-                    await browser.study.endStudy("expired");
-                  }
-                };
-                console.log("Setting up alarm listener", alarmListener);
-                browser.alarms.onAlarm.addListener(alarmListener);
-                console.log("Creating alarm", alarmName, delayInMinutes);
-                browser.alarms.create(alarmName, {
-                  delayInMinutes,
-                });
-              }
-            });
-            await browser.study.setup(_studySetupForTests);
-          },
-          studySetupForTests(overrides),
-        );
+          });
+          browser.study.onReady.addListener(async _studyInfo => {
+            console.log(
+              "In resetSetupAndConfigureAlarm - onReady listener",
+              _studyInfo,
+            );
+            await browser.study.sendTelemetry({ foo: "bar" });
+            const { delayInMinutes } = _studyInfo;
+            if (delayInMinutes !== undefined) {
+              const alarmName = `${browser.runtime.id}:studyExpiration`;
+              const alarmListener = async alarm => {
+                console.log(
+                  "In resetSetupAndConfigureAlarm - alarmListener",
+                  alarm,
+                );
+                if (alarm.name === alarmName) {
+                  browser.alarms.onAlarm.removeListener(alarmListener);
+                  await browser.study.endStudy("expired");
+                }
+              };
+              console.log("Setting up alarm listener", alarmListener);
+              browser.alarms.onAlarm.addListener(alarmListener);
+              console.log("Creating alarm", alarmName, delayInMinutes);
+              browser.alarms.create(alarmName, {
+                delayInMinutes,
+              });
+            }
+          });
+          await browser.study.setup(_studySetupForTests);
+        }, studySetupForTests(overrides));
+        endingResult = _.endingResult;
+        endingInternals = _.endingInternals;
       });
 
       describe("browser.study.endStudy() side effects", function() {
@@ -1175,6 +1231,7 @@ const publicApiTests = function(studyType) {
 
           before(async () => {
             studyPings = {};
+            studyPings.seen = endingInternals.seenTelemetry.reverse();
             studyPings.sent = await utils.telemetry.searchSentTelemetry(
               driver,
               {
@@ -1187,31 +1244,48 @@ const publicApiTests = function(studyType) {
               },
             );
             // For debugging tests
-            // console.debug("Final pings report: ", utils.telemetry.pingsReport(studyPings));
-            // console.debug("Final pings with id and payload: ", utils.telemetry.pingsDebug(studyPings));
+            // console.debug("Final pings report: ", utils.telemetry.pingsReport(studyPings.seen));
+            // console.debug("Final pings with id and payload: ", utils.telemetry.pingsDebug(studyPings.seen));
           });
 
-          it("one shield-study telemetry ping with study_state=exit", async () => {
-            const filteredPings = studyPings.sent.filter(
-              ping =>
-                ping.type === "shield-study" &&
-                ping.payload.data.study_state === "exit",
-            );
+          it("should have sent at least one shield telemetry ping", async () => {
             assert(
-              filteredPings.length > 0,
-              "at least one shield-study telemetry ping with study_state=exit",
+              studyPings.sent.length > 0,
+              "at least one shield telemetry ping",
             );
           });
 
-          it("one shield-study telemetry ping with study_state=expired", async () => {
-            const filteredPings = studyPings.sent.filter(
-              ping =>
-                ping.type === "shield-study" &&
-                ping.payload.data.study_state === "expired",
+          it("should have sent expected telemetry", async () => {
+            const observed = utils.telemetry.summarizePings(
+              studyType === "shield" ? studyPings.sent : studyPings.seen,
             );
-            assert(
-              filteredPings.length > 0,
-              "at least one shield-study telemetry ping with study_state=expired",
+            const expected = [
+              [
+                "shield-study",
+                {
+                  study_state: "exit",
+                },
+              ],
+              [
+                "shield-study",
+                {
+                  study_state: "expired",
+                  study_state_fullname: "expired",
+                },
+              ],
+              [
+                "shield-study-addon",
+                {
+                  attributes: {
+                    foo: "bar",
+                  },
+                },
+              ],
+            ];
+            assert.deepStrictEqual(
+              expected,
+              observed,
+              "telemetry pings as as expected",
             );
           });
         });
