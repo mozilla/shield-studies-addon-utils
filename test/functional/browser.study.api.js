@@ -103,7 +103,7 @@ const publicApiTests = function(studyType) {
   }
 
   // This gives Firefox time to start, and us a bit longer during some of the tests.
-  this.timeout(15000 + KEEPOPEN * 1000 * 2);
+  this.timeout(30000 + KEEPOPEN * 1000 * 2);
 
   let driver;
   let addonId;
@@ -1147,7 +1147,7 @@ const publicApiTests = function(studyType) {
           },
         },
         testing: {
-          firstRunTimestamp: now - msInOneDay + 2000,
+          firstRunTimestamp: now - msInOneDay + 15000,
         },
       };
 

@@ -429,6 +429,14 @@ class StudyUtils {
       shieldId: this.getShieldId(),
       delayInMinutes: this.getDelayInMinutes(),
     };
+    const now = new Date();
+    const diff = Number(now) - studyInfo.firstRunTimestamp;
+    utilsLogger.debug(
+      "Study info date information: now, firstRunTimestamp and diff in minutes",
+      now,
+      new Date(studyInfo.firstRunTimestamp),
+      diff / 1000 / 60,
+    );
     guard.it("studyInfoObject", studyInfo, "(in studyInfo)");
     return studyInfo;
   }
