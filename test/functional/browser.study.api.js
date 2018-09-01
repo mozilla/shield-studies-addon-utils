@@ -1330,14 +1330,13 @@ const publicApiTests = function(studyType) {
     });
   });
 
-  describe("uninstall by users?", function() {});
-
-  // TODO 5.1
-  describe.skip("possible 5.1 future tests.", function() {
+  // TODO 5.2+
+  describe.skip("possible 5.2+ future tests.", function() {
+    describe("uninstall by users?", function() {});
 
     describe("surveyUrl", function() {
       describe("needs setup", function() {
-        it("throws StudyNotsSetupError  if not setup");
+        it("throws StudyNotSetupError  if not setup");
       });
       describe("correctly constructs urls queryArgs from profile info", function() {
         it("an example url is correct");
