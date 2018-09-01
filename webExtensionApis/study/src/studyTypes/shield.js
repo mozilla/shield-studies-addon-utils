@@ -33,7 +33,7 @@ class ShieldStudyType {
   /**
    * @param bucket
    * @param payload
-   * @returns {*|Promise}
+   * @returns {Promise<String>} The ID of the ping that was submitted
    */
   async sendTelemetry(bucket, payload) {
     const telOptions = { addClientId: true, addEnvironment: true };
