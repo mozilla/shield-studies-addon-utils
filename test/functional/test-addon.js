@@ -160,10 +160,10 @@ const testAddonTests = function(studyType) {
   });
 };
 
-describe("Tests verifying that the test add-on works as expected (studyType=shield)", function() {
+describe("Tests verifying that the test add-on works as expected (studyType: shield)", function() {
   testAddonTests.bind(this)("shield");
 });
 
-describe("Tests verifying that the test add-on works as expected (studyType=pioneer)", function() {
+describe("Tests verifying that the test add-on works as expected (studyType: pioneer)", function() {
   testAddonTests.bind(this)("pioneer");
 });
