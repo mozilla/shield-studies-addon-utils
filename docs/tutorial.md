@@ -83,7 +83,7 @@ Plumb the listener
 ## Good probes
 
 * good probes mirror the analysis.
-* Analysis wants to be sql. Try to make the probes reflect that.
+* Analysis wants to be SQL. Try to make the probes reflect that.
 
 ## Why Shield-Utils?
 

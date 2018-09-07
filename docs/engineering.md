@@ -36,7 +36,7 @@ This document describes general Shield Study Add-on engineering and is aimed at 
     * [Where are my pings?](#where-are-my-pings)
 * [Glossary](#glossary)
 * [OTHER DOCS](#other-docs)
-* [`StudyUtils.jsm` api used in `bootstrap.js`](#studyutilsjsm-api-used-in-bootstrapjs)
+* [`StudyUtils.jsm` API used in `bootstrap.js`](#studyutilsjsm-api-used-in-bootstrapjs)
   * [Configuration](#configuration)
   * [Lifecycle](#lifecycle)
   * [Running](#running)
@@ -89,7 +89,7 @@ The [template](https://github.com/mozilla/shield-studies-addon-template) contain
     * `addon/Config.jsm`
     * `addon/lib/*`
 
-3.  Build the legacy add-on xpi. Run **Nightly** with add-on
+3.  Build the legacy add-on XPI. Run **Nightly** with add-on
 
     ```
     npm run firefox
@@ -156,7 +156,7 @@ studyUtils.startup(ADDON_INSTALL);
 studyUtils.telemetry({ evt: "click", button: "share", times: "3" });
 ```
 
-4.  **Annotate Telemetry Enviroment** to mark the user as special, and copy every `main` and other ping to a special bucket for faster analysis.
+4.  **Annotate Telemetry Environment** to mark the user as special, and copy every `main` and other ping to a special bucket for faster analysis.
 
 **Links** for `studyUtils` code:
 
@@ -166,7 +166,7 @@ studyUtils.telemetry({ evt: "click", button: "share", times: "3" });
 
 ### Legacy Add-ons
 
-**Note**: to send Telemetry and see the ClientId, study add-ons require `Components.utils` (Chrome) privileges. Firefox webExtensions do not have those privileges. All Study Add-ons must be [Legacy Extensions][link-legacy].
+**Note**: to send Telemetry and see the ClientId, study add-ons require `Components.utils` (Chrome) privileges. Firefox WebExtensions do not have those privileges. All Study Add-ons must be [Legacy Extensions][link-legacy].
 
 A **Legacy Add-on** consists of:
 
@@ -362,7 +362,7 @@ studyUtils.endStudy("user-attempted-signup");
 
 ### Collector (example [s.t.m.o](http://sql.telemetry.mozilla.org/) query)
 
-[Example s.t.m.o study states query for "Pioneer Enrollement"][stmo-study-states] shows the Study lifecycle for every client in the Pioneer Enrollment study.
+[Example s.t.m.o study states query for "Pioneer Enrollment"][stmo-study-states] shows the Study lifecycle for every client in the Pioneer Enrollment study.
 
 ## Engineering Side-by-Side (a/b) Feature Variations
 
@@ -388,8 +388,8 @@ Note: this is a gloss / summary.
 Style:
 
 * Embedded Web Extension
-* Telmetry on 'button click'
-* has one "end early" condition: 3 or more button presses during a sesson.
+* Telemetry on 'button click'
+* has one "end early" condition: 3 or more button presses during a session.
 * Goal: test if interest rate is higher for kittens or puppies, using a PROXY MEASURE -- "button clicks"
 
 ## Get More Help
@@ -434,7 +434,7 @@ Debugging `Cu.import`.
 3.  Have you waited… 3-5 minutes?
 
 * All error messages are misleading. They almost always indicate issues with syntax. Sometimes they indicate misspelled fields.
-* No SEMI-COLONS at the end of your sql!
+* No SEMI-COLONS at the end of your SQL!
 * Athena >> Presto (10-20x faster!)
 * Be careful with single and double-quotes.
 
@@ -451,10 +451,10 @@ Debugging `Cu.import`.
 
   * should be edited for YOUR STUDY
   * move the general npm commands there
-  * links to 'about shield stuides' (in general)
-  * shield-study-addon-utils api
+  * links to 'about shield studies' (in general)
+  * shield-study-addon-utils API
 
-## `StudyUtils.jsm` api used in `bootstrap.js`
+## `StudyUtils.jsm` API used in `bootstrap.js`
 
 ### Configuration
 
@@ -497,7 +497,7 @@ Debugging `Cu.import`.
 * `studyUtils.endStudy(endingName)`
 
   * Send ending ping
-  * Open a url for that ending if defined
+  * Open a URL for that ending if defined
   * Uninstalls add-on
 
 ### Running
@@ -520,7 +520,7 @@ Debugging `Cu.import`.
 
 ### TODO
 
-Change SSAU api to this:
+Change SSAU API to this:
 
 * suggestVariation
 * setup(includes branch)
