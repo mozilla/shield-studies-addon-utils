@@ -101,7 +101,7 @@ If you haven't checked out [the template](https://github.com/mozilla/shield-stud
 
 ### `browser.study.*`
 
-[`browser.study` API documentation](./docs/study/api.md)
+[`browser.study` API documentation](./webExtensionApis/study/api.md)
 
 Provides these capabilities:
 
@@ -140,7 +140,7 @@ Depending on which data processing pipeline the study add-on is configured to us
 
 ### `browser.studyDebug.*`
 
-[`browser.studyDebug` API documentation](./docs/study/api.md)
+[`browser.studyDebug` API documentation](./webExtensionApis/study/api.md)
 
 Tools for writing tests, getting and resetting StudyUtils iternals.
 
