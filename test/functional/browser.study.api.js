@@ -106,6 +106,7 @@ const publicApiTests = function(studyType) {
   this.timeout(30000 + KEEPOPEN * 1000 * 2);
 
   let driver;
+  let beginTime;
   let addonId;
 
   // run in the extension page
@@ -115,7 +116,7 @@ const publicApiTests = function(studyType) {
     driver = await utils.setupWebdriver.promiseSetupDriver(
       utils.FIREFOX_PREFERENCES,
     );
-    installAddon();
+    await installAddon();
     await utils.ui.openBrowserConsole(driver);
 
     // make a shorter alias
@@ -126,8 +127,10 @@ const publicApiTests = function(studyType) {
   }
 
   async function installAddon() {
+    beginTime = Date.now();
     if (addonId) {
       await utils.setupWebdriver.uninstallAddon(driver, addonId);
+      addonId = null;
     }
     if (studyType === "pioneer") {
       await utils.setupWebdriver.installPioneerOptInAddon(driver);
@@ -793,6 +796,7 @@ const publicApiTests = function(studyType) {
                   "shield-study-error",
                   "pioneer-study",
                 ],
+                timestamp: beginTime,
               },
             );
             // For debugging tests
@@ -940,6 +944,7 @@ const publicApiTests = function(studyType) {
                   "shield-study-error",
                   "pioneer-study",
                 ],
+                timestamp: beginTime,
               },
             );
             // For debugging tests
@@ -1076,6 +1081,7 @@ const publicApiTests = function(studyType) {
                   "shield-study-error",
                   "pioneer-study",
                 ],
+                timestamp: beginTime,
               },
             );
             // For debugging tests
@@ -1241,6 +1247,7 @@ const publicApiTests = function(studyType) {
                   "shield-study-error",
                   "pioneer-study",
                 ],
+                timestamp: beginTime,
               },
             );
             // For debugging tests

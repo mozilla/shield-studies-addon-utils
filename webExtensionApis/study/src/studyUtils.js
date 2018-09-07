@@ -432,10 +432,12 @@ class StudyUtils {
     const now = new Date();
     const diff = Number(now) - studyInfo.firstRunTimestamp;
     utilsLogger.debug(
-      "Study info date information: now, firstRunTimestamp and diff in minutes",
+      "Study info date information: now, new Date(firstRunTimestamp), firstRunTimestamp, diff (in minutes), delayInMinutes",
       now,
       new Date(studyInfo.firstRunTimestamp),
+      studyInfo.firstRunTimestamp,
       diff / 1000 / 60,
+      studyInfo.delayInMinutes,
     );
     guard.it("studyInfoObject", studyInfo, "(in studyInfo)");
     return studyInfo;
