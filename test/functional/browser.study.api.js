@@ -1133,8 +1133,6 @@ const publicApiTests = function(studyType) {
 
     describe("setup of a study that expires within a few seconds should result in endStudy('expired') after a few seconds", function() {
       let endingResult, endingInternals;
-      const now = Number(Date.now());
-      const msInOneDay = 60 * 60 * 24 * 1000;
       const overrides = {
         activeExperimentName: "test:browser.study.api",
         telemetry: {
@@ -1153,12 +1151,17 @@ const publicApiTests = function(studyType) {
           },
         },
         testing: {
-          firstRunTimestamp: now - msInOneDay + 15000,
+          firstRunTimestamp: null, // needs to be set in the before-hook below in order to be executed just before the setup of the study
         },
       };
 
       before(async function reinstallSetupAndConfigureAlarm() {
         await installAddon();
+        // Set the study to expire after a few seconds
+        const now = Number(Date.now());
+        const msInOneDay = 60 * 60 * 24 * 1000;
+        overrides.testing.firstRunTimestamp = now - msInOneDay + 5000;
+        // console.log("Expiration debug: now, firstRunTimestamp, new Date(), new Date(now), new Date(firstRunTimestamp)", now, overrides.testing.firstRunTimestamp, new Date(), new Date(now), new Date(overrides.testing.firstRunTimestamp));
         const _ = await addonExec(async (_studySetupForTests, callback) => {
           console.log(
             "In resetSetupAndConfigureAlarm - addonExec",
