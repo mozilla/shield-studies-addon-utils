@@ -26,13 +26,13 @@ If you haven't checked out [the template](https://github.com/mozilla/shield-stud
 
 [The template](https://github.com/mozilla/shield-studies-addon-template) includes examples of unit tests and functional tests. After cloning the template, remove the example tests except https://github.com/mozilla/shield-studies-addon-template/blob/develop/test/functional/0-study_utils_integration.js, which is meant to remain in your study-specific add-on since it verifies that the study utils integration is working as expected.
 
-Unit tests currently can ONLY test helper methods in static classes, like Feature in feature.js. The karma tests are run without any access to browser.\* web extension api:s (since we have no way for Karma to run in a privileged WebExtension context at the moment). Thus, make sure to only test static helper methods in unit tests. Other tests needs to be written as functional tests. (There IS a way to write functional tests that act like unit tests, probing the privileged web extension APIs more or less directly, but it is ugly: https://github.com/mozilla/shield-studies-addon-utils/issues/125#issuecomment-379180930)
+Unit tests currently can ONLY test helper methods in static classes, like Feature in feature.js. The karma tests are run without any access to browser.\* web extension API:s (since we have no way for Karma to run in a privileged WebExtension context at the moment). Thus, make sure to only test static helper methods in unit tests. Other tests needs to be written as functional tests. (There IS a way to write functional tests that act like unit tests, probing the privileged web extension APIs more or less directly, but it is ugly: https://github.com/mozilla/shield-studies-addon-utils/issues/125#issuecomment-379180930)
 
 ## FAQ
 
 > Q: Is there any way to install my testing extension before signing it? Because I want to observe the behavior of my extension when people start browser after first shutdown the browser.
 
-A: Not yet, but @glind started som wip code on https://github.com/mozilla/shield-studies-addon-utils/pull/245 - feel free to expand on it and see if you can get it to work. it would be a valuable contribution for others - see https://github.com/mozilla/shield-studies-addon-utils/issues/143.
+A: Not yet, but @glind started some work-in-progress code on https://github.com/mozilla/shield-studies-addon-utils/pull/245 - feel free to expand on it and see if you can get it to work. it would be a valuable contribution for others - see https://github.com/mozilla/shield-studies-addon-utils/issues/143.
 
 > Q: Since every time I receive "ADDON_UNINSTALL" after shutdown browser if I use "$web-ext run" to test my extension. I want to know whether the " browser.study.onEndStudy" would be triggered when user close the browser? or it just triggers the ExtensionAPI::onShutdown()?
 
@@ -44,6 +44,6 @@ A: Use custom telemetry events if you have to roll your own pings. The fastest w
 
 ## Other hints / guidelines
 
-* Use empty constructors in feature.js. No study-specific code should be instantiated in feature.js constructor methods. Leave constructurs empty and instead instantiate feature logic feature.configure(). This way, we can ensure that there are no side-effects of the study add-on unless the study is confirmed to be eligible to run for the client.
+* Use empty constructors in feature.js. No study-specific code should be instantiated in feature.js constructor methods. Leave constructors empty and instead instantiate feature logic feature.configure(). This way, we can ensure that there are no side-effects of the study add-on unless the study is confirmed to be eligible to run for the client.
 * We put all the privileged code in `src/privileged` to make it easy for QA
-* The 'Firefox privileged' modules cannot use webExtension apis (`browserAction`, `management`, etc.). Use a `background.js` script (using messages and events) to co-ordinate multiple privileged modules.
+* The 'Firefox privileged' modules cannot use webExtension API:s (`browserAction`, `management`, etc.). Use a `background.js` script (using messages and events) to co-ordinate multiple privileged modules.

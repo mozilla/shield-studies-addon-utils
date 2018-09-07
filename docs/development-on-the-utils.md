@@ -42,7 +42,7 @@ Firefox WebExtension Experiments APIs providing capabilities for study add-ons t
 
 Goal: create the `study/api.js` and `study/schema.json` files that implement the `browser.study` WEE interface, for use by WebExtension Add-ons.
 
-1.  **Format** `eslint`, `prettier` all javascript code in all directories
+1.  **Format** `eslint`, `prettier` all JavaScript code in all directories
 2.  **Bundle** `webExtensionApis/study/api.js`, the `browser.study` WEE interface.
 
 * `webpack` `study/src/*` into `study/api.js`
@@ -58,7 +58,7 @@ Goal: create the `study/api.js` and `study/schema.json` files that implement the
 
 Our toolchain for making schemas: `schema.yaml => {schema.json, api.md}`
 
-* `webExtensionApis/study/schema.yaml` is the canonical source. Using Yaml allows easily multiline comments
+* `webExtensionApis/study/schema.yaml` is the canonical source. Using YAML allows easily multiline comments
 * `npm run build:schema`
 
       - converts `schema.yaml => schema.json`
@@ -67,7 +67,7 @@ Our toolchain for making schemas: `schema.yaml => {schema.json, api.md}`
 
 ## Testing overview: `npm run test`
 
-(If you are looking for ideas about QA for your study addon, see the FAQ.)
+(If you are looking for ideas about QA for your study add-on, see the FAQ.)
 
 Goal: Use `webdriver` to exercise the `browser.study` API to prove correctness.
 
@@ -77,13 +77,13 @@ Goal: Use `webdriver` to exercise the `browser.study` API to prove correctness.
 4.  Do tests:
 
     1.  `mocha` test runner uses files in `testUtils/` to
-    2.  Install the addon (using `webdriver`)
+    2.  Install the add-on (using `webdriver`)
     3.  Switch context to the panel, so that we can exercise `browser.study`. The function that does this: `setupWebDriver`
     4.  Run all tests. Most API tests are at: `test/functional/browser.study.api.js`
     5.  Most tests are of this `Selenium`/`WebDriver`/`GeckoDriver` form:
 
         * run some async code in the panel context using `addonExec`
-        * in that code, exercise the `browser.study` api.
+        * in that code, exercise the `browser.study` API.
         * callback with the results of `browser.study.setup()`, and/or `browser.studyDebug.getInternals()` as necessary.
         * use `node` `assert` to check the called back result.
 
@@ -95,7 +95,7 @@ Goal: Use `webdriver` to exercise the `browser.study` API to prove correctness.
 
   * We want `api.js` to be one file, for ease of use by study authors
   * We want the source to be broken up into logical pieces
-  * Firefox doens't come with a usable JSONSchema library (`Schema.jsm` isn't very usable.
+  * Firefox doesn't come with a usable JSONSchema library (`Schema.jsm` isn't very usable.
   * We want Jsonschema validation to guard args, and to send Telemetry
   * we use `webpack` to bundle src and AJV (jsonschema) into `api.js`
 
@@ -106,8 +106,8 @@ Goal: Use `webdriver` to exercise the `browser.study` API to prove correctness.
     * We are ignorant about Mochitest,
     * so we rebuilt a lot of things in Selenium / webDriver
 
-  * The things we are testing are mostly weird / hard addon edge cases
-    * a lot of the code is to simulate weird things like add-on install / unintall / startup / setup under weird combinations of conditions
+  * The things we are testing are mostly weird / hard add-on edge cases
+    * a lot of the code is to simulate weird things like add-on install / uninstall / startup / setup under weird combinations of conditions
 
 * What Telemetry is sent when?
 
@@ -135,7 +135,7 @@ Goal: Use `webdriver` to exercise the `browser.study` API to prove correctness.
 
   * IsFirstRun => user doesn't have the pref set for `{id}.firstRunTimestamp`
 
-  * IIF first run, then allowEnroll can make the user `ineligible`
+  * IF first run, then allowEnroll can make the user `ineligible`
 
 * Expiration
 
@@ -156,9 +156,9 @@ Goal: Use `webdriver` to exercise the `browser.study` API to prove correctness.
 - QA
 
   * put your 'jsm' files in `privileged` by convention.
-  * your addon can use prefs to override the `testing` fields in a `studySetup` (to choose a variation).
+  * your add-on can use prefs to override the `testing` fields in a `studySetup` (to choose a variation).
   * exercising all the study endings is hard. Ideas welcome.
-  * proving that your addon doesn't regress performance is hard. Ideas welcome.
+  * proving that your add-on doesn't regress performance is hard. Ideas welcome.
 
 ## File structure
 

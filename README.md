@@ -162,7 +162,7 @@ To use, copy and adjust the files as per the `study` API above.
 Repositories that should not be used as templates for new studies:
 
 * NO. <https://github.com/benmiroglio/shield-study-embedded-webextension-hello-world-example> - A repository that was created in 2017 to help new Shield/Pioneer engineers to quickly get up and running with a Shield add-on, built upon an older and much more verbose add-on template. It's documentation has been ported to the official template repo.
-* NO. <https://github.com/johngruen/shield-template> - Despite its name, this repo is for static amo consent pages and does not contain any template for Shield studies
+* NO. <https://github.com/johngruen/shield-template> - Despite its name, this repo is for static AMO consent pages and does not contain any template for Shield studies
 
 ## Development on the Shield-Studies-Addon-Utils
 
