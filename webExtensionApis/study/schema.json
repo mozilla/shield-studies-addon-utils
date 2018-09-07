@@ -26,6 +26,28 @@
         "testcases": [null, "a string"]
       },
       {
+        "id": "NullableBoolean",
+        "$schema": "http://json-schema.org/draft-04/schema",
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "boolean"
+          }
+        ],
+        "choices": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "boolean"
+          }
+        ],
+        "testcases": [null, true, false],
+        "failcases": ["1234567890", "foo", []]
+      },
+      {
         "id": "NullableInteger",
         "$schema": "http://json-schema.org/draft-04/schema",
         "oneOf": [
@@ -331,7 +353,7 @@
               },
               "internalTelemetryArchive": {
                 "optional": true,
-                "type": "boolean"
+                "$ref": "NullableBoolean"
               }
             }
           },

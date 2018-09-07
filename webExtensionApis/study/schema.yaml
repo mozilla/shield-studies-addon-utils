@@ -34,14 +34,25 @@
       {type: 'string'}]
     testcases: [null, 'a string']
 
+  - id: NullableBoolean
+    $schema: "http://json-schema.org/draft-04/schema"
+    oneOf: [
+    {type: 'null'},
+    {type: 'boolean'}]
+    choices: [
+    {type: 'null'},
+    {type: 'boolean'}]
+    testcases: [null, true, false]
+    failcases: ['1234567890', 'foo', []]
+
   - id: NullableInteger
     $schema: "http://json-schema.org/draft-04/schema"
     oneOf: [
-      {type: 'null'},
-      {type: 'integer'}]
+    {type: 'null'},
+    {type: 'integer'}]
     choices: [
-      {type: 'null'},
-      {type: 'integer'}]
+    {type: 'null'},
+    {type: 'integer'}]
     testcases: [null, 1234567890]
     failcases: ['1234567890', []]
 
@@ -214,7 +225,7 @@
             type: boolean
           internalTelemetryArchive:
             optional: true
-            type: boolean
+            $ref: NullableBoolean
       testing:
         type: object
         properties:

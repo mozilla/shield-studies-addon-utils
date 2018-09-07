@@ -290,7 +290,34 @@ Act on it by
 }
 ```
 
-### [1] NullableInteger
+### [1] NullableBoolean
+
+```json
+{
+  "id": "NullableBoolean",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "oneOf": [
+    {
+      "type": "null"
+    },
+    {
+      "type": "boolean"
+    }
+  ],
+  "choices": [
+    {
+      "type": "null"
+    },
+    {
+      "type": "boolean"
+    }
+  ],
+  "testcases": [null, true, false],
+  "failcases": ["1234567890", "foo", []]
+}
+```
+
+### [2] NullableInteger
 
 ```json
 {
@@ -317,7 +344,7 @@ Act on it by
 }
 ```
 
-### [2] NullableNumber
+### [3] NullableNumber
 
 ```json
 {
@@ -344,7 +371,7 @@ Act on it by
 }
 ```
 
-### [3] studyTypesEnum
+### [4] studyTypesEnum
 
 ```json
 {
@@ -357,7 +384,7 @@ Act on it by
 }
 ```
 
-### [4] weightedVariationObject
+### [5] weightedVariationObject
 
 ```json
 {
@@ -381,7 +408,7 @@ Act on it by
 }
 ```
 
-### [5] weightedVariationsArray
+### [6] weightedVariationsArray
 
 ```json
 {
@@ -414,7 +441,7 @@ Act on it by
 }
 ```
 
-### [6] anEndingRequest
+### [7] anEndingRequest
 
 ```json
 {
@@ -525,7 +552,7 @@ Act on it by
 }
 ```
 
-### [7] onEndStudyResponse
+### [8] onEndStudyResponse
 
 ```json
 {
@@ -547,7 +574,7 @@ Act on it by
 }
 ```
 
-### [8] studyInfoObject
+### [9] studyInfoObject
 
 ```json
 {
@@ -581,7 +608,7 @@ Act on it by
 }
 ```
 
-### [9] dataPermissionsObject
+### [10] dataPermissionsObject
 
 ```json
 {
@@ -600,7 +627,7 @@ Act on it by
 }
 ```
 
-### [10] studySetup
+### [11] studySetup
 
 ```json
 {
@@ -644,7 +671,7 @@ Act on it by
         },
         "internalTelemetryArchive": {
           "optional": true,
-          "type": "boolean"
+          "$ref": "NullableBoolean"
         }
       }
     },
@@ -818,7 +845,7 @@ Act on it by
 }
 ```
 
-### [11] telemetryPayload
+### [12] telemetryPayload
 
 ```json
 {
@@ -832,7 +859,7 @@ Act on it by
 }
 ```
 
-### [12] searchTelemetryQuery
+### [13] searchTelemetryQuery
 
 ```json
 {
@@ -870,7 +897,7 @@ Act on it by
 }
 ```
 
-### [13] anEndingAnswer
+### [14] anEndingAnswer
 
 ```json
 {
