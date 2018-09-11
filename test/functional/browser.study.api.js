@@ -57,7 +57,7 @@ function merge(...sources) {
   return Object.assign({}, ...sources);
 }
 
-const publicApiTests = function(studyType) {
+function publicApiTests(studyType) {
   /** return a studySetup, shallow merged from overrides
    *
    * @return {object} mergedStudySetup
@@ -1356,12 +1356,12 @@ const publicApiTests = function(studyType) {
       it("log level works?");
     });
   });
-};
+}
 
 describe("PUBLIC API `browser.study` (studyType: shield)", function() {
-  publicApiTests.bind(this)("shield");
+  publicApiTests.call(this, "shield");
 });
 
 describe("PUBLIC API `browser.study` (studyType: pioneer)", function() {
-  publicApiTests.bind(this)("pioneer");
+  publicApiTests.call(this, "pioneer");
 });
