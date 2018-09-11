@@ -295,7 +295,9 @@ class PioneerStudyType {
    * @returns {Promise<*>}
    */
   async sendTelemetry(bucket, payload) {
-    return this._telemetry(bucket, 1, payload);
+    const schemaName = bucket;
+    const schemaVersion = 3; // Corresponds to the schema versions used in https://github.com/mozilla-services/mozilla-pipeline-schemas/tree/dev/templates/telemetry/shield-study (and the shield-study-addon, shield-study-error equivalents)
+    return this._telemetry(schemaName, schemaVersion, payload);
   }
 
   /**
