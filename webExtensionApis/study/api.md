@@ -196,6 +196,17 @@ Usage scenarios:
   * $ref:
   * optional: false
 
+### `browser.study.getTestingOverrides( )`
+
+Returns an object with the following keys:
+variationName - to be able to test specific variations
+firstRunTimestamp - to be able to test the expiration event
+expired - to be able to test the behavior of an already expired study
+Used to override study testing flags in getStudySetup().
+The values are set by the corresponding preference under the `extensions.${widgetId}.test.*` preference branch.
+
+**Parameters**
+
 ### `browser.study.validateJSON( someJson, jsonschema )`
 
 Using AJV, do jsonschema validation of an object. Can be used to validate your arguments, packets at client.
@@ -838,6 +849,84 @@ Act on it by
   "additionalProperties": true
 }
 ```
+
+# Namespace: `browser.study.logger`
+
+For study developers to be able to log messages which are hidden by default but can
+be displayed via a preference (not currently possible with avoid console.{info,log,debug,warn,error}).
+Log messages will be prefixed with the add-on's widget id and the log level is controlled by the
+`shieldStudy.logLevel` preference.
+Note that since there is no way to handle an arbitrarily variable number of arguments in the schema,
+all values to log needs to be sent as a single variable.
+Usage example: await browser.study.logger.log("foo");
+Usage example (multiple things to log): await browser.study.logger.log(["foo", bar]);
+
+## Functions
+
+### `browser.study.logger.info( values )`
+
+Corresponds to console.info
+
+**Parameters**
+
+* `values`
+  * type: values
+  * $ref:
+  * optional: false
+
+### `browser.study.logger.log( values )`
+
+Corresponds to console.log
+
+**Parameters**
+
+* `values`
+  * type: values
+  * $ref:
+  * optional: false
+
+### `browser.study.logger.debug( values )`
+
+Corresponds to console.debug
+
+**Parameters**
+
+* `values`
+  * type: values
+  * $ref:
+  * optional: false
+
+### `browser.study.logger.warn( values )`
+
+Corresponds to console.warn
+
+**Parameters**
+
+* `values`
+  * type: values
+  * $ref:
+  * optional: false
+
+### `browser.study.logger.error( values )`
+
+Corresponds to console.error
+
+**Parameters**
+
+* `values`
+  * type: values
+  * $ref:
+  * optional: false
+
+## Events
+
+(None)
+
+## Properties TBD
+
+## Data Types
+
+(None)
 
 # Namespace: `browser.studyDebug`
 

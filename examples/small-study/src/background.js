@@ -74,7 +74,7 @@ class StudyLifeCycleHandler {
    * @returns {undefined}
    */
   async enableFeature(studyInfo) {
-    console.log("Enabling experiment", studyInfo);
+    await browser.study.logger.log(["Enabling experiment", studyInfo]);
     const { delayInMinutes } = studyInfo;
     if (delayInMinutes !== undefined) {
       const alarmName = `${browser.runtime.id}:studyExpiration`;
@@ -102,19 +102,19 @@ class StudyLifeCycleHandler {
    * @returns {undefined}
    */
   async handleStudyEnding(ending) {
-    console.log(`Study wants to end:`, ending);
+    await browser.study.logger.log([`Study wants to end:`, ending]);
     for (const url of ending.urls) {
       await browser.tabs.create({ url });
     }
     switch (ending.endingName) {
       // could have different actions depending on positive / ending names
       default:
-        console.log(`The ending: ${ending.endingName}`);
+        await browser.study.logger.log(`The ending: ${ending.endingName}`);
         await this.cleanup();
         break;
     }
     // actually remove the addon.
-    console.log("About to actually uninstall");
+    await browser.study.logger.log("About to actually uninstall");
     return browser.management.uninstallSelf();
   }
 }
@@ -137,11 +137,11 @@ class ButtonFeature {
         browser.study.endStudy("user-used-the-feature");
       }
     });
-    console.log(
+    await browser.study.logger.log([
       `Setting the browser action title to the variation name: '${
         studyInfo.variation.name
       }'`,
-    );
+    ]);
     await browser.browserAction.setTitle({ title: studyInfo.variation.name });
   }
 }
@@ -158,7 +158,7 @@ async function onEveryExtensionLoad() {
   new StudyLifeCycleHandler();
 
   const studySetup = await getStudySetup();
-  console.log("Study setup: ", studySetup);
+  await browser.study.logger.log(["Study setup: ", studySetup]);
   await browser.study.setup(studySetup);
 }
 onEveryExtensionLoad();

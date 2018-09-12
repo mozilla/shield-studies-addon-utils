@@ -7,12 +7,14 @@
  * 3.  Does NOT handle 'user-disable' surveys, see #194
  */
 
-import logger from "./logger";
+import { utilsLogger, createLogger } from "./logger";
+import makeWidgetId from "./makeWidgetId";
+import * as testingOverrides from "./testingOverrides";
 
 ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 
-logger.debug("loading web extension experiment study/api.js");
+utilsLogger.debug("loading web extension experiment study/api.js");
 
 /* eslint-disable no-undef */
 const { EventManager } = ExtensionCommon;
@@ -52,7 +54,7 @@ this.study = class extends ExtensionAPI {
      */
     this.extension = extension;
     this.studyApiEventEmitter = new StudyApiEventEmitter();
-    logger.debug("constructed!");
+    utilsLogger.debug("constructed!");
   }
 
   /**
@@ -68,12 +70,12 @@ this.study = class extends ExtensionAPI {
    * @returns {undefined}
    */
   async onShutdown(shutdownReason) {
-    logger.debug("possible uninstalling", shutdownReason);
+    utilsLogger.debug("possible uninstalling", shutdownReason);
     if (
       shutdownReason === "ADDON_UNINSTALL" ||
       shutdownReason === "ADDON_DISABLE"
     ) {
-      logger.debug("definitely uninstall | disable", shutdownReason);
+      utilsLogger.debug("definitely uninstall | disable", shutdownReason);
       const anEndingAlias = "user-disable";
       const endingResponse = await this.studyUtils.endStudy(anEndingAlias);
       // See #194, getApi is already torn down, so cannot hear it.
@@ -101,8 +103,12 @@ this.study = class extends ExtensionAPI {
     studyUtils.setExtensionManifest(extension.manifest);
     studyUtils._internals = studyUtils._createInternals();
 
+    // for add-on logging via browser.study.logger.log()
+    const widgetId = makeWidgetId(extension.manifest.applications.gecko.id);
+    const addonLogger = createLogger(widgetId, `shieldStudy.logLevel`);
+
     async function endStudy(anEndingAlias) {
-      logger.debug("called endStudy anEndingAlias");
+      utilsLogger.debug("called endStudy anEndingAlias");
       const endingResponse = await studyUtils.endStudy(anEndingAlias);
       studyApiEventEmitter.emitEndStudy(endingResponse);
     }
@@ -172,7 +178,7 @@ this.study = class extends ExtensionAPI {
           // function when the study is initialized
           if (studyInfo.isFirstRun) {
             if (!studySetup.allowEnroll) {
-              logger.debug("User is ineligible, ending study.");
+              utilsLogger.debug("User is ineligible, ending study.");
               // 1. uses studySetup.endings.ineligible.url if any,
               // 2. sends UT for "ineligible"
               // 3. then uninstalls add-on
@@ -182,7 +188,7 @@ this.study = class extends ExtensionAPI {
           }
 
           if (studyInfo.delayInMinutes === 0) {
-            logger.debug("encountered already expired study");
+            utilsLogger.debug("encountered already expired study");
             await endStudy("expired");
             return studyUtils.info();
           }
@@ -196,12 +202,12 @@ this.study = class extends ExtensionAPI {
 
           // update what the study variation and other info is.
           studyInfo = studyUtils.info();
-          logger.debug(`api info: ${JSON.stringify(studyInfo)}`);
+          utilsLogger.debug(`api info: ${JSON.stringify(studyInfo)}`);
           try {
             studyApiEventEmitter.emitReady(studyInfo);
           } catch (e) {
-            logger.error("browser.study.setup error");
-            logger.error(e);
+            utilsLogger.error("browser.study.setup error");
+            utilsLogger.error(e);
           }
           return studyUtils.info();
         },
@@ -261,7 +267,7 @@ this.study = class extends ExtensionAPI {
          *  Throws ExtensionError if called before `browser.study.setup`
          **/
         getStudyInfo: async function getStudyInfo() {
-          logger.debug("called getStudyInfo ");
+          utilsLogger.debug("called getStudyInfo ");
           return studyUtils.info();
         },
 
@@ -286,7 +292,7 @@ this.study = class extends ExtensionAPI {
          * @returns {undefined}
          */
         sendTelemetry: async function sendTelemetry(payload) {
-          logger.debug("called sendTelemetry payload");
+          utilsLogger.debug("called sendTelemetry payload");
 
           function throwIfInvalid(obj) {
             // Check: all keys and values must be strings,
@@ -334,9 +340,22 @@ this.study = class extends ExtensionAPI {
 
         /* Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client. */
         validateJSON: async function validateJSON(someJson, jsonschema) {
-          logger.debug("called validateJSON someJson, jsonschema");
+          utilsLogger.debug("called validateJSON someJson, jsonschema");
           return studyUtils.jsonschema.validate(someJson, jsonschema);
           // return { valid: true, errors: [] };
+        },
+
+        /* Returns an object with the following keys:
+    variationName - to be able to test specific variations
+    firstRunTimestamp - to be able to test the expiration event
+    expired - to be able to test the behavior of an already expired study
+  The values are set by the corresponding preference under the `extensions.${widgetId}.test.*` preference branch. */
+        getTestingOverrides: async function getTestingOverrides() {
+          utilsLogger.info(
+            "The preferences that can be used to override study testing flags: ",
+            testingOverrides.listPreferences(widgetId),
+          );
+          return testingOverrides.getTestingOverrides(widgetId);
         },
 
         /**
@@ -372,6 +391,33 @@ this.study = class extends ExtensionAPI {
             studyApiEventEmitter.off("endStudy", listener);
           };
         }).api(),
+
+        logger: {
+          /* Corresponds to console.info */
+          info: async function info(values) {
+            addonLogger.info(values);
+          },
+
+          /* Corresponds to console.log */
+          log: async function log(values) {
+            addonLogger.log(values);
+          },
+
+          /* Corresponds to console.debug */
+          debug: async function debug(values) {
+            addonLogger.debug(values);
+          },
+
+          /* Corresponds to console.warn */
+          warn: async function warn(values) {
+            addonLogger.warn(values);
+          },
+
+          /* Corresponds to console.error */
+          error: async function error(values) {
+            addonLogger.error(values);
+          },
+        },
       },
 
       studyDebug: {

@@ -137,11 +137,12 @@ async function getStudySetup() {
   const studySetup = Object.assign({}, baseStudySetup);
 
   studySetup.allowEnroll = await cachingFirstRunShouldAllowEnroll();
+
+  const testingOverrides = await browser.study.getTestingOverrides();
   studySetup.testing = {
-    /* Example: override testing keys various ways, such as by prefs. (TODO) */
-    variationName: null, // await browser.prefs.getStringPref(prefs.variationName);
-    firstRunTimestamp: null,
-    expired: null,
+    variationName: testingOverrides.variationName,
+    firstRunTimestamp: testingOverrides.firstRunTimestamp,
+    expired: testingOverrides.expired,
   };
   return studySetup;
 }

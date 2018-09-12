@@ -1,7 +1,7 @@
 {
   "name": "shield-studies-addon-utils",
   "description": "Utilities for building Shield-Study Mozilla Firefox add-ons.",
-  "version": "5.0.4",
+  "version": "5.1.0",
   "author": "Mozilla",
   "bin": {
     "copyStudyUtils": "bin/copyStudyUtils.js"
