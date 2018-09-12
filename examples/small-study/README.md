@@ -36,7 +36,7 @@ npm start    # web-ext run
 
 ## short description flow and description
 
-1.  `manifest.json` maps `experiment_apis` to make lazy gettrers at `browser.study`
+1.  `manifest.json` maps `experiment_apis` to make lazy getters at `browser.study`
 2.  Background loads
 
     * `studySetup.js`, a mostly declarative configuration for the study.
