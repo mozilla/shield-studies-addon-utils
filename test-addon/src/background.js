@@ -114,7 +114,15 @@ class ButtonFeature {
     console.log(
       "Feature is now enabled, sending 'test:onFeatureEnabled' event (for the tests)",
     );
-    browser.runtime.sendMessage("test:onFeatureEnabled").catch(console.error);
+    const internals = await browser.studyDebug.getInternals();
+    const updatedStudyInfo = await browser.study.getStudyInfo();
+    const informationForTests = {
+      message: "test:onFeatureEnabled",
+      internals,
+      studyInfo,
+      updatedStudyInfo,
+    };
+    browser.runtime.sendMessage(informationForTests).catch(console.error);
   }
 }
 

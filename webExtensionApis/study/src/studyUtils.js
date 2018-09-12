@@ -258,7 +258,7 @@ class StudyUtils {
   }
 
   /**
-   * Validates the studySetup object passed in from the addon.
+   * Validates the studySetup object passed in from the add-on.
    * @param {Object} studySetup - the studySetup object, see schema.studySetup.json
    * @returns {StudyUtils} - the StudyUtils class instance
    */
@@ -441,7 +441,7 @@ class StudyUtils {
 
   /**
    * Get the telemetry configuration for the study.
-   * @returns {Object} - the telemetry cofiguration, see schema.studySetup.json
+   * @returns {Object} - the telemetry configuration, see schema.studySetup.json
    */
   get telemetryConfig() {
     this.throwIfNotSetup("telemetryConfig");
@@ -475,7 +475,7 @@ class StudyUtils {
   }
 
   /**
-   * Sends an 'enter' telemetry ping for the study; should be called on addon
+   * Sends an 'enter' telemetry ping for the study; should be called on add-on
    * startup for the reason ADDON_INSTALL. For more on study states like 'enter'
    * see ABOUT.md at github.com/mozilla/shield-studies-addon-template
    *
@@ -531,7 +531,7 @@ class StudyUtils {
   /**
    * Adds the study to the active list of telemetry experiments and sends the
    * "installed" telemetry ping if applicable
-   * @param {string} reason - The reason the addon has started up
+   * @param {string} reason - The reason the add-on has started up
    * @returns {void}
    */
   async startup() {
@@ -710,7 +710,7 @@ class StudyUtils {
     try {
       validation = jsonschema.validate(payload, schemas[bucket]);
     } catch (err) {
-      // Catch failures of unknown origin (could be library, addon, system...)
+      // Catch failures of unknown origin (could be library, add-on, system...)
       // if validation broke, GIVE UP.
       logger.error(err);
       return false;
@@ -752,7 +752,7 @@ class StudyUtils {
   }
 
   /**
-   * Validates and submits telemetry pings from the addon; mostly from
+   * Validates and submits telemetry pings from the add-on; mostly from
    * webExtension messages.
    * @param {Object} data - the data to send as part of the telemetry packet
    * @returns {Promise|boolean} - see StudyUtils._telemetry

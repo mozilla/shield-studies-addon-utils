@@ -101,7 +101,7 @@ function studySetupForTests(...overrides) {
 
 describe("PUBLIC API `browser.study` (not specific to any add-on background logic)", function() {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
-  this.timeout(15000);
+  this.timeout(15000 + KEEPOPEN * 1000 * 2);
 
   let driver;
   let addonId;
@@ -131,7 +131,12 @@ describe("PUBLIC API `browser.study` (not specific to any add-on background logi
 
   // hint: skipping driver.quit() may be useful when debugging failed tests,
   // leaving the browser open allowing inspection of the ui and browser logs
-  after(() => !KEEPOPEN && driver.quit());
+  after(async () => {
+    if (KEEPOPEN) {
+      await driver.sleep(KEEPOPEN * 1000); // wait for KEEPOPEN seconds
+    }
+    driver.quit();
+  });
 
   /* Reset a study */
   async function resetStudy() {

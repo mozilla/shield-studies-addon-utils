@@ -17,7 +17,7 @@ jobs:
       # Download and cache dependencies (update the cache keys to force a newer version)
       - restore_cache:
           keys:
-          - dependencies-and-browsers-{{ checksum "package.json" }}-20180707
+          - dependencies-and-browsers-{{ checksum "package.json" }}-20180831
 
       - run:
           name: Install dependencies
@@ -41,7 +41,7 @@ jobs:
             - firefox-beta
             - firefox-release
             - firefox-unbranded-release
-          key: dependencies-and-browsers-{{ checksum "package.json" }}-20180707
+          key: dependencies-and-browsers-{{ checksum "package.json" }}-20180831
 
       - run:
           name: Reveal which Firefox versions are installed
@@ -62,19 +62,24 @@ jobs:
 
       - store_artifacts:
           path: "test-addon/dist"
+          destination: "test-addon/dist"
 
       # Needs signed add-on to work on branded releases
       #- run:
       #    name: Test with Firefox Release
-      #    command: FIREFOX_BINARY=/home/circleci/checkout/firefox-release/firefox-bin npm run test-only
+      #    command: FIREFOX_BINARY=/home/circleci/checkout/firefox-release/firefox-bin npm run test:func && mkdir test/results/logs-release && mv test/results/logs/* test/results/logs-release/
       #- run:
       #    name: Test with Firefox Beta
-      #    command: FIREFOX_BINARY=/home/circleci/checkout/firefox-beta/firefox-bin npm run test-only
+      #    command: FIREFOX_BINARY=/home/circleci/checkout/firefox-beta/firefox-bin npm run test:func && mkdir test/results/logs-beta && mv test/results/logs/* test/results/logs-beta/
 
       - run:
           name: Test with Firefox Developer Edition
-          command: FIREFOX_BINARY=/home/circleci/checkout/firefox-devedition/firefox-bin npm run test-only
+          command: FIREFOX_BINARY=/home/circleci/checkout/firefox-devedition/firefox-bin npm run test:func && mkdir test/results/logs-devedition && mv test/results/logs/* test/results/logs-devedition/
 
       - run:
           name: Test with Firefox Nightly
-          command: FIREFOX_BINARY=/home/circleci/checkout/firefox-nightly/firefox-bin npm run test-only
+          command: FIREFOX_BINARY=/home/circleci/checkout/firefox-nightly/firefox-bin npm run test:func && mkdir test/results/logs-nightly && mv test/results/logs/* test/results/logs-nightly/
+
+      - store_artifacts:
+          path: "test/results"
+          destination: "test/results"

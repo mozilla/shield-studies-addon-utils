@@ -1,6 +1,7 @@
 /* eslint-env node, mocha */
 /* global browser */
 
+const KEEPOPEN = process.env.KEEPOPEN;
 /** Tests for
  *
  * - selenium/webdriver
@@ -13,7 +14,7 @@ const utils = require("./utils");
 
 describe("Tests verifying that the test add-on works as expected", function() {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
-  this.timeout(15000);
+  this.timeout(15000 + KEEPOPEN * 1000 * 3);
 
   let driver;
 
@@ -27,7 +28,12 @@ describe("Tests verifying that the test add-on works as expected", function() {
 
   // hint: skipping driver.quit() may be useful when debugging failed tests,
   // leaving the browser open allowing inspection of the ui and browser logs
-  after(() => driver.quit());
+  after(async () => {
+    if (KEEPOPEN) {
+      await driver.sleep(KEEPOPEN * 1000); // wait for KEEPOPEN seconds
+    }
+    driver.quit();
+  });
 
   it("should be able to access window.browser from the extension page for tests", async () => {
     const hasAccessToWebExtensionApi = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
@@ -50,11 +56,16 @@ describe("Tests verifying that the test add-on works as expected", function() {
   });
 
   describe('test the test add-on\'s "onEveryExtensionLoad" process', function() {
+    // For unknown reasons, whenever we query browser.studyDebug.getInternals() or browser.study.getStudyInfo()
+    // from this test, a clean state is encountered. Instead, we let the relevant information be sent via messaging
+    // to test, stored in the following variable:
+    let informationFromAddon;
+
     /**
      * Before running the tests in this group, trigger onEveryExtensionLoad and wait for the study to be running
      */
     before(async () => {
-      await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
+      informationFromAddon = await utils.executeJs.executeAsyncScriptInExtensionPageForTests(
         driver,
         async callback => {
           // Let the test add-on know it is time to load the background logic
@@ -63,13 +74,24 @@ describe("Tests verifying that the test add-on works as expected", function() {
             .catch(console.error);
 
           // Wait for the feature to be enabled before continuing with the test assertions
-          browser.runtime.onMessage.addListener(request => {
+          browser.runtime.onMessage.addListener(async request => {
             console.log("test:onFeatureEnabled listener - request:", request);
-            if (request === "test:onFeatureEnabled") {
-              callback();
+            if (request.message === "test:onFeatureEnabled") {
+              callback(request);
             }
           });
         },
+      );
+      // console.log("informationFromAddon", informationFromAddon);
+    });
+
+    it("should have chosen one of the study's variations", async () => {
+      const chosenVariation = informationFromAddon.studyInfo.variation;
+      assert(chosenVariation);
+      assert(
+        chosenVariation.name === "feature-active" ||
+          chosenVariation.name === "feature-passive" ||
+          chosenVariation.name === "control",
       );
     });
 
