@@ -4,7 +4,8 @@
   "version": "5.1.1",
   "author": "Mozilla",
   "bin": {
-    "copyStudyUtils": "bin/copyStudyUtils.js"
+    "copyStudyUtils": "bin/copyStudyUtils.js",
+    "importPioneerOptIn": "bin/import-pioneer-opt-in.sh"
   },
   "bugs": {
     "url": "https://github.com/mozilla/shield-studies-addon-utils/issues"
@@ -42,6 +43,7 @@
   },
   "files": [
     "bin/copyStudyUtils.js",
+    "bin/import-pioneer-opt-in.sh",
     "testUtils",
     "webExtensionApis/study/api.js",
     "webExtensionApis/study/schema.json",
