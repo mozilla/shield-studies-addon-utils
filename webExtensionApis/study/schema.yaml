@@ -456,18 +456,14 @@
     description: |
       Send Telemetry using appropriate shield or pioneer methods.
 
-      shield:
+      shield & pioneer sends using the following schema:
       - `shield-study-addon` ping, requires object string keys and string values
-
-      pioneer:
-      - TBD
 
       Note:
       - no conversions / coercion of data happens.
 
       Note:
       - undefined what happens if validation fails
-      - undefined what happens when you try to send 'shield' from 'pioneer'
 
       TBD fix the parameters here.
 
@@ -478,6 +474,26 @@
 
     defaultReturn: undefined  # exception if out of policy based on config
     returns:
+
+  - name: calculateTelemetryPingSize
+    type: function
+    description: |
+      Calculate Telemetry using appropriate shield or pioneer methods.
+
+      shield:
+      - Calculate the size of a ping
+
+      pioneer:
+      - Calculate the size of a ping that has Pioneer encrypted data
+
+    async: true
+    parameters:
+    - name: payload
+      $ref: telemetryPayload
+
+    defaultReturn: undefined
+    returns:
+    - type: number
 
   - name: searchSentTelemetry
     type: function

@@ -3,6 +3,7 @@
 
 import { utilsLogger } from "../logger";
 import * as dataPermissions from "../dataPermissions";
+import { getPingSize } from "../getPingSize";
 
 const { Services } = ChromeUtils.import(
   "resource://gre/modules/Services.jsm",
@@ -102,25 +103,6 @@ class PioneerUtils {
   }
 
   /**
-   * Calculate the size of a ping.
-   *
-   * @param {Object} payload
-   *   The data payload of the ping.
-   *
-   * @returns {Number}
-   *   The total size of the ping.
-   */
-  getPingSize(payload) {
-    const converter = Cc[
-      "@mozilla.org/intl/scriptableunicodeconverter"
-    ].createInstance(Ci.nsIScriptableUnicodeConverter);
-    converter.charset = "UTF-8";
-    let utf8Payload = converter.ConvertFromUnicode(JSON.stringify(payload));
-    utf8Payload += converter.Finish();
-    return utf8Payload.length;
-  }
-
-  /**
    * @private
    * @param {String} data The data to encrypt
    * @returns {String} The encrypted data
@@ -156,27 +138,6 @@ class PioneerUtils {
       schemaName,
       schemaVersion,
     };
-  }
-
-  /**
-   * Calculate the size of a ping that has Pioneer encrypted data.
-   *
-   * @param {String} schemaName
-   *   The name of the schema to be used for validation.
-   *
-   * @param {int} schemaVersion
-   *   The version of the schema to be used for validation.
-   *
-   * @param {Object} data
-   *   An object containing data to be encrypted and submitted.
-   *
-   * @returns {Number}
-   *   The total size of the ping.
-   */
-  async getEncryptedPingSize(schemaName, schemaVersion, data) {
-    return this.getPingSize(
-      await this.buildEncryptedPayload(schemaName, schemaVersion, data),
-    );
   }
 
   /**
@@ -267,6 +228,7 @@ class PioneerStudyType {
       telemetryEnv: studySetup.telemetry.removeTestingFlag ? "prod" : "stage",
     };
     this.pioneerUtils = new PioneerUtils(Config);
+    this.schemaVersion = 3; // Corresponds to the schema versions used in https://github.com/mozilla-services/mozilla-pipeline-schemas/tree/dev/templates/telemetry/shield-study (and the shield-study-addon, shield-study-error equivalents)
   }
 
   /**
@@ -298,8 +260,7 @@ class PioneerStudyType {
    */
   async sendTelemetry(bucket, payload) {
     const schemaName = bucket;
-    const schemaVersion = 3; // Corresponds to the schema versions used in https://github.com/mozilla-services/mozilla-pipeline-schemas/tree/dev/templates/telemetry/shield-study (and the shield-study-addon, shield-study-error equivalents)
-    return this._telemetry(schemaName, schemaVersion, payload);
+    return this._telemetry(schemaName, this.schemaVersion, payload);
   }
 
   /**
@@ -336,6 +297,47 @@ class PioneerStudyType {
       );
     }
     return pingId;
+  }
+
+  /**
+   * Calculate the size of a ping.
+   *
+   * @param {String} bucket The type of telemetry payload
+   *
+   * @param {Object} payload
+   *   The data payload of the ping.
+   *
+   * @returns {Promise<Number>}
+   *   The total size of the ping.
+   */
+  async getPingSize(bucket, payload) {
+    const schemaName = bucket;
+    return this.getEncryptedPingSize(schemaName, this.schemaVersion, payload);
+  }
+
+  /**
+   * Calculate the size of a ping that has Pioneer encrypted data.
+   *
+   * @param {String} schemaName
+   *   The name of the schema to be used for validation.
+   *
+   * @param {int} schemaVersion
+   *   The version of the schema to be used for validation.
+   *
+   * @param {Object} data
+   *   An object containing data to be encrypted and submitted.
+   *
+   * @returns {Promise<Number>}
+   *   The total size of the ping.
+   */
+  async getEncryptedPingSize(schemaName, schemaVersion, data) {
+    return getPingSize(
+      await this.pioneerUtils.buildEncryptedPayload(
+        schemaName,
+        schemaVersion,
+        data,
+      ),
+    );
   }
 }
 

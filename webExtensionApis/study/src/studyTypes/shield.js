@@ -1,5 +1,7 @@
 /* eslint-env commonjs */
 
+import { getPingSize } from "../getPingSize";
+
 const { TelemetryController } = ChromeUtils.import(
   "resource://gre/modules/TelemetryController.jsm",
   null,
@@ -38,6 +40,21 @@ class ShieldStudyType {
   async sendTelemetry(bucket, payload) {
     const telOptions = { addClientId: true, addEnvironment: true };
     return TelemetryController.submitExternalPing(bucket, payload, telOptions);
+  }
+
+  /**
+   * Calculate the size of a ping.
+   *
+   * @param {String} bucket The type of telemetry payload
+   *
+   * @param {Object} payload
+   *   The data payload of the ping.
+   *
+   * @returns {Promise<Number>}
+   *   The total size of the ping.
+   */
+  async getPingSize(bucket, payload) {
+    return getPingSize(payload);
   }
 }
 

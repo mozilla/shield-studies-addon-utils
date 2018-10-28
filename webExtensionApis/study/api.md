@@ -149,13 +149,9 @@ Object of current dataPermissions (shield enabled true/false, pioneer enabled tr
 
 Send Telemetry using appropriate shield or pioneer methods.
 
-shield:
+shield & pioneer sends using the following schema:
 
 * `shield-study-addon` ping, requires object string keys and string values
-
-pioneer:
-
-* TBD
 
 Note:
 
@@ -164,9 +160,27 @@ Note:
 Note:
 
 * undefined what happens if validation fails
-* undefined what happens when you try to send 'shield' from 'pioneer'
 
 TBD fix the parameters here.
+
+**Parameters**
+
+* `payload`
+  * type: payload
+  * $ref:
+  * optional: false
+
+### `browser.study.calculateTelemetryPingSize( payload )`
+
+Calculate Telemetry using appropriate shield or pioneer methods.
+
+shield:
+
+* Calculate the size of a ping
+
+pioneer:
+
+* Calculate the size of a ping that has Pioneer encrypted data
 
 **Parameters**
 
