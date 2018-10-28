@@ -610,7 +610,7 @@ function publicApiTests(studyType) {
 
   describe("life-cycle tests", function() {
     describe("setup, sendTelemetry, manually invoked endStudy", function() {
-      let studyInfo;
+      let studyInfo, calculatedPingSize;
       const overrides = {
         activeExperimentName: "test:browser.study.api",
         telemetry: {
@@ -630,14 +630,23 @@ function publicApiTests(studyType) {
 
       before(async function reinstallSetupDoTelemetryAndWait() {
         await installAddon();
-        studyInfo = await addonExec(async (_studySetupForTests, callback) => {
+        const _ = await addonExec(async (_studySetupForTests, callback) => {
           // Ensure we have a configured study and are supposed to run our feature
           browser.study.onReady.addListener(async _studyInfo => {
-            await browser.study.sendTelemetry({ foo: "bar" });
-            callback(_studyInfo);
+            const samplePing = { foo: "bar" };
+            await browser.study.sendTelemetry(samplePing);
+            const _calculatedPingSize = await browser.study.calculateTelemetryPingSize(
+              samplePing,
+            );
+            callback({
+              studyInfo: _studyInfo,
+              calculatedPingSize: _calculatedPingSize,
+            });
           });
           await browser.study.setup(_studySetupForTests);
         }, studySetupForTests(overrides));
+        studyInfo = _.studyInfo;
+        calculatedPingSize = _.calculatedPingSize;
         await delay(1000); // wait a second to telemetry to settle on disk.
       });
 
@@ -647,6 +656,14 @@ function publicApiTests(studyType) {
           studyInfo.activeExperimentName,
           overrides.activeExperimentName,
         );
+      });
+
+      it("calculated ping size is as expected", async () => {
+        const expectedPingSizes = {
+          shield: 20,
+          pioneer: 662,
+        };
+        assert.strictEqual(calculatedPingSize, expectedPingSizes[studyType]);
       });
 
       describe("telemetry archive / controller effects", function() {
