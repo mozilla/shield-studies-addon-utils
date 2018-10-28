@@ -56,7 +56,7 @@ joseSetCrypto(crypto);
  */
 class PioneerUtils {
   /**
-   * @param {Config} config
+   * @param {Config} config Object with Pioneer-related configuration as specified above
    */
   constructor(config) {
     this.config = config;
@@ -72,7 +72,9 @@ class PioneerUtils {
     return PUBLIC_KEYS[env];
   }
 
-  /** */
+  /**
+   * @returns {void}
+   */
   setupEncrypter() {
     if (this.encrypter === null) {
       const pk = this.getPublicKey();
@@ -121,7 +123,7 @@ class PioneerUtils {
   /**
    * @private
    * @param {String} data The data to encrypt
-   * @returns {String}
+   * @returns {String} The encrypted data
    */
   async encryptData(data) {
     this.setupEncrypter();
@@ -290,9 +292,9 @@ class PioneerStudyType {
   }
 
   /**
-   * @param bucket
-   * @param payload
-   * @returns {Promise<*>}
+   * @param {String} bucket The type of telemetry payload
+   * @param {Object} payload The telemetry payload
+   * @returns {Promise<String>} The ID of the ping that was submitted
    */
   async sendTelemetry(bucket, payload) {
     const schemaName = bucket;
