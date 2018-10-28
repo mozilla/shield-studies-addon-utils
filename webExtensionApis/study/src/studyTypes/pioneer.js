@@ -323,12 +323,12 @@ class PioneerStudyType {
       payload,
     );
     if (pingId) {
-      utilsLogger.log(
+      utilsLogger.debug(
         "Pioneer Telemetry sent (encrypted)",
         JSON.stringify(payload),
       );
     } else {
-      utilsLogger.log(
+      utilsLogger.debug(
         "Pioneer Telemetry not sent due to privacy preferences",
         JSON.stringify(payload),
       );
