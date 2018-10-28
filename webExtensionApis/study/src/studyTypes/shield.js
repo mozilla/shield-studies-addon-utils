@@ -15,7 +15,7 @@ class ShieldStudyType {
    * @param {object} studyUtils The studyUtils instance from where this class was instantiated
    */
   constructor(studyUtils) {
-    console.log("studyUtils", studyUtils);
+    // console.log("studyUtils", studyUtils);
   }
 
   /**
