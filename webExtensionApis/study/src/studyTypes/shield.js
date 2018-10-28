@@ -19,7 +19,7 @@ class ShieldStudyType {
   }
 
   /**
-   * @returns {Promise<*>}
+   * @returns {Promise<String>} The telemetry client id
    */
   async getTelemetryId() {
     const id = TelemetryController.clientID;
@@ -31,8 +31,8 @@ class ShieldStudyType {
   }
 
   /**
-   * @param bucket
-   * @param payload
+   * @param {String} bucket The type of telemetry payload
+   * @param {Object} payload The telemetry payload
    * @returns {Promise<String>} The ID of the ping that was submitted
    */
   async sendTelemetry(bucket, payload) {
