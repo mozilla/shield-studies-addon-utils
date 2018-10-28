@@ -561,7 +561,7 @@
           "endingName": "some-reason"
         },
         "description":
-          "Signal to browser.study that it should end.\n\nUsage scenarios:\n- addons defined\n  - postive endings (tried feature)\n  - negative endings (client clicked 'no thanks')\n  - expiration / timeout (feature should last for 14 days then uninstall)\n\nLogic:\n- If study has already ended, do nothing.\n- Else: END\n\nEND:\n- record internally that study is ended.\n- disable all methods that rely on configuration / setup.\n- clear all prefs stored by `browser.study`\n- fire telemetry pings for:\n  - 'exit'\n  - the ending, one of:\n\n    \"ineligible\",\n    \"expired\",\n    \"user-disable\",\n    \"ended-positive\",\n    \"ended-neutral\",\n    \"ended-negative\",\n\n- augment all ending urls with query urls\n- fire 'study:end' event to `browser.study.onEndStudy` handlers.\n\nAddon should then do\n- open returned urls\n- feature specific cleanup\n- uninstall the addon\n\nNote:\n1.  calling this function multiple time is safe.\n`browser.study` will choose the\n",
+          "Signal to browser.study that it should end.\n\nUsage scenarios:\n- add-ons defined\n  - positive endings (tried feature)\n  - negative endings (client clicked 'no thanks')\n  - expiration / timeout (feature should last for 14 days then uninstall)\n\nLogic:\n- If study has already ended, do nothing.\n- Else: END\n\nEND:\n- record internally that study is ended.\n- disable all methods that rely on configuration / setup.\n- clear all prefs stored by `browser.study`\n- fire telemetry pings for:\n  - 'exit'\n  - the ending, one of:\n\n    \"ineligible\",\n    \"expired\",\n    \"user-disable\",\n    \"ended-positive\",\n    \"ended-neutral\",\n    \"ended-negative\",\n\n- augment all ending URLs with query URLs\n- fire 'study:end' event to `browser.study.onEndStudy` handlers.\n\nAdd-on should then do\n- open returned URLs\n- feature specific cleanup\n- uninstall the add-on\n\nNote:\n1.  calling this function multiple time is safe.\n`browser.study` will choose the\n",
         "parameters": [
           {
             "name": "anEndingAlias",
@@ -613,7 +613,7 @@
         "type": "function",
         "async": true,
         "description":
-          "Search locally stored telemetry pings using these fields (if set)\n\nn:\n  if set, no more than `n` pings.\ntype:\n  Array of 'ping types' (e.g., main, crash, shield-study-addon) to filter\nminimumTimestamp:\n  only pings after this timestamp.\nheadersOnly:\n  boolean.  If true, only the 'headers' will be returned.\n\nPings will be returned sorted by timestamp with most recent first.\n\nUsage scenarios:\n- enrollment / eligiblity using recent Telemetry behaviours or client environment\n- addon testing scenarios\n",
+          "Search locally stored telemetry pings using these fields (if set)\n\nn:\n  if set, no more than `n` pings.\ntype:\n  Array of 'ping types' (e.g., main, crash, shield-study-addon) to filter\nminimumTimestamp:\n  only pings after this timestamp.\nheadersOnly:\n  boolean.  If true, only the 'headers' will be returned.\n\nPings will be returned sorted by timestamp with most recent first.\n\nUsage scenarios:\n- enrollment / eligiblity using recent Telemetry behaviours or client environment\n- add-on testing scenarios\n",
         "defaultReturn": [
           {
             "pingType": "main"
@@ -702,7 +702,7 @@
           "reason": "some-reason"
         },
         "description":
-          "Listen for when the study wants to end.\n\nAct on it by\n- opening surveyUrls\n- tearing down your feature\n- uninstalling the addon\n",
+          "Listen for when the study wants to end.\n\nAct on it by\n- opening surveyUrls\n- tearing down your feature\n- uninstalling the add-on\n",
         "parameters": [
           {
             "name": "ending",

@@ -2,7 +2,7 @@
 
 // TODO, eventually remove this.  It's used by the Template testing, for now.
 
-// TODO, making this a seperate file means that we have to pass the error from the other compartment.
+// TODO, making this a separate file means that we have to pass the error from the other compartment.
 
 /**
  * Returns array of pings of type `type` in reverse sorted order by timestamp
