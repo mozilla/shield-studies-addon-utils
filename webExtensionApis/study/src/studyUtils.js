@@ -764,14 +764,14 @@ class StudyUtils {
   /**
    * Validates and submits telemetry pings from the add-on; mostly from
    * webExtension messages.
-   * @param {Object} data - the data to send as part of the telemetry packet
+   * @param {Object} payload - the data to send as part of the telemetry packet
    * @returns {Promise|boolean} - see StudyUtils._telemetry
    */
-  async telemetry(data) {
+  async telemetry(payload) {
     this.throwIfNotSetup("telemetry");
-    utilsLogger.debug(`telemetry ${JSON.stringify(data)}`);
+    utilsLogger.debug(`telemetry ${JSON.stringify(payload)}`);
     const toSubmit = {
-      attributes: data,
+      attributes: payload,
     };
     return this._telemetry(toSubmit, "shield-study-addon");
   }
@@ -783,6 +783,25 @@ class StudyUtils {
    */
   telemetryError(errorReport) {
     return this._telemetry(errorReport, "shield-study-error");
+  }
+
+  /** Calculate Telemetry using appropriate shield or pioneer methods.
+   *
+   *  shield:
+   *   - Calculate the size of a ping
+   *
+   *   pioneer:
+   *   - Calculate the size of a ping that has Pioneer encrypted data
+   *
+   * @param {Object} payload Non-nested object with key strings, and key values
+   * @returns {Promise<Number>} The total size of the ping.
+   */
+  async calculateTelemetryPingSize(payload) {
+    this.throwIfNotSetup("calculateTelemetryPingSize");
+    const toSubmit = {
+      attributes: payload,
+    };
+    return this.studyType.getPingSize(toSubmit, "shield-study-addon");
   }
 }
 

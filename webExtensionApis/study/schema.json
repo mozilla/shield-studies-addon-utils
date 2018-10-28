@@ -656,7 +656,7 @@
         "name": "sendTelemetry",
         "type": "function",
         "description":
-          "Send Telemetry using appropriate shield or pioneer methods.\n\nshield:\n- `shield-study-addon` ping, requires object string keys and string values\n\npioneer:\n- TBD\n\nNote:\n- no conversions / coercion of data happens.\n\nNote:\n- undefined what happens if validation fails\n- undefined what happens when you try to send 'shield' from 'pioneer'\n\nTBD fix the parameters here.\n",
+          "Send Telemetry using appropriate shield or pioneer methods.\n\nshield & pioneer sends using the following schema:\n- `shield-study-addon` ping, requires object string keys and string values\n\nNote:\n- no conversions / coercion of data happens.\n\nNote:\n- undefined what happens if validation fails\n\nTBD fix the parameters here.\n",
         "async": true,
         "parameters": [
           {
@@ -666,6 +666,25 @@
         ],
         "defaultReturn": "undefined",
         "returns": null
+      },
+      {
+        "name": "calculateTelemetryPingSize",
+        "type": "function",
+        "description":
+          "Calculate Telemetry using appropriate shield or pioneer methods.\n\nshield:\n- Calculate the size of a ping\n\npioneer:\n- Calculate the size of a ping that has Pioneer encrypted data\n",
+        "async": true,
+        "parameters": [
+          {
+            "name": "payload",
+            "$ref": "telemetryPayload"
+          }
+        ],
+        "defaultReturn": "undefined",
+        "returns": [
+          {
+            "type": "number"
+          }
+        ]
       },
       {
         "name": "searchSentTelemetry",

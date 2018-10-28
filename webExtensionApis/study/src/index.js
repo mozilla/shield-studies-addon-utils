@@ -315,6 +315,23 @@ this.study = class extends ExtensionAPI {
           return studyUtils.telemetry(payload);
         },
 
+        /** Calculate Telemetry using appropriate shield or pioneer methods.
+         *
+         *  shield:
+         *   - Calculate the size of a ping
+         *
+         *   pioneer:
+         *   - Calculate the size of a ping that has Pioneer encrypted data
+         *
+         * @param {Object} payload Non-nested object with key strings, and key values
+         * @returns {Promise<Number>} The total size of the ping.
+         */
+        calculateTelemetryPingSize: async function calculateTelemetryPingSize(
+          payload,
+        ) {
+          return studyUtils.calculateTelemetryPingSize(payload);
+        },
+
         /** Search locally stored telemetry pings using these fields (if set)
          *
          *  n:
