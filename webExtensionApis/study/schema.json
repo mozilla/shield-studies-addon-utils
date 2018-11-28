@@ -26,6 +26,28 @@
         "testcases": [null, "a string"]
       },
       {
+        "id": "NullableBoolean",
+        "$schema": "http://json-schema.org/draft-04/schema",
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "boolean"
+          }
+        ],
+        "choices": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "boolean"
+          }
+        ],
+        "testcases": [null, true, false],
+        "failcases": ["1234567890", "foo", []]
+      },
+      {
         "id": "NullableInteger",
         "$schema": "http://json-schema.org/draft-04/schema",
         "oneOf": [
@@ -277,6 +299,20 @@
         ]
       },
       {
+        "id": "dataPermissionsObject",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "shield": {
+            "type": "boolean"
+          },
+          "pioneer": {
+            "type": "boolean"
+          }
+        },
+        "required": ["shield", "pioneer"]
+      },
+      {
         "id": "studySetup",
         "$schema": "http://json-schema.org/draft-04/schema",
         "type": "object",
@@ -314,6 +350,10 @@
               },
               "removeTestingFlag": {
                 "type": "boolean"
+              },
+              "internalTelemetryArchive": {
+                "optional": true,
+                "$ref": "NullableBoolean"
               }
             }
           },
@@ -402,7 +442,8 @@
             ],
             "telemetry": {
               "send": false,
-              "removeTestingFlag": false
+              "removeTestingFlag": false,
+              "internalTelemetryArchive": false
             },
             "testing": {
               "variationName": "something",
@@ -426,7 +467,8 @@
             ],
             "telemetry": {
               "send": false,
-              "removeTestingFlag": true
+              "removeTestingFlag": true,
+              "internalTelemetryArchive": true
             },
             "testing": {
               "variationName": "something",
@@ -539,7 +581,7 @@
         "type": "function",
         "async": true,
         "description":
-          "Attempt an setup/enrollment, with these effects:\n\n- sets 'studyType' as Shield or Pioneer\n  - affects telemetry\n  - (5.1 TODO) watches for dataPermission changes that should *always*\n    stop that kind of study\n\n- Use or choose variation\n  - `testing.variation` if present\n  - OR (internal) deterministicVariation\n    from `weightedVariations`\n    based on hash of\n\n    - activeExperimentName\n    - clientId\n\n- During firstRun[1] only:\n  - set firstRunTimestamp pref value\n  - send 'enter' ping\n  - if `allowEnroll`, send 'install' ping\n  - else endStudy(\"ineligible\") and return\n\n- Every Run\n  - setActiveExperiment(studySetup)\n  - monitor shield | pioneer permission endings\n  - suggests alarming if `expire` is set.\n\nReturns:\n- studyInfo object (see `getStudyInfo`)\n\nTelemetry Sent (First run only)\n\n  - enter\n  - install\n\nFires Events\n\n(At most one of)\n- study:onReady  OR\n- study:onEndStudy\n\nPreferences set\n- `shield.${runtime.id}.firstRunTimestamp`\n\nNote:\n1. allowEnroll is ONLY used during first run (install)\n",
+          "Attempt an setup/enrollment, with these effects:\n\n- sets 'studyType' as Shield or Pioneer\n  - affects telemetry\n  - (5.2+ TODO) watches for dataPermission changes that should *always*\n    stop that kind of study\n\n- Use or choose variation\n  - `testing.variation` if present\n  - OR (internal) deterministicVariation\n    from `weightedVariations`\n    based on hash of\n\n    - activeExperimentName\n    - clientId\n\n- During firstRun[1] only:\n  - set firstRunTimestamp pref value\n  - send 'enter' ping\n  - if `allowEnroll`, send 'install' ping\n  - else endStudy(\"ineligible\") and return\n\n- Every Run\n  - setActiveExperiment(studySetup)\n  - monitor shield | pioneer permission endings\n  - suggests alarming if `expire` is set.\n\nReturns:\n- studyInfo object (see `getStudyInfo`)\n\nTelemetry Sent (First run only)\n\n  - enter\n  - install\n\nFires Events\n\n(At most one of)\n- study:onReady  OR\n- study:onEndStudy\n\nPreferences set\n- `shield.${runtime.id}.firstRunTimestamp`\n\nNote:\n1. allowEnroll is ONLY used during first run (install)\n",
         "parameters": [
           {
             "name": "studySetup",
@@ -594,10 +636,27 @@
         ]
       },
       {
+        "name": "getDataPermissions",
+        "type": "function",
+        "async": true,
+        "description":
+          "Object of current dataPermissions (shield enabled true/false, pioneer enabled true/false)",
+        "defaultReturn": {
+          "shield": true,
+          "pioneer": false
+        },
+        "parameters": [],
+        "returns": [
+          {
+            "$ref": "dataPermissionsObject"
+          }
+        ]
+      },
+      {
         "name": "sendTelemetry",
         "type": "function",
         "description":
-          "Send Telemetry using appropriate shield or pioneer methods.\n\nshield:\n- `shield-study-addon` ping, requires object string keys and string values\n\npioneer:\n- TBD\n\nNote:\n- no conversions / coercion of data happens.\n\nNote:\n- undefined what happens if validation fails\n- undefined what happens when you try to send 'shield' from 'pioneer'\n\nTBD fix the parameters here.\n",
+          "Send Telemetry using appropriate shield or pioneer methods.\n\nshield & pioneer sends using the following schema:\n- `shield-study-addon` ping, requires object string keys and string values\n\nNote:\n- no conversions / coercion of data happens.\n\nNote:\n- undefined what happens if validation fails\n\nTBD fix the parameters here.\n",
         "async": true,
         "parameters": [
           {
@@ -607,6 +666,25 @@
         ],
         "defaultReturn": "undefined",
         "returns": null
+      },
+      {
+        "name": "calculateTelemetryPingSize",
+        "type": "function",
+        "description":
+          "Calculate Telemetry using appropriate shield or pioneer methods.\n\nshield:\n- Calculate the size of a ping\n\npioneer:\n- Calculate the size of a ping that has Pioneer encrypted data\n",
+        "async": true,
+        "parameters": [
+          {
+            "name": "payload",
+            "$ref": "telemetryPayload"
+          }
+        ],
+        "defaultReturn": "undefined",
+        "returns": [
+          {
+            "type": "number"
+          }
+        ]
       },
       {
         "name": "searchSentTelemetry",
@@ -864,7 +942,15 @@
         "type": "function",
         "async": true,
         "description":
-          "Return `_internals` of the studyUtils object.\n\nUse this for debugging state.\n\nAbout `this._internals`:\n- variation:  (chosen variation, `setup` )\n- isEnding: bool  `endStudy`\n- isSetup: bool   `setup`\n- isFirstRun: bool `setup`, based on pref\n- studySetup: bool  `setup` the config\n- seenTelemetry: object of lists of seen telemetry by bucket\n- prefs: object of all created prefs and their names\n",
+          "Return `_internals` of the studyUtils object.\n\nUse this for debugging state.\n\nAbout `this._internals`:\n- variation:  (chosen variation, `setup` )\n- isEnding: bool  `endStudy`\n- isSetup: bool   `setup`\n- isFirstRun: bool `setup`, based on pref\n- studySetup: bool  `setup` the config\n- seenTelemetry: array of seen telemetry. Fully populated only if studySetup.telemetry.internalTelemetryArchive is true\n- prefs: object of all created prefs and their names\n",
+        "parameters": []
+      },
+      {
+        "name": "getInternalTestingOverrides",
+        "type": "function",
+        "async": true,
+        "description":
+          "Returns an object with the following keys:\n  studyType - to be able to test add-ons with different studyType configurations\nUsed to override study testing flags in getStudySetup().\nThe values are set by the corresponding preference under the `extensions.${widgetId}.test.*` preference branch.\n",
         "parameters": []
       }
     ]
