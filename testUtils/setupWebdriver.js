@@ -107,20 +107,6 @@ module.exports.setupWebdriver = {
     return addonId;
   },
 
-  /** Install pioneer opt-in add-on from where it is expected to be if its
-   * repo is cloned in the current working directory and the xpi then built within
-   *
-   * @param {object} driver Configured Firefox webdriver
-   * @param {string} fileLocation location for add-on xpi/zip
-   * @returns {Promise<void>} returns add-on id)
-   */
-  installPioneerOptInAddon: async (driver, fileLocation) => {
-    fileLocation =
-      fileLocation ||
-      path.join(process.cwd(), "pioneer-opt-in/pioneer-opt-in.xpi");
-    return module.exports.setupWebdriver.installAddon(driver, fileLocation);
-  },
-
   uninstallAddon: async (driver, addonId) => {
     const executor = driver.getExecutor();
     executor.defineCommand(

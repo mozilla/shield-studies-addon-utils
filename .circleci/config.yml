@@ -64,10 +64,6 @@ jobs:
           path: "test-addon/dist"
           destination: "test-addon/dist"
 
-      - run:
-          name: Import and build the Pioneer opt-in add-on
-          command: npm run import-pioneer-opt-in
-
       # Needs signed add-on to work on branded releases
       #- run:
       #    name: Test with Firefox Release

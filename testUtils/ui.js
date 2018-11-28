@@ -27,18 +27,6 @@ module.exports.ui = {
   },
 
   /**
-   * From firefox/browser/components/extensions/ExtensionPopups.jsm
-   *
-   * @param {string} id Id to modify
-   * @returns {string} widgetId canonical widget id with replaced bits.
-   */
-  makeWidgetId: id => {
-    id = id.toLowerCase();
-    // FIXME: This allows for collisions.
-    return id.replace(/[^a-z0-9_-]/g, "_");
-  },
-
-  /**
    * The widget id is used to identify add-on specific chrome elements. Examples:
    *  - Browser action - {addonWidgetId}-browser-action
    *  - Page action - {addonWidgetId}-page-action
@@ -46,8 +34,20 @@ module.exports.ui = {
    * @returns {Promise<string>} name of the made widget
    */
   addonWidgetId: async () => {
+    /**
+     * From firefox/browser/components/extensions/ExtensionPopups.jsm
+     *
+     * @param {string} id Id to modify
+     * @returns {string} widgetId canonical widget id with replaced bits.
+     */
+    function makeWidgetId(id) {
+      id = id.toLowerCase();
+      // FIXME: This allows for collisions.
+      return id.replace(/[^a-z0-9_-]/g, "_");
+    }
+
     const manifest = await module.exports.ui.promiseManifest();
-    return module.exports.ui.makeWidgetId(manifest.applications.gecko.id);
+    return makeWidgetId(manifest.applications.gecko.id);
   },
 
   openBrowserConsole: async driver => {

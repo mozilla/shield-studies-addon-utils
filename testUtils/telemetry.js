@@ -7,14 +7,6 @@ const {
 const firefox = require("selenium-webdriver/firefox");
 const Context = firefox.Context;
 
-// node's util, for printing a deeply nested object to node console
-const { inspect } = require("util");
-
-// eslint-disable-next-line no-unused-vars
-function full(myObject) {
-  return inspect(myObject, { showHidden: false, depth: null });
-}
-
 module.exports.telemetry = {
   getActiveExperiments: async driver => {
     driver.setContext(Context.CHROME);
@@ -58,14 +50,6 @@ module.exports.telemetry = {
 
   summarizePings: pings => {
     return pings.map(p => [p.payload.type, p.payload.data]);
-  },
-
-  pingsDebug: pings => {
-    return full(
-      pings.map(x => {
-        return { id: x.id, payload: x.payload };
-      }),
-    );
   },
 
   pingsReport: pings => {

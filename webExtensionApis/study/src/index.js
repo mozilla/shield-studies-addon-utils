@@ -10,7 +10,6 @@
 import { utilsLogger, createLogger } from "./logger";
 import makeWidgetId from "./makeWidgetId";
 import * as testingOverrides from "./testingOverrides";
-import * as dataPermissions from "./dataPermissions";
 
 ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
@@ -272,11 +271,6 @@ this.study = class extends ExtensionAPI {
           return studyUtils.info();
         },
 
-        /* Object of current dataPermissions (shield enabled true/false, pioneer enabled true/false) */
-        getDataPermissions: async function getDataPermissions() {
-          return dataPermissions.getDataPermissions();
-        },
-
         /** Send Telemetry using appropriate shield or pioneer methods.
          *
          *  shield:
@@ -313,23 +307,6 @@ this.study = class extends ExtensionAPI {
 
           throwIfInvalid(payload);
           return studyUtils.telemetry(payload);
-        },
-
-        /** Calculate Telemetry using appropriate shield or pioneer methods.
-         *
-         *  shield:
-         *   - Calculate the size of a ping
-         *
-         *   pioneer:
-         *   - Calculate the size of a ping that has Pioneer encrypted data
-         *
-         * @param {Object} payload Non-nested object with key strings, and key values
-         * @returns {Promise<Number>} The total size of the ping.
-         */
-        calculateTelemetryPingSize: async function calculateTelemetryPingSize(
-          payload,
-        ) {
-          return studyUtils.calculateTelemetryPingSize(payload);
         },
 
         /** Search locally stored telemetry pings using these fields (if set)
@@ -470,10 +447,6 @@ this.study = class extends ExtensionAPI {
 
         async getInternals() {
           return studyUtils._internals;
-        },
-
-        getInternalTestingOverrides: async function getInternalTestingOverrides() {
-          return testingOverrides.getInternalTestingOverrides(widgetId);
         },
       },
     };

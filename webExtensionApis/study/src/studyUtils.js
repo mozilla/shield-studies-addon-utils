@@ -5,8 +5,6 @@
 import sampling from "./sampling";
 import { utilsLogger } from "./logger";
 import makeWidgetId from "./makeWidgetId";
-import ShieldStudyType from "./studyTypes/shield";
-import PioneerStudyType from "./studyTypes/pioneer";
 
 /*
 * Supports the `browser.study` webExtensionExperiment api.
@@ -51,6 +49,11 @@ const { ExtensionUtils } = ChromeUtils.import(
 const { ExtensionError } = ExtensionUtils;
 
 // telemetry utils
+const CID = ChromeUtils.import("resource://gre/modules/ClientID.jsm", {});
+const { TelemetryController } = ChromeUtils.import(
+  "resource://gre/modules/TelemetryController.jsm",
+  null,
+);
 const { TelemetryEnvironment } = ChromeUtils.import(
   "resource://gre/modules/TelemetryEnvironment.jsm",
   null,
@@ -175,7 +178,7 @@ class StudyUtils {
    * - isSetup: bool   `setup`
    * - isFirstRun: bool `setup`, based on pref
    * - studySetup: bool  `setup` the config
-   * - seenTelemetry: array of seen telemetry. Fully populated only if studySetup.telemetry.internalTelemetryArchive is true
+   * - seenTelemetry: object of lists of seen telemetry by bucket
    * - prefs: object of all created prefs and their names
    * - endingRequested: string of ending name
    * - endingReturns: object with useful ending instructions
@@ -222,7 +225,11 @@ class StudyUtils {
       isSetup: false,
       isEnding: false,
       isEnded: false,
-      seenTelemetry: [],
+      seenTelemetry: {
+        "shield-study": [],
+        "shield-study-addon": [],
+        "shield-study-error": [],
+      },
       prefs: {
         firstRunTimestamp: `shield.${widgetId}.firstRunTimestamp`,
       },
@@ -261,15 +268,6 @@ class StudyUtils {
       throw new ExtensionError("StudyUtils is already setup");
     }
     guard.it("studySetup", studySetup, "(in studySetup)");
-    this._internals.studySetup = studySetup;
-
-    // Different study types treat data and configuration differently
-    if (studySetup.studyType === "shield") {
-      this.studyType = new ShieldStudyType(this);
-    }
-    if (studySetup.studyType === "pioneer") {
-      this.studyType = new PioneerStudyType(this);
-    }
 
     function getVariationByName(name, variations) {
       if (!name) return null;
@@ -296,6 +294,7 @@ class StudyUtils {
     utilsLogger.debug(`setting up: variation ${variation.name}`);
 
     this._internals.variation = variation;
+    this._internals.studySetup = studySetup;
     this._internals.isSetup = true;
 
     // isFirstRun?  ever seen before?
@@ -319,7 +318,6 @@ class StudyUtils {
    */
   reset() {
     this._internals = this._createInternals();
-    this.studyType = null;
     this.resetFirstRunTimestamp();
   }
 
@@ -401,7 +399,12 @@ class StudyUtils {
    * @returns {string} - the telemetry client ID
    */
   async getTelemetryId() {
-    return this.studyType.getTelemetryId();
+    const id = TelemetryController.clientID;
+    /* istanbul ignore next */
+    if (id === undefined) {
+      return CID.ClientIDImpl._doLoadClientID();
+    }
+    return id;
   }
 
   /**
@@ -429,16 +432,6 @@ class StudyUtils {
       shieldId: this.getShieldId(),
       delayInMinutes: this.getDelayInMinutes(),
     };
-    const now = new Date();
-    const diff = Number(now) - studyInfo.firstRunTimestamp;
-    utilsLogger.debug(
-      "Study info date information: now, new Date(firstRunTimestamp), firstRunTimestamp, diff (in minutes), delayInMinutes",
-      now,
-      new Date(studyInfo.firstRunTimestamp),
-      studyInfo.firstRunTimestamp,
-      diff / 1000 / 60,
-      studyInfo.delayInMinutes,
-    );
     guard.it("studyInfoObject", studyInfo, "(in studyInfo)");
     return studyInfo;
   }
@@ -464,7 +457,8 @@ class StudyUtils {
     weightedVariations,
     fraction = null,
   ) {
-    // this is the standard arm choosing method, used by both shield and pioneer studies
+    // this is the standard arm choosing method
+    // TODO, allow 'pioneer' algorithm
     if (fraction === null) {
       // hash the studyName and telemetryId to get the same branch every time.
       const clientId = await this.getTelemetryId();
@@ -739,39 +733,32 @@ class StudyUtils {
     }
     utilsLogger.debug(`telemetry: ${JSON.stringify(payload)}`);
 
-    let pingId;
+    // IF it's a shield-study or error ping, which are few in number
+    if (bucket === "shield-study" || bucket === "shield-study-error") {
+      this._internals.seenTelemetry[bucket].push(payload);
+    }
 
     // during development, don't actually send
     if (!this.telemetryConfig.send) {
       utilsLogger.debug("NOT sending.  `telemetryConfig.send` is false");
-      pingId = false;
-    } else {
-      pingId = await this.studyType.sendTelemetry(bucket, payload);
+      return false;
     }
 
-    // Store a copy of the ping if it's a shield-study or error ping, which are few in number, or if we have activated the internal telemetry archive configuration
-    if (
-      bucket === "shield-study" ||
-      bucket === "shield-study-error" ||
-      this.telemetryConfig.internalTelemetryArchive
-    ) {
-      this._internals.seenTelemetry.push({ id: pingId, payload });
-    }
-
-    return pingId;
+    const telOptions = { addClientId: true, addEnvironment: true };
+    return TelemetryController.submitExternalPing(bucket, payload, telOptions);
   }
 
   /**
    * Validates and submits telemetry pings from the add-on; mostly from
    * webExtension messages.
-   * @param {Object} payload - the data to send as part of the telemetry packet
+   * @param {Object} data - the data to send as part of the telemetry packet
    * @returns {Promise|boolean} - see StudyUtils._telemetry
    */
-  async telemetry(payload) {
+  async telemetry(data) {
     this.throwIfNotSetup("telemetry");
-    utilsLogger.debug(`telemetry ${JSON.stringify(payload)}`);
+    utilsLogger.debug(`telemetry ${JSON.stringify(data)}`);
     const toSubmit = {
-      attributes: payload,
+      attributes: data,
     };
     return this._telemetry(toSubmit, "shield-study-addon");
   }
@@ -783,25 +770,6 @@ class StudyUtils {
    */
   telemetryError(errorReport) {
     return this._telemetry(errorReport, "shield-study-error");
-  }
-
-  /** Calculate Telemetry using appropriate shield or pioneer methods.
-   *
-   *  shield:
-   *   - Calculate the size of a ping
-   *
-   *   pioneer:
-   *   - Calculate the size of a ping that has Pioneer encrypted data
-   *
-   * @param {Object} payload Non-nested object with key strings, and key values
-   * @returns {Promise<Number>} The total size of the ping.
-   */
-  async calculateTelemetryPingSize(payload) {
-    this.throwIfNotSetup("calculateTelemetryPingSize");
-    const toSubmit = {
-      attributes: payload,
-    };
-    return this.studyType.getPingSize(toSubmit, "shield-study-addon");
   }
 }
 

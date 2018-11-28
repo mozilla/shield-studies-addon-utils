@@ -22,17 +22,15 @@ const baseStudySetup = {
   // used for activeExperiments tagging (telemetryEnvironment.setActiveExperiment)
   activeExperimentName: browser.runtime.id,
 
-  // use either "shield" or "pioneer" telemetry semantics and data pipelines
-  studyType: null, // set by internal test override below in getStudySetup()
+  // uses shield sampling and telemetry semantics.  Future: will support "pioneer"
+  studyType: "shield",
 
   // telemetry
   telemetry: {
-    // Actually submit the pings to Telemetry. [default if omitted: false]
+    // default false. Actually send pings.
     send: true,
-    // Marks pings with testing=true. Set flag to `true` for pings are meant to be seen by analysts [default if omitted: false]
+    // Marks pings with testing=true.  Set flag to `true` before final release
     removeTestingFlag: false,
-    // Keep an internal telemetry archive. Useful for verifying payloads of Pioneer studies without risking actually sending any unencrypted payloads [default if omitted: false]
-    internalTelemetryArchive: true,
   },
 
   // endings with urls
@@ -101,11 +99,10 @@ const baseStudySetup = {
  *
  * This implementation caches in local storage to speed up second run.
  *
- * @param {object} studySetup A complete study setup object
  * @returns {Promise<boolean>} answer An boolean answer about whether the user should be
  *       allowed to enroll in the study
  */
-async function cachingFirstRunShouldAllowEnroll(studySetup) {
+async function cachingFirstRunShouldAllowEnroll() {
   // Cached answer.  Used on 2nd run
   let allowed = await browser.storage.local.get("allowedEnrollOnFirstRun");
   if (allowed.allowedEnrollOnFirstRun === true) return true;
@@ -116,13 +113,7 @@ async function cachingFirstRunShouldAllowEnroll(studySetup) {
   */
 
   // could have other reasons to be eligible, such add-ons, prefs
-  const dataPermissions = await browser.study.getDataPermissions();
-  if (studySetup.studyType === "shield") {
-    allowed = dataPermissions.shield;
-  }
-  if (studySetup.studyType === "pioneer") {
-    allowed = dataPermissions.pioneer;
-  }
+  allowed = true;
 
   // cache the answer
   await browser.storage.local.set({ allowedEnrollOnFirstRun: allowed });
@@ -138,11 +129,7 @@ async function getStudySetup() {
   // shallow copy
   const studySetup = Object.assign({}, baseStudySetup);
 
-  // internal testing override necessary to be able to test all study types
-  const internalTestingOverrides = await browser.studyDebug.getInternalTestingOverrides();
-  studySetup.studyType = internalTestingOverrides.studyType;
-
-  studySetup.allowEnroll = await cachingFirstRunShouldAllowEnroll(studySetup);
+  studySetup.allowEnroll = await cachingFirstRunShouldAllowEnroll();
 
   const testingOverrides = await browser.study.getTestingOverrides();
   studySetup.testing = {
@@ -150,6 +137,5 @@ async function getStudySetup() {
     firstRunTimestamp: testingOverrides.firstRunTimestamp,
     expired: testingOverrides.expired,
   };
-
   return studySetup;
 }
