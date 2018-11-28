@@ -7,8 +7,12 @@ export function getTestingOverrides(widgetId) {
   const testingOverrides = {};
   testingOverrides.variationName =
     Preferences.get(`extensions.${widgetId}.test.variationName`) || null;
-  testingOverrides.firstRunTimestamp =
-    Preferences.get(`extensions.${widgetId}.test.firstRunTimestamp`) || null;
+  const firstRunTimestamp = Preferences.get(
+    `extensions.${widgetId}.test.firstRunTimestamp`,
+  );
+  testingOverrides.firstRunTimestamp = firstRunTimestamp
+    ? Number(firstRunTimestamp)
+    : null;
   testingOverrides.expired =
     Preferences.get(`extensions.${widgetId}.test.expired`) || null;
   return testingOverrides;

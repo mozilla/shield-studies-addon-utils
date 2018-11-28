@@ -357,8 +357,8 @@
       Signal to browser.study that it should end.
 
       Usage scenarios:
-      - addons defined
-        - postive endings (tried feature)
+      - add-ons defined
+        - positive endings (tried feature)
         - negative endings (client clicked 'no thanks')
         - expiration / timeout (feature should last for 14 days then uninstall)
 
@@ -381,13 +381,13 @@
           "ended-neutral",
           "ended-negative",
 
-      - augment all ending urls with query urls
+      - augment all ending URLs with query URLs
       - fire 'study:end' event to `browser.study.onEndStudy` handlers.
 
-      Addon should then do
-      - open returned urls
+      Add-on should then do
+      - open returned URLs
       - feature specific cleanup
-      - uninstall the addon
+      - uninstall the add-on
 
       Note:
       1.  calling this function multiple time is safe.
@@ -480,7 +480,7 @@
 
       Usage scenarios:
       - enrollment / eligiblity using recent Telemetry behaviours or client environment
-      - addon testing scenarios
+      - add-on testing scenarios
 
     defaultReturn: [{pingType: 'main'}]
     parameters:
@@ -551,7 +551,7 @@
       Act on it by
       - opening surveyUrls
       - tearing down your feature
-      - uninstalling the addon
+      - uninstalling the add-on
 
     parameters:  # for the callback
     - name: ending
