@@ -34,14 +34,25 @@
       {type: 'string'}]
     testcases: [null, 'a string']
 
+  - id: NullableBoolean
+    $schema: "http://json-schema.org/draft-04/schema"
+    oneOf: [
+    {type: 'null'},
+    {type: 'boolean'}]
+    choices: [
+    {type: 'null'},
+    {type: 'boolean'}]
+    testcases: [null, true, false]
+    failcases: ['1234567890', 'foo', []]
+
   - id: NullableInteger
     $schema: "http://json-schema.org/draft-04/schema"
     oneOf: [
-      {type: 'null'},
-      {type: 'integer'}]
+    {type: 'null'},
+    {type: 'integer'}]
     choices: [
-      {type: 'null'},
-      {type: 'integer'}]
+    {type: 'null'},
+    {type: 'integer'}]
     testcases: [null, 1234567890]
     failcases: ['1234567890', []]
 
@@ -169,16 +180,20 @@
     - activeExperimentName
     - isFirstRun
 
-  #- id: dataPermissionsObject
-  #  type: object
-  #  additionalProperties: true
-  #  properties:
-  #    shield:
-  #      type:
-  #        boolean
-  #
-  #  required:
-  #  - shield
+  - id: dataPermissionsObject
+    type: object
+    additionalProperties: false
+    properties:
+      shield:
+        type:
+          boolean
+      pioneer:
+        type:
+          boolean
+
+    required:
+    - shield
+    - pioneer
 
   - id: studySetup
     $schema: "http://json-schema.org/draft-04/schema"
@@ -208,6 +223,9 @@
             type: boolean
           removeTestingFlag:
             type: boolean
+          internalTelemetryArchive:
+            optional: true
+            $ref: NullableBoolean
       testing:
         type: object
         properties:
@@ -246,7 +264,7 @@
         expire: { "days": 10},
         endings: {anEnding: {baseUrls: ['some.url']}},
         weightedVariations: [{name: feature-active, weight: 1.5}],
-        telemetry: {  send: false, removeTestingFlag: false},
+        telemetry: {  send: false, removeTestingFlag: false, internalTelemetryArchive: false},
         testing: {
           variationName: "something",
           firstRunTimestamp: 1234567890,
@@ -258,7 +276,7 @@
         studyType: 'pioneer',
         endings: {anEnding: {baseUrls: ['some.url']}},
         weightedVariations: [{name: feature-active, weight: 1.5}],
-        telemetry: {  send: false, removeTestingFlag: true},
+        telemetry: {  send: false, removeTestingFlag: true, internalTelemetryArchive: true},
         testing: {
           variationName: "something",
           firstRunTimestamp: 1234567890,
@@ -299,7 +317,7 @@
 
       - sets 'studyType' as Shield or Pioneer
         - affects telemetry
-        - (5.1 TODO) watches for dataPermission changes that should *always*
+        - (5.2+ TODO) watches for dataPermission changes that should *always*
           stop that kind of study
 
       - Use or choose variation
@@ -423,14 +441,14 @@
     returns:
     - $ref: studyInfoObject
 
-  # - name: getDataPermissions
-  #   type: function
-  #   async: true
-  #   description: object of current dataPermissions with keys shield, pioneer, telemetry, 'ok'
-  #   defaultReturn: {shield: true, pioneer: false, telemetry: true, alwaysPrivateBrowsing: false}
-  #   parameters: []
-  #   returns:
-  #   - $ref: dataPermissionsObject
+  - name: getDataPermissions
+    type: function
+    async: true
+    description: Object of current dataPermissions (shield enabled true/false, pioneer enabled true/false)
+    defaultReturn: {shield: true, pioneer: false}
+    parameters: []
+    returns:
+    - $ref: dataPermissionsObject
 
   # telemetry related things
   - name: sendTelemetry
@@ -438,18 +456,11 @@
     description: |
       Send Telemetry using appropriate shield or pioneer methods.
 
-      shield:
-      - `shield-study-addon` ping, requires object string keys and string values
-
-      pioneer:
-      - TBD
+      Note: The payload must adhere to the `data.attributes` property in the [`shield-study-addon`](https://github.com/mozilla-services/mozilla-pipeline-schemas/blob/dev/templates/include/telemetry/shieldStudyAddonPayload.3.schema.json) schema. That is, it must be a flat object with string keys and string values.
 
       Note:
       - no conversions / coercion of data happens.
-
-      Note:
       - undefined what happens if validation fails
-      - undefined what happens when you try to send 'shield' from 'pioneer'
 
       TBD fix the parameters here.
 
@@ -460,6 +471,26 @@
 
     defaultReturn: undefined  # exception if out of policy based on config
     returns:
+
+  - name: calculateTelemetryPingSize
+    type: function
+    description: |
+      Calculate Telemetry using appropriate shield or pioneer methods.
+
+      shield:
+      - Calculate the size of a ping
+
+      pioneer:
+      - Calculate the size of a ping that has Pioneer encrypted data
+
+    async: true
+    parameters:
+    - name: payload
+      $ref: telemetryPayload
+
+    defaultReturn: undefined
+    returns:
+    - type: number
 
   - name: searchSentTelemetry
     type: function
@@ -557,7 +588,7 @@
     - name: ending
       type: object
 
-  # TODO 5.1
+  # TODO 5.2+
   # - name: onDataPermissionsChange
   #   type: function
   #   defaultReturn: {shield: true, pioneer: false}
@@ -694,7 +725,17 @@
       - isSetup: bool   `setup`
       - isFirstRun: bool `setup`, based on pref
       - studySetup: bool  `setup` the config
-      - seenTelemetry: object of lists of seen telemetry by bucket
+      - seenTelemetry: array of seen telemetry. Fully populated only if studySetup.telemetry.internalTelemetryArchive is true
       - prefs: object of all created prefs and their names
 
+    parameters: []
+
+  - name: getInternalTestingOverrides
+    type: 'function'
+    async: true
+    description: |
+      Returns an object with the following keys:
+        studyType - to be able to test add-ons with different studyType configurations
+      Used to override study testing flags in getStudySetup().
+      The values are set by the corresponding preference under the `extensions.${widgetId}.test.*` preference branch.
     parameters: []
