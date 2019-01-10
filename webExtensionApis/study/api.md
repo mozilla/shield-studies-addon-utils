@@ -11,7 +11,7 @@ Attempt an setup/enrollment, with these effects:
 * sets 'studyType' as Shield or Pioneer
 
   * affects telemetry
-  * (5.1 TODO) watches for dataPermission changes that should _always_
+  * (5.2+ TODO) watches for dataPermission changes that should _always_
     stop that kind of study
 
 * Use or choose variation
@@ -139,17 +139,19 @@ Throws Error if called before `browser.study.setup`
 
 **Parameters**
 
+### `browser.study.getDataPermissions( )`
+
+Object of current dataPermissions (shield enabled true/false, pioneer enabled true/false)
+
+**Parameters**
+
 ### `browser.study.sendTelemetry( payload )`
 
 Send Telemetry using appropriate shield or pioneer methods.
 
-shield:
+shield & pioneer sends using the following schema:
 
 * `shield-study-addon` ping, requires object string keys and string values
-
-pioneer:
-
-* TBD
 
 Note:
 
@@ -158,9 +160,27 @@ Note:
 Note:
 
 * undefined what happens if validation fails
-* undefined what happens when you try to send 'shield' from 'pioneer'
 
 TBD fix the parameters here.
+
+**Parameters**
+
+* `payload`
+  * type: payload
+  * $ref:
+  * optional: false
+
+### `browser.study.calculateTelemetryPingSize( payload )`
+
+Calculate Telemetry using appropriate shield or pioneer methods.
+
+shield:
+
+* Calculate the size of a ping
+
+pioneer:
+
+* Calculate the size of a ping that has Pioneer encrypted data
 
 **Parameters**
 
@@ -284,7 +304,34 @@ Act on it by
 }
 ```
 
-### [1] NullableInteger
+### [1] NullableBoolean
+
+```json
+{
+  "id": "NullableBoolean",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "oneOf": [
+    {
+      "type": "null"
+    },
+    {
+      "type": "boolean"
+    }
+  ],
+  "choices": [
+    {
+      "type": "null"
+    },
+    {
+      "type": "boolean"
+    }
+  ],
+  "testcases": [null, true, false],
+  "failcases": ["1234567890", "foo", []]
+}
+```
+
+### [2] NullableInteger
 
 ```json
 {
@@ -311,7 +358,7 @@ Act on it by
 }
 ```
 
-### [2] NullableNumber
+### [3] NullableNumber
 
 ```json
 {
@@ -338,7 +385,7 @@ Act on it by
 }
 ```
 
-### [3] studyTypesEnum
+### [4] studyTypesEnum
 
 ```json
 {
@@ -351,7 +398,7 @@ Act on it by
 }
 ```
 
-### [4] weightedVariationObject
+### [5] weightedVariationObject
 
 ```json
 {
@@ -375,7 +422,7 @@ Act on it by
 }
 ```
 
-### [5] weightedVariationsArray
+### [6] weightedVariationsArray
 
 ```json
 {
@@ -408,7 +455,7 @@ Act on it by
 }
 ```
 
-### [6] anEndingRequest
+### [7] anEndingRequest
 
 ```json
 {
@@ -519,7 +566,7 @@ Act on it by
 }
 ```
 
-### [7] onEndStudyResponse
+### [8] onEndStudyResponse
 
 ```json
 {
@@ -541,7 +588,7 @@ Act on it by
 }
 ```
 
-### [8] studyInfoObject
+### [9] studyInfoObject
 
 ```json
 {
@@ -575,7 +622,26 @@ Act on it by
 }
 ```
 
-### [9] studySetup
+### [10] dataPermissionsObject
+
+```json
+{
+  "id": "dataPermissionsObject",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "shield": {
+      "type": "boolean"
+    },
+    "pioneer": {
+      "type": "boolean"
+    }
+  },
+  "required": ["shield", "pioneer"]
+}
+```
+
+### [11] studySetup
 
 ```json
 {
@@ -616,6 +682,10 @@ Act on it by
         },
         "removeTestingFlag": {
           "type": "boolean"
+        },
+        "internalTelemetryArchive": {
+          "optional": true,
+          "$ref": "NullableBoolean"
         }
       }
     },
@@ -704,7 +774,8 @@ Act on it by
       ],
       "telemetry": {
         "send": false,
-        "removeTestingFlag": false
+        "removeTestingFlag": false,
+        "internalTelemetryArchive": false
       },
       "testing": {
         "variationName": "something",
@@ -728,7 +799,8 @@ Act on it by
       ],
       "telemetry": {
         "send": false,
-        "removeTestingFlag": true
+        "removeTestingFlag": true,
+        "internalTelemetryArchive": true
       },
       "testing": {
         "variationName": "something",
@@ -787,7 +859,7 @@ Act on it by
 }
 ```
 
-### [10] telemetryPayload
+### [12] telemetryPayload
 
 ```json
 {
@@ -801,7 +873,7 @@ Act on it by
 }
 ```
 
-### [11] searchTelemetryQuery
+### [13] searchTelemetryQuery
 
 ```json
 {
@@ -839,7 +911,7 @@ Act on it by
 }
 ```
 
-### [12] anEndingAnswer
+### [14] anEndingAnswer
 
 ```json
 {
@@ -1006,8 +1078,17 @@ About `this._internals`:
 * isSetup: bool `setup`
 * isFirstRun: bool `setup`, based on pref
 * studySetup: bool `setup` the config
-* seenTelemetry: object of lists of seen telemetry by bucket
+* seenTelemetry: array of seen telemetry. Fully populated only if studySetup.telemetry.internalTelemetryArchive is true
 * prefs: object of all created prefs and their names
+
+**Parameters**
+
+### `browser.studyDebug.getInternalTestingOverrides( )`
+
+Returns an object with the following keys:
+studyType - to be able to test add-ons with different studyType configurations
+Used to override study testing flags in getStudySetup().
+The values are set by the corresponding preference under the `extensions.${widgetId}.test.*` preference branch.
 
 **Parameters**
 
