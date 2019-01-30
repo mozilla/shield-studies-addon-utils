@@ -149,16 +149,11 @@ Object of current dataPermissions (shield enabled true/false, pioneer enabled tr
 
 Send Telemetry using appropriate shield or pioneer methods.
 
-shield & pioneer sends using the following schema:
-
-* `shield-study-addon` ping, requires object string keys and string values
+Note: The payload must adhere to the `data.attributes` property in the [`shield-study-addon`](https://github.com/mozilla-services/mozilla-pipeline-schemas/blob/dev/templates/include/telemetry/shieldStudyAddonPayload.3.schema.json) schema. That is, it must be a flat object with string keys and string values.
 
 Note:
 
 * no conversions / coercion of data happens.
-
-Note:
-
 * undefined what happens if validation fails
 
 TBD fix the parameters here.

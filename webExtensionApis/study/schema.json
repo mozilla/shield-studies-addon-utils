@@ -656,7 +656,7 @@
         "name": "sendTelemetry",
         "type": "function",
         "description":
-          "Send Telemetry using appropriate shield or pioneer methods.\n\nshield & pioneer sends using the following schema:\n- `shield-study-addon` ping, requires object string keys and string values\n\nNote:\n- no conversions / coercion of data happens.\n\nNote:\n- undefined what happens if validation fails\n\nTBD fix the parameters here.\n",
+          "Send Telemetry using appropriate shield or pioneer methods.\n\nNote: The payload must adhere to the `data.attributes` property in the [`shield-study-addon`](https://github.com/mozilla-services/mozilla-pipeline-schemas/blob/dev/templates/include/telemetry/shieldStudyAddonPayload.3.schema.json) schema. That is, it must be a flat object with string keys and string values.\n\nNote:\n- no conversions / coercion of data happens.\n- undefined what happens if validation fails\n\nTBD fix the parameters here.\n",
         "async": true,
         "parameters": [
           {

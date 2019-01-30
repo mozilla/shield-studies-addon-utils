@@ -275,3 +275,8 @@ circleci build
 ```
 
 Note: Steps related to caching and uploading/storing artifacts will report as failed locally. This is not necessarily a problem, they are designed to fail since the operations are not supported locally by the CircleCI build agent.
+
+# NPM release routine
+
+npx publish-please --dry-run
+npx publish-please
