@@ -6,7 +6,10 @@ const { TelemetryController } = ChromeUtils.import(
   "resource://gre/modules/TelemetryController.jsm",
   null,
 );
-const CID = ChromeUtils.import("resource://gre/modules/ClientID.jsm", {});
+const { ClientID } = ChromeUtils.import(
+  "resource://gre/modules/ClientID.jsm",
+  {},
+);
 // ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 
 // eslint-disable-next-line no-undef
@@ -24,12 +27,7 @@ class ShieldStudyType {
    * @returns {Promise<String>} The telemetry client id
    */
   async getTelemetryId() {
-    const id = TelemetryController.clientID;
-    /* istanbul ignore next */
-    if (id === undefined) {
-      return CID.ClientIDImpl._doLoadClientID();
-    }
-    return id;
+    return ClientID.getClientID();
   }
 
   /**
