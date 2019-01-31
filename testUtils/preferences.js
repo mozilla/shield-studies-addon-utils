@@ -16,7 +16,10 @@ module.exports.preferences = {
     driver.setContext(Context.CHROME);
     return driver.executeAsyncScript(
       async ($prefName, $defaultValue, callback) => {
-        ChromeUtils.import("resource://gre/modules/Preferences.jsm");
+        const { Preferences } = ChromeUtils.import(
+          "resource://gre/modules/Preferences.jsm",
+          null,
+        );
         // eslint-disable-next-line no-undef
         const result = Preferences.get($prefName, $defaultValue);
         callback(result);
@@ -37,7 +40,10 @@ module.exports.preferences = {
     driver.setContext(Context.CHROME);
     return driver.executeAsyncScript(
       async ($prefName, $prefValue, callback) => {
-        ChromeUtils.import("resource://gre/modules/Preferences.jsm");
+        const { Preferences } = ChromeUtils.import(
+          "resource://gre/modules/Preferences.jsm",
+          null,
+        );
         // eslint-disable-next-line no-undef
         const result = Preferences.set($prefName, $prefValue);
         callback(result);
