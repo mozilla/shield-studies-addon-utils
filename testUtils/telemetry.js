@@ -19,7 +19,10 @@ module.exports.telemetry = {
   getActiveExperiments: async driver => {
     driver.setContext(Context.CHROME);
     return driver.executeAsyncScript(async callback => {
-      ChromeUtils.import("resource://gre/modules/TelemetryEnvironment.jsm");
+      const { TelemetryEnvironment } = ChromeUtils.import(
+        "resource://gre/modules/TelemetryEnvironment.jsm",
+        null,
+      );
       callback(TelemetryEnvironment.getActiveExperiments());
     });
   },
@@ -39,7 +42,10 @@ module.exports.telemetry = {
       async (_searchTelemetryArchive, _searchTelemetryQuery, callback) => {
         // eslint-disable-next-line no-eval
         eval(_searchTelemetryArchive);
-        ChromeUtils.import("resource://gre/modules/TelemetryArchive.jsm");
+        const { TelemetryArchive } = ChromeUtils.import(
+          "resource://gre/modules/TelemetryArchive.jsm",
+          null,
+        );
         callback(
           await searchTelemetryArchive(TelemetryArchive, _searchTelemetryQuery),
         );
