@@ -177,7 +177,8 @@ Repositories that should not be used as templates for new studies:
 
 ## History of major versions
 
-* v5.1: (In development at: `mozilla/shield-studies-addon-utils#develop`). Further extensions.
+* v5.2: Added Pioneer and Firefox 67 support
+* v5.1: Added preferences for testing overrides, study logger and other enhancements
 * v5: API exposed as a Web Extension Experiment. Minimal viable add-on example added. Test coverage improved. Test utils added.
 * v4.1: Improved utils for common cases
 * v4: First `.jsm` release for shipping studies as [legacy add-ons](https://developer.mozilla.org/Add-ons/Legacy_add_ons). Used packet format for PACKET version 3. (Jetpack / addon-sdk is not at all supported since v4 of this utils library)
