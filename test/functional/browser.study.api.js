@@ -330,7 +330,7 @@ function publicApiTests(studyType) {
         "Error: telemetry: this method can't be used until `setup` is called",
         "Error: info: this method can't be used until `setup` is called",
       ];
-      assert.deepStrictEqual(expected, caughtErrors);
+      assert.deepStrictEqual(caughtErrors, expected);
     });
   });
 
@@ -733,8 +733,8 @@ function publicApiTests(studyType) {
             ],
           ];
           assert.deepStrictEqual(
-            expected,
             observed,
+            expected,
             "telemetry pings as as expected",
           );
         });
@@ -795,7 +795,7 @@ function publicApiTests(studyType) {
             "Error: endStudy, requested:  expired, but already ending customEnding",
             "Error: endStudy, requested:  user-disable, but already ending customEnding",
           ];
-          assert.deepStrictEqual(expected, caughtErrors);
+          assert.deepStrictEqual(caughtErrors, expected);
         });
 
         describe("should have sent the expected exit telemetry", function() {
@@ -868,8 +868,8 @@ function publicApiTests(studyType) {
               ],
             ];
             assert.deepStrictEqual(
-              expected,
               observed,
+              expected,
               "telemetry pings as as expected",
             );
           });
@@ -1002,8 +1002,8 @@ function publicApiTests(studyType) {
               ],
             ];
             assert.deepStrictEqual(
-              expected,
               observed,
+              expected,
               "telemetry pings as as expected",
             );
           });
@@ -1139,8 +1139,8 @@ function publicApiTests(studyType) {
               ],
             ];
             assert.deepStrictEqual(
-              expected,
               observed,
+              expected,
               "telemetry pings as as expected",
             );
           });
@@ -1310,8 +1310,8 @@ function publicApiTests(studyType) {
               ],
             ];
             assert.deepStrictEqual(
-              expected,
               observed,
+              expected,
               "telemetry pings as as expected",
             );
           });
@@ -1353,7 +1353,7 @@ function publicApiTests(studyType) {
           valid: false,
         },
       ];
-      assert.deepStrictEqual(expected, answers);
+      assert.deepStrictEqual(answers, expected);
     });
   });
 
