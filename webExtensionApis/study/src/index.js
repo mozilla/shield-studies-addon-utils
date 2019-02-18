@@ -109,10 +109,17 @@ this.study = class extends ExtensionAPI {
     const addonLogger = createLogger(widgetId, `shieldStudy.logLevel`);
 
     async function endStudy(anEndingAlias) {
-      utilsLogger.debug("called endStudy anEndingAlias");
+      utilsLogger.debug("called endStudy with anEndingAlias:", anEndingAlias);
       const endingResponse = await studyUtils.endStudy(anEndingAlias);
       studyApiEventEmitter.emitEndStudy(endingResponse);
     }
+
+    // Add normandy unenroll listener
+    const { AddonStudies } = ChromeUtils.import(
+      "resource://normandy/lib/AddonStudies.jsm",
+      {},
+    );
+    AddonStudies.addUnenrollListener(extension.id, reason => endStudy(reason));
 
     return {
       study: {
