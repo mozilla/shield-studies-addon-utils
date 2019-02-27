@@ -561,7 +561,18 @@ class StudyUtils {
     this.throwIfNotSetup("endStudy");
 
     // also handle default endings.
-    const alwaysHandle = ["ineligible", "expired", "user-disable"];
+    const alwaysHandle = [
+      "ineligible",
+      "expired",
+      "user-disable",
+      "install-failure",
+      "individual-opt-out",
+      "general-opt-out",
+      "recipe-not-seen",
+      "uninstalled",
+      "uninstalled-sideload",
+      "unknown",
+    ];
     let ending = this._internals.studySetup.endings[endingName];
     if (!ending) {
       // a 'no-action' ending is okay for the 'always handle'
