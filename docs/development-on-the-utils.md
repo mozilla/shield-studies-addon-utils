@@ -1,3 +1,23 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+**Contents**
+
+* [Development on the Utils](#development-on-the-utils)
+  * [Directory Highlights](#directory-highlights)
+  * [Build process overview: `npm run build`](#build-process-overview-npm-run-build)
+  * [Testing overview: `npm run test`](#testing-overview-npm-run-test)
+  * [FAQ](#faq)
+  * [File structure](#file-structure)
+* [Continuous Integration](#continuous-integration)
+  * [Install cli to test Circle CI locally](#install-cli-to-test-circle-ci-locally)
+  * [Validate Circle CI configuration](#validate-circle-ci-configuration)
+  * [Run Circle CI locally (requires Docker)](#run-circle-ci-locally-requires-docker)
+* [NPM release routine](#npm-release-routine)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Development on the Utils
 
 ## Directory Highlights

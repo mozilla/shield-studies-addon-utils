@@ -8,6 +8,12 @@ There are many moving parts in engineering a Shield Study Add-on. This document 
 
 **Contents**
 
+* [Help and support](#help-and-support)
+* [Links](#links)
+* [Writing tests for your study add-on](#writing-tests-for-your-study-add-on)
+* [FAQ](#faq)
+* [Other hints / guidelines](#other-hints--guidelines)
+
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Help and support
