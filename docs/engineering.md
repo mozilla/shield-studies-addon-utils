@@ -36,7 +36,13 @@ Unit tests currently can ONLY test helper methods in static classes, like Featur
 
 ## FAQ
 
-> Q: Is there any way to install my testing extension before signing it? Because I want to observe the behavior of my extension when people start browser after first shutdown the browser.
+> Q: Are there any re-usable patterns for common study use cases?
+
+Some are in [the template](https://github.com/mozilla/shield-studies-addon-template), but most of the time, they are only found throughout specific implementations. See https://github.com/mozilla/shield-studies-addon-utils/issues/239 for a growing list of study add-ons.
+
+(Study authors: please contribute back to the template or in other ways make useful patterns accessible for other study authors, thanks.)
+
+> Q: Is there any way to install my testing extension before starting the Browser? I want to observe the behavior of my extension when people start the browser with the extension installed.
 
 A: Not yet, but @glind started some work-in-progress code on https://github.com/mozilla/shield-studies-addon-utils/pull/245 - feel free to expand on it and see if you can get it to work. it would be a valuable contribution for others - see https://github.com/mozilla/shield-studies-addon-utils/issues/143.
 

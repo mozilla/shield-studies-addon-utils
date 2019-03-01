@@ -8,6 +8,7 @@
   * [Directory Highlights](#directory-highlights)
   * [Build process overview: `npm run build`](#build-process-overview-npm-run-build)
   * [Testing overview: `npm run test`](#testing-overview-npm-run-test)
+  * [Useful testing helpers.](#useful-testing-helpers)
   * [FAQ](#faq)
   * [File structure](#file-structure)
 * [Continuous Integration](#continuous-integration)
@@ -108,6 +109,12 @@ Goal: Use `webdriver` to exercise the `browser.study` API to prove correctness.
         * use `node` `assert` to check the called back result.
 
 **Note**: `browser.studyDebug.getInternals()` gets internals of the `studyUtils` singleton as needful. `browser.studyDebug` also allows other manipulation of the studyUtils singleton, for use by tests, and to induce states and reactions.
+
+## Useful testing helpers.
+
+* `KEEPOPEN=1000 npm run test` keeps Firefox open
+* `SKIPLINT=1 npm run test` skips linting
+* `npm run test-only` skips build steps.
 
 ## FAQ
 

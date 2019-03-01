@@ -11,18 +11,18 @@ This is the home of the [`shield-studies-addon-utils` npm package](https://www.n
 * WebExtensionExperiment API's
 
   * `browser.study`
-  * `browser.prefs` (TBD)
 
 * Additional useful testing interface
 
   * `browser.studyDebug`
 
 * Scripts:
+
   * `copyStudyUtils` shell command copying these files in your study add-on.
 
 ## Goals:
 
-Allows writing [Shield and Pioneer](https://wiki.mozilla.org/Firefox/Shield/Shield_Studies) ([Normandy](https://wiki.mozilla.org/Firefox/Shield#Normandy_-_User_Profile_Matching_and_Recipe_Deployment)) study WebExension Experiments correctly.
+Allows writing [Shield and Pioneer Add-on Experiments](https://mana.mozilla.org/wiki/display/FIREFOX/Pref-Flip+and+Add-On+Experiments) that manage their own life-cycle.
 
 * **assign variations**: deterministic, persistent variation assignments for A/B multi-variant studies.
 * **startup/shutdown/disable/uninstall**: has strong opinions about business logic for Telemetry around startup, shutdown
@@ -35,13 +35,13 @@ Allows writing [Shield and Pioneer](https://wiki.mozilla.org/Firefox/Shield/Shie
 
 ## Help and support
 
-Thinking about building a Shield/Study Add-on? Go to #shield in Slack and discuss first (there may be quicker and cheaper ways to run your experiment without building an add-on). Building one already? Join #shield-engineering in Slack and ask away.
+Thinking about building a Study Add-on? Please read [the docs on Pref-Flip and Add-On Experiments](https://mana.mozilla.org/wiki/display/FIREFOX/Pref-Flip+and+Add-On+Experiments) first.
 
 If you haven't checked out [the template](https://github.com/mozilla/shield-studies-addon-template) yet, do it. It contains a lot of best practices that helps study add-ons pass QA quicker.
 
 ## Learn the API
 
-0.  **Read** the API: [study api.md](./docs/api.md)
+1.  **Read** the API: [study api.md](./docs/api.md)
 
     Documentation of the API. Notice that there are
 
@@ -49,7 +49,7 @@ If you haven't checked out [the template](https://github.com/mozilla/shield-stud
     * `events`: webExtension events in the `browser.study`
     * `types`: jsonschema draft-04 formats.
 
-1.  **Explore** [`examples/small-study`](./examples/small-study/):
+2.  **Explore** [`examples/small-study`](./examples/small-study/):
 
     * [`manifest.json`](./examples/small-study/src/manifest.json)
 
@@ -63,22 +63,14 @@ If you haven't checked out [the template](https://github.com/mozilla/shield-stud
 
       Using the `browser.study` API within a small instrumented feature.
 
-1.  **Create magic** using [mozilla/shield-studies-addon-template/](https://github.com/mozilla/shield-studies-addon-template/) to get started with an example study where `shield-studies-addon-utils` is already installed and configured.
+3.  **Create magic** using [mozilla/shield-studies-addon-template/](https://github.com/mozilla/shield-studies-addon-template/) to get started with an example study where `shield-studies-addon-utils` is already installed and configured.
 
 ## Installing the Shield Studies Add-on Utils in your add-on
 
 1.  Install the Package
 
-    **Stable version.**
-
     ```sh
     npm install --save shield-studies-addon-utils
-    ```
-
-    **V5.1 develop branch**
-
-    ```sh
-    npm install --save mozilla/shield-studies-addon-utils#develop
     ```
 
 2.  Copy the files to your 'privileged' src directory
@@ -96,6 +88,8 @@ If you haven't checked out [the template](https://github.com/mozilla/shield-stud
     prefName: shieldStudy.logLevel
     values: All|Trace|Debug|Info|Warn|Error
     ```
+
+Again, [the template](https://github.com/mozilla/shield-studies-addon-template) has this preconfigured already.
 
 ## WebExtension APIs Provided by Shield Studies Add-on Utils
 
@@ -134,8 +128,8 @@ To use in your study (long-version):
 
 Depending on which data processing pipeline the study add-on is configured to use, the pings end up in different destinations:
 
-* `shield` - The pings end up in the `shield-study` and `shield-study-addon` Telemetry buckets for faster analysis.
-* TBD: `pioneer` - The pings are encrypted and end up in the Pioneer processing pipeline
+* `shield` - The pings end up in the `shield-study` and `shield-study-addon` Telemetry buckets for instant access to submitted payloads via [STMO](https://sql.telemetry.mozilla.org/).
+* `pioneer` - The pings are encrypted and end up in the Pioneer processing pipeline.
 * TBD: `custom-telemetry-events` - The pings end up in the ordinary destination for custom telemetry events (Not Yet Implemented)
 
 ### `browser.studyDebug.*`
@@ -143,14 +137,6 @@ Depending on which data processing pipeline the study add-on is configured to us
 [`browser.studyDebug` API documentation](./webExtensionApis/study/api.md)
 
 Tools for writing tests, getting and resetting StudyUtils internals.
-
-### `browser.prefs.*`
-
-**Not yet implemented**
-
-Allows your web extension add-on to set and read preferences.
-
-To use, copy and adjust the files as per the `study` API above.
 
 ## Engineering your own study add-on
 
@@ -168,11 +154,7 @@ Repositories that should not be used as templates for new studies:
 
 * Open an issue
 * Hack and file a PR
-* `npm run test` must pass.
-* Useful testing helpers.
-  * `KEEPOPEN=1 npm run test` keeps Firefox open
-  * `SKIPLINT=1 npm run test` skips linting
-  * `npm run test-only` skips build steps.
+* `npm test` must pass.
 * Read [./docs/development-on-the-utils.md](./docs/development-on-the-utils.md) for more in-depth development documentation.
 
 ## History of major versions
