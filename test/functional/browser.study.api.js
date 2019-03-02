@@ -1377,14 +1377,14 @@ function publicApiTests(studyType) {
           );
           callback(result);
         });
-        const matchesExpectedExceptForTheClientId =
+        const matchesExpectedExceptForVariableArguments =
           actual.indexOf(
-            "https://foo.com/survey-foo/?shield=3&study=test%3Abrowser.study.api&variation=control&updateChannel=nightly&fxVersion=67.0a1&addon=1.0.0&who=",
+            "https://foo.com/survey-foo/?shield=3&study=test%3Abrowser.study.api",
           ) > -1 &&
           actual.indexOf(
             "&testing=1&reason=mid-study-survey&fullreason=mid-study-survey",
           ) > -1;
-        assert(matchesExpectedExceptForTheClientId);
+        assert(matchesExpectedExceptForVariableArguments);
       });
     });
   });
