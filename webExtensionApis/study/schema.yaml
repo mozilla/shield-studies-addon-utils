@@ -546,6 +546,17 @@
       descripton: a valid jsonschema object
       additionalProperties: true
 
+  - name: fullSurveyUrl
+    type: function
+    async: true
+    defaultReturn: "https://foo.com/?reason=foo&addon=1.0.0"
+    description: Annotates the supplied survey base url with common survey parameters (study name, variation, updateChannel, fxVersion, add-on version and client id)
+    parameters:
+    - name: surveyBaseUrl
+      type: string
+    - name: reason
+      type: string
+
     # aValidation
     returns:
     - type: object
