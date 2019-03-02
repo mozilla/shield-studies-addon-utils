@@ -660,6 +660,13 @@ class StudyUtils {
     return out;
   }
 
+  async fullSurveyUrl(surveyBaseUrl, reason) {
+    const queryArgs = await this.endingQueryArgs();
+    queryArgs.reason = reason;
+    queryArgs.fullreason = reason;
+    return mergeQueryArgs(surveyBaseUrl, queryArgs);
+  }
+
   /**
    * Builds an object whose properties are query arguments that can be
    * appended to a study ending url

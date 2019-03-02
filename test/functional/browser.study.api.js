@@ -323,12 +323,22 @@ function publicApiTests(studyType) {
           _caughtErrors.push(e.toString());
         }
 
+        try {
+          await browser.study.fullSurveyUrl(
+            "https://foo.com/survey-foo/",
+            "mid-study-survey",
+          );
+        } catch (e) {
+          _caughtErrors.push(e.toString());
+        }
+
         callback(_caughtErrors);
       });
       const expected = [
         "Error: endStudy: this method can't be used until `setup` is called",
         "Error: telemetry: this method can't be used until `setup` is called",
         "Error: info: this method can't be used until `setup` is called",
+        "Error: endingQueryArgs: this method can't be used until `setup` is called",
       ];
       assert.deepStrictEqual(caughtErrors, expected);
     });
@@ -1357,19 +1367,33 @@ function publicApiTests(studyType) {
     });
   });
 
-  // TODO 5.2+
-  describe.skip("possible 5.2+ future tests.", function() {
-    describe("uninstall by users?", function() {});
-
-    describe("surveyUrl", function() {
-      describe("needs setup", function() {
-        it("throws StudyNotSetupError  if not setup");
-      });
-      describe("correctly constructs urls queryArgs from profile info", function() {
-        it("an example url is correct");
+  describe("api: fullSurveyUrl", function() {
+    describe("correctly constructs urls queryArgs", function() {
+      it("an example url is correct", async function() {
+        const actual = await addonExec(async callback => {
+          const result = await browser.study.fullSurveyUrl(
+            "https://foo.com/survey-foo/",
+            "mid-study-survey",
+          );
+          callback(result);
+        });
+        const matchesExpectedExceptForTheClientId =
+          actual.indexOf(
+            "https://foo.com/survey-foo/?shield=3&study=test%3Abrowser.study.api&variation=control&updateChannel=nightly&fxVersion=67.0a1&addon=1.0.0&who=",
+          ) > -1 &&
+          actual.indexOf(
+            "&testing=1&reason=mid-study-survey&fullreason=mid-study-survey",
+          ) > -1;
+        assert(matchesExpectedExceptForTheClientId);
       });
     });
-    describe.skip("log", function() {
+  });
+
+  // TODO 5.3+
+  describe.skip("possible 5.3+ future tests.", function() {
+    describe("uninstall by users - individual opt-out", function() {});
+
+    describe.skip("browser.study.logger", function() {
       it("log level works?");
     });
   });

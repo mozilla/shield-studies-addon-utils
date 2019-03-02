@@ -239,6 +239,23 @@ Using AJV, do jsonschema validation of an object. Can be used to validate your a
   * $ref:
   * optional: false
 
+### `browser.study.fullSurveyUrl( surveyBaseUrl, reason )`
+
+Annotates the supplied survey base url with common survey parameters (study name, variation, updateChannel, fxVersion, add-on version and client id)
+
+**Parameters**
+
+* `surveyBaseUrl`
+
+  * type: surveyBaseUrl
+  * $ref:
+  * optional: false
+
+* `reason`
+  * type: reason
+  * $ref:
+  * optional: false
+
 ## Events
 
 ### `browser.study.onReady ()` Event

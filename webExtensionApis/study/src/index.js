@@ -368,6 +368,16 @@ this.study = class extends ExtensionAPI {
           // return { valid: true, errors: [] };
         },
 
+        /* Annotates the supplied survey base url with common survey parameters (study name, variation, updateChannel, fxVersion, add-on version and client id) */
+        fullSurveyUrl: async function fullSurveyUrl(surveyBaseUrl, reason) {
+          utilsLogger.debug(
+            "Called fullSurveyUrl(surveyBaseUrl, reason)",
+            surveyBaseUrl,
+            reason,
+          );
+          return studyUtils.fullSurveyUrl(surveyBaseUrl, reason);
+        },
+
         /* Returns an object with the following keys:
     variationName - to be able to test specific variations
     firstRunTimestamp - to be able to test the expiration event
