@@ -119,7 +119,25 @@ this.study = class extends ExtensionAPI {
       "resource://normandy/lib/AddonStudies.jsm",
       {},
     );
-    AddonStudies.addUnenrollListener(extension.id, reason => endStudy(reason));
+    AddonStudies.addUnenrollListener(extension.id, async reason => {
+      utilsLogger.debug(
+        "AddonStudies.addUnenrollListener fired with reason:",
+        reason,
+      );
+      await endStudy(reason);
+      // Normandy will wait until this promise resolves before uninstalling the add-on
+      // We need to give the add-on a chance to do its clean-up after receiving the endStudy event above
+      // Note that the add-on uninstalls by itself upon the endStudy event
+      utilsLogger.debug(
+        "Stalling for a few seconds before allowing Normandy to uninstall the add-on",
+      );
+      await new Promise(resolve => {
+        const id = setTimeout(() => {
+          clearTimeout(id);
+          resolve();
+        }, 5 * 1000);
+      });
+    });
 
     return {
       study: {
