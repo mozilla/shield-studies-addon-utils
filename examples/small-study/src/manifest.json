@@ -3,6 +3,7 @@
   "description": "Demo of shield-studies-addon-utils",
   "version": "1.0.0",
   "manifest_version": 2,
+  "hidden": true,
   "applications": {
     "gecko": {
       "id": "shield-utils-small-study-demo@shield.mozilla.org",

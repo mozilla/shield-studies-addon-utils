@@ -159,6 +159,7 @@ Repositories that should not be used as templates for new studies:
 
 ## History of major versions
 
+* v5.3: [Better study endings](https://github.com/mozilla/shield-studies-addon-utils/issues/246) and `browser.study.fullSurveyUrl()`
 * v5.2: Added Pioneer and Firefox 67 support
 * v5.1: Added preferences for testing overrides, study logger and other enhancements
 * v5: API exposed as a Web Extension Experiment. Minimal viable add-on example added. Test coverage improved. Test utils added.

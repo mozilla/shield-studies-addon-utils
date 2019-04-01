@@ -109,10 +109,35 @@ this.study = class extends ExtensionAPI {
     const addonLogger = createLogger(widgetId, `shieldStudy.logLevel`);
 
     async function endStudy(anEndingAlias) {
-      utilsLogger.debug("called endStudy anEndingAlias");
+      utilsLogger.debug("called endStudy with anEndingAlias:", anEndingAlias);
       const endingResponse = await studyUtils.endStudy(anEndingAlias);
       studyApiEventEmitter.emitEndStudy(endingResponse);
     }
+
+    // Add normandy unenroll listener
+    const { AddonStudies } = ChromeUtils.import(
+      "resource://normandy/lib/AddonStudies.jsm",
+      {},
+    );
+    AddonStudies.addUnenrollListener(extension.id, async reason => {
+      utilsLogger.debug(
+        "AddonStudies.addUnenrollListener fired with reason:",
+        reason,
+      );
+      await endStudy(reason);
+      // Normandy will wait until this promise resolves before uninstalling the add-on
+      // We need to give the add-on a chance to do its clean-up after receiving the endStudy event above
+      // Note that the add-on uninstalls by itself upon the endStudy event
+      utilsLogger.debug(
+        "Stalling for a few seconds before allowing Normandy to uninstall the add-on",
+      );
+      await new Promise(resolve => {
+        const id = setTimeout(() => {
+          clearTimeout(id);
+          resolve();
+        }, 5 * 1000);
+      });
+    });
 
     return {
       study: {
@@ -366,6 +391,16 @@ this.study = class extends ExtensionAPI {
           utilsLogger.debug("called validateJSON someJson, jsonschema");
           return studyUtils.jsonschema.validate(someJson, jsonschema);
           // return { valid: true, errors: [] };
+        },
+
+        /* Annotates the supplied survey base url with common survey parameters (study name, variation, updateChannel, fxVersion, add-on version and client id) */
+        fullSurveyUrl: async function fullSurveyUrl(surveyBaseUrl, reason) {
+          utilsLogger.debug(
+            "Called fullSurveyUrl(surveyBaseUrl, reason)",
+            surveyBaseUrl,
+            reason,
+          );
+          return studyUtils.fullSurveyUrl(surveyBaseUrl, reason);
         },
 
         /* Returns an object with the following keys:
