@@ -1,7 +1,7 @@
 {
   "name": "shield-studies-addon-utils",
-  "description": "Utilities for building Shield-Study Mozilla Firefox add-ons.",
-  "version": "5.3.0",
+  "description": "Utilities for Mozilla Firefox study add-ons.",
+  "version": "6.0.0-rc1",
   "author": "Mozilla",
   "bin": {
     "copyStudyUtils": "bin/copyStudyUtils.js",
@@ -72,7 +72,6 @@
   },
   "scripts": {
     "build": "npm run generate && cd webExtensionApis/study && webpack",
-    "clean": "rm -rf examples/*/{src/privileged/,dist/}",
     "docformat": "doctoc --title '**Contents**' docs/*.md && prettier '**/*.md' --write",
     "eslint": "eslint . --ext js --ext json",
     "eslint-fix": "npm run eslint -- --fix",
@@ -93,7 +92,6 @@
     "prepare": "export SKIPLINT=1 && fixpack && npm run build",
     "pretest": "npm run build && npm run test-addon:bundle-utils && npm run test-addon:build && npm run import-pioneer-opt-in",
     "pretest-addon": "npm run pretest",
-    "small-study": "cd examples/small-study && npm run rebuild && npm start",
     "test": "npm run test:func",
     "test-addon": "cd test-addon && web-ext run --no-reload",
     "test-addon:build": "cd test-addon && web-ext build",

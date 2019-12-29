@@ -9,7 +9,7 @@ const customHelp = `
   # Additional hints
 
   ## cleanup
-  rm -rf <privilegedDirName>/{study,prefs}
+  rm -rf <privilegedDirName>/study
 `;
 
 function correctOutputDir(privilegedDirname) {

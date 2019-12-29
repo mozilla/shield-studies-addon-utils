@@ -21,14 +21,6 @@
   },
   "permissions": ["storage", "alarms"],
   "background": {
-    "scripts": ["studySetup.js", "background.js"]
-  },
-  "icons": {
-    "48": "icons/shield-icon.svg"
-  },
-  "browser_action": {
-    "browser_style": true,
-    "default_icon": "icons/shield-icon.svg",
-    "default_title": "Test"
+    "scripts": ["background.js"]
   }
 }
