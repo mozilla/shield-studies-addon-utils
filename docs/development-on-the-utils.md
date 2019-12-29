@@ -29,6 +29,10 @@
 * `SKIPLINT=1 npm run test` skips linting
 * `npm run test-only` skips build steps.
 
+## Troubleshooting error messages during execution of functional tests
+
+Sometimes Selenium just comes back with `JavascriptError: Error: An unexpected error occurred`. In these cases (and others) it may be useful to check the contents of `test/results/logs/geckodriver.log` for hints of what code was last attempted to be executed, then manually attempt to run that same lines of code in the browser console / add-on toolbox console. Unfortunately, web extension experiments are notorious for failing silently or with minimal information about the actual error. Use plenty of try/catch clauses and logging to track down what code is causing an error. Many times it may be incorrect invocations of web extension experiment API methods (or other methods) that may be causing poorly explained error messages.
+
 # Continuous Integration
 
 [Circle CI](https://circleci.com/) is used for continuous integration. Configured via `./.circleci/config.yml`.

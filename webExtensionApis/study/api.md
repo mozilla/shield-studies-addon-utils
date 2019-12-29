@@ -10,7 +10,7 @@ Object of current dataPermissions (shield enabled true/false, pioneer enabled tr
 
 **Parameters**
 
-### `browser.study.sendTelemetry( payload )`
+### `browser.study.sendTelemetry( payload, studyType )`
 
 Send Telemetry using appropriate shield or pioneer methods.
 
@@ -26,11 +26,17 @@ TBD fix the parameters here.
 **Parameters**
 
 * `payload`
+
   * type: payload
   * $ref:
   * optional: false
 
-### `browser.study.calculateTelemetryPingSize( payload )`
+* `studyType`
+  * type: studyType
+  * $ref:
+  * optional: false
+
+### `browser.study.calculateTelemetryPingSize( payload, studyType )`
 
 Calculate Telemetry using appropriate shield or pioneer methods.
 
@@ -45,7 +51,13 @@ pioneer:
 **Parameters**
 
 * `payload`
+
   * type: payload
+  * $ref:
+  * optional: false
+
+* `studyType`
+  * type: studyType
   * $ref:
   * optional: false
 

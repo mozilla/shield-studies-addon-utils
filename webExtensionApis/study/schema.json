@@ -184,6 +184,10 @@
           {
             "name": "payload",
             "$ref": "telemetryPayload"
+          },
+          {
+            "name": "studyType",
+            "$ref": "studyTypesEnum"
           }
         ],
         "defaultReturn": "undefined",
@@ -199,6 +203,10 @@
           {
             "name": "payload",
             "$ref": "telemetryPayload"
+          },
+          {
+            "name": "studyType",
+            "$ref": "studyTypesEnum"
           }
         ],
         "defaultReturn": "undefined",

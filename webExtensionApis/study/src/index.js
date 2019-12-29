@@ -6,6 +6,7 @@
 "use strict";
 
 import { utilsLogger } from "./logger";
+import { studyUtils } from "./studyUtils";
 
 /** Implements the study/getApi for `browser.study` API */
 this.study = class extends ExtensionAPI {
@@ -46,9 +47,6 @@ this.study = class extends ExtensionAPI {
     /* eslint-disable no-undef */
     const { ExtensionError } = ExtensionUtils;
 
-    // Load studyUtils
-    const { studyUtils } = require("./studyUtils.js");
-
     // Used for pref naming, telemetry
     // studyUtils.setExtensionManifest(extension.manifest);
 
@@ -74,7 +72,7 @@ this.study = class extends ExtensionAPI {
          * @param {Object} payload Non-nested object with key strings, and key values
          * @returns {undefined}
          */
-        sendTelemetry: async function sendTelemetry(payload) {
+        sendTelemetry: async function sendTelemetry(payload, studyType) {
           utilsLogger.debug("called sendTelemetry payload");
 
           function throwIfInvalid(obj) {
@@ -89,7 +87,15 @@ this.study = class extends ExtensionAPI {
           }
 
           throwIfInvalid(payload);
-          return studyUtils.telemetry(payload);
+          utilsLogger.debug("valid telemetry payload");
+
+          try {
+            return studyUtils.telemetry(payload);
+          } catch (error) {
+            // Surface otherwise silent or obscurely reported errors
+            console.error(error.message, error.stack);
+            throw new ExtensionError(error.message);
+          }
         },
 
         /** Calculate Telemetry using appropriate shield or pioneer methods.
@@ -106,7 +112,13 @@ this.study = class extends ExtensionAPI {
         calculateTelemetryPingSize: async function calculateTelemetryPingSize(
           payload,
         ) {
-          return studyUtils.calculateTelemetryPingSize(payload);
+          try {
+            return studyUtils.calculateTelemetryPingSize(payload);
+          } catch (error) {
+            // Surface otherwise silent or obscurely reported errors
+            console.error(error.message, error.stack);
+            throw new ExtensionError(error.message);
+          }
         },
 
         /** Search locally stored telemetry pings using these fields (if set)
@@ -130,29 +142,49 @@ this.study = class extends ExtensionAPI {
          * @returns {Array<sendTelemetry>} matchingPings
          */
         async searchSentTelemetry(searchTelemetryQuery) {
-          const { TelemetryArchive } = ChromeUtils.import(
-            "resource://gre/modules/TelemetryArchive.jsm",
-            {},
-          );
-          const { searchTelemetryArchive } = require("./telemetry.js");
-          return searchTelemetryArchive(TelemetryArchive, searchTelemetryQuery);
+          try {
+            const { TelemetryArchive } = ChromeUtils.import(
+              "resource://gre/modules/TelemetryArchive.jsm",
+              {},
+            );
+            const { searchTelemetryArchive } = require("./telemetry.js");
+            return searchTelemetryArchive(
+              TelemetryArchive,
+              searchTelemetryQuery,
+            );
+          } catch (error) {
+            // Surface otherwise silent or obscurely reported errors
+            console.error(error.message, error.stack);
+            throw new ExtensionError(error.message);
+          }
         },
 
         /* Using AJV, do jsonschema validation of an object.  Can be used to validate your arguments, packets at client. */
         validateJSON: async function validateJSON(someJson, jsonschema) {
-          utilsLogger.debug("called validateJSON someJson, jsonschema");
-          return studyUtils.jsonschema.validate(someJson, jsonschema);
-          // return { valid: true, errors: [] };
+          try {
+            utilsLogger.debug("called validateJSON someJson, jsonschema");
+            return studyUtils.jsonschema.validate(someJson, jsonschema);
+          } catch (error) {
+            // Surface otherwise silent or obscurely reported errors
+            console.error(error.message, error.stack);
+            throw new ExtensionError(error.message);
+          }
         },
 
         /* Annotates the supplied survey base url with common survey parameters (study name, variation, updateChannel, fxVersion, add-on version and client id) */
         fullSurveyUrl: async function fullSurveyUrl(surveyBaseUrl, reason) {
-          utilsLogger.debug(
-            "Called fullSurveyUrl(surveyBaseUrl, reason)",
-            surveyBaseUrl,
-            reason,
-          );
-          return studyUtils.fullSurveyUrl(surveyBaseUrl, reason);
+          try {
+            utilsLogger.debug(
+              "Called fullSurveyUrl(surveyBaseUrl, reason)",
+              surveyBaseUrl,
+              reason,
+            );
+            return studyUtils.fullSurveyUrl(surveyBaseUrl, reason);
+          } catch (error) {
+            // Surface otherwise silent or obscurely reported errors
+            console.error(error.message, error.stack);
+            throw new ExtensionError(error.message);
+          }
         },
       },
 

@@ -13,6 +13,12 @@ const { Services } = ChromeUtils.import(
   "resource://gre/modules/Services.jsm",
   {},
 );
+const { ExtensionUtils } = ChromeUtils.import(
+  "resource://gre/modules/ExtensionUtils.jsm",
+  {},
+);
+/* eslint-disable no-undef */
+const { ExtensionError } = ExtensionUtils;
 
 Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
 
@@ -102,12 +108,25 @@ class StudyUtils {
     this._extensionManifest = extensionManifest;
   }
 
+  getStudyTypeHandler(studyType) {
+    if (!this.studyTypeHandler) {
+      // Different study types treat data and configuration differently
+      if (studyType === "shield") {
+        this.studyTypeHandler = new ShieldStudyType(this);
+      }
+      if (studyType === "pioneer") {
+        this.studyTypeHandler = new PioneerStudyType(this);
+      }
+    }
+    return this.studyTypeHandler;
+  }
+
   /**
    * Gets the telemetry client ID for the user.
    * @returns {string} - the telemetry client ID
    */
   async getTelemetryId() {
-    return this.studyTypeHandler.getTelemetryId();
+    return this.getStudyTypeHandler(studyType).getTelemetryId();
   }
 
   /**
@@ -131,19 +150,25 @@ class StudyUtils {
    * appended to a study ending url
    * @returns {Object} - the query arguments for the study
    */
-  async endingQueryArgs() {
-    const who = await this.getTelemetryId();
-    const queryArgs = {
-      shield: PACKET_VERSION,
-      study,
-      variation,
-      updateChannel: Services.appinfo.defaultUpdateChannel,
-      fxVersion: Services.appinfo.version,
-      addon: this._extensionManifest.version, // addon version
-      who, // telemetry clientId
-    };
-    queryArgs.testing = false;
-    return queryArgs;
+  async endingQueryArgs(study, variation) {
+    try {
+      const who = await this.getTelemetryId();
+      const queryArgs = {
+        shield: PACKET_VERSION,
+        study,
+        variation,
+        updateChannel: Services.appinfo.defaultUpdateChannel,
+        fxVersion: Services.appinfo.version,
+        addon: this._extensionManifest.version, // addon version
+        who, // telemetry clientId
+      };
+      queryArgs.testing = false;
+      return queryArgs;
+    } catch (error) {
+      // Surface otherwise silent or obscurely reported errors
+      console.error(error.message, error.stack);
+      throw new ExtensionError(error.message);
+    }
   }
 
   /**
@@ -156,94 +181,96 @@ class StudyUtils {
    *   - the packet is of type "shield-study-error"
    *   - the study's telemetryConfig.send is set to false
    */
-  async _telemetry(
-    data,
-    bucket = "shield-study-addon",
-    /*
-    studyType,
-    study_name,
-    branch,
-    testing,
-     */
-  ) {
-    utilsLogger.debug(`telemetry in:  ${bucket} ${JSON.stringify(data)}`);
-
-    const payload = {
-      version: PACKET_VERSION,
-      study_name,
-      branch,
-      addon_version: this._extensionManifest.version,
-      shield_version: UTILS_VERSION,
-      type: bucket,
-      data,
-      testing,
-    };
-
-    let validation;
+  async _telemetry(data, { bucket, studyType, study_name, branch, testing }) {
     try {
-      validation = jsonschema.validate(payload, schemas[bucket]);
-    } catch (err) {
-      // Catch failures of unknown origin (could be library, add-on, system...)
-      // if validation broke, GIVE UP.
-      utilsLogger.error(err);
-      return false;
-    }
-    /*
-    * Handle validation errors by sending a "shield-study-error"
-    * telemetry ping with the error report.
-    * If the invalid payload is itself of type "shield-study-error",
-    * throw an error (to avoid a possible infinite loop).
-    */
-    if (validation.errors.length) {
-      const errorReport = {
-        error_id: "jsonschema-validation",
-        error_source: "addon",
-        severity: "fatal",
-        message: JSON.stringify(validation.errors),
+      utilsLogger.debug(`telemetry in:  ${bucket} ${JSON.stringify(data)}`);
+
+      const payload = {
+        version: PACKET_VERSION,
+        study_name,
+        branch,
+        addon_version: this._extensionManifest.version,
+        shield_version: UTILS_VERSION,
+        type: bucket,
+        data,
+        testing,
       };
-      if (bucket === "shield-study-error") {
-        utilsLogger.warn("cannot validate shield-study-error", data, bucket);
-        return false; // just die, maybe should have a super escape hatch?
+
+      let validation;
+      try {
+        validation = jsonschema.validate(payload, schemas[bucket]);
+      } catch (err) {
+        // Catch failures of unknown origin (could be library, add-on, system...)
+        // if validation broke, GIVE UP.
+        utilsLogger.error(err);
+        return false;
       }
-      return this.telemetryError(errorReport);
-    }
-    utilsLogger.debug(`telemetry: ${JSON.stringify(payload)}`);
+      /*
+      * Handle validation errors by sending a "shield-study-error"
+      * telemetry ping with the error report.
+      * If the invalid payload is itself of type "shield-study-error",
+      * throw an error (to avoid a possible infinite loop).
+      */
+      if (validation.errors.length) {
+        const errorReport = {
+          error_id: "jsonschema-validation",
+          error_source: "addon",
+          severity: "fatal",
+          message: JSON.stringify(validation.errors),
+        };
+        if (bucket === "shield-study-error") {
+          utilsLogger.warn("cannot validate shield-study-error", data, bucket);
+          return false; // just die, maybe should have a super escape hatch?
+        }
+        return this.telemetryError(errorReport);
+      }
+      utilsLogger.debug(`telemetry: ${JSON.stringify(payload)}`);
 
-    // Different study types treat data and configuration differently
-    if (studyType === "shield") {
-      this.studyTypeHandler = new ShieldStudyType(this);
-    }
-    if (studyType === "pioneer") {
-      this.studyTypeHandler = new PioneerStudyType(this);
-    }
+      let pingId;
+      pingId = await this.getStudyTypeHandler(studyType).sendTelemetry(
+        bucket,
+        payload,
+      );
 
-    let pingId;
-    pingId = await this.studyTypeHandler.sendTelemetry(bucket, payload);
+      // Store a copy of the ping if it's a shield-study or error ping, which are few in number, or if we have activated the internal telemetry archive configuration
+      if (
+        bucket === "shield-study" ||
+        bucket === "shield-study-error" ||
+        this.telemetryConfig.internalTelemetryArchive
+      ) {
+        this.seenTelemetry.push({ id: pingId, payload });
+      }
 
-    // Store a copy of the ping if it's a shield-study or error ping, which are few in number, or if we have activated the internal telemetry archive configuration
-    if (
-      bucket === "shield-study" ||
-      bucket === "shield-study-error" ||
-      this.telemetryConfig.internalTelemetryArchive
-    ) {
-      this.seenTelemetry.push({ id: pingId, payload });
+      return pingId;
+    } catch (error) {
+      // Surface otherwise silent or obscurely reported errors
+      console.error(error.message, error.stack);
+      throw new ExtensionError(error.message);
     }
-
-    return pingId;
   }
 
   /**
    * Validates and submits telemetry pings from the add-on; mostly from
    * webExtension messages.
    * @param {Object} payload - the data to send as part of the telemetry packet
+   * @param {Object} studyType - the study type
    * @returns {Promise|boolean} - see StudyUtils._telemetry
    */
-  async telemetry(payload) {
-    utilsLogger.debug(`telemetry ${JSON.stringify(payload)}`);
-    const toSubmit = {
-      attributes: payload,
-    };
-    return this._telemetry(toSubmit, "shield-study-addon");
+  async telemetry(payload, studyType) {
+    try {
+      utilsLogger.debug(`telemetry ${JSON.stringify(payload)}`);
+      const toSubmit = {
+        attributes: payload,
+      };
+      return this._telemetry(toSubmit, {
+        studyType,
+        bucket: "shield-study-addon",
+      });
+    } catch (error) {
+      // Surface otherwise silent or obscurely reported errors
+      console.error(error.message, error.stack);
+      throw new ExtensionError(error.message);
+    }
   }
 
   /**
@@ -252,7 +279,13 @@ class StudyUtils {
    * @returns {Promise|boolean} - see StudyUtils._telemetry
    */
   telemetryError(errorReport) {
-    return this._telemetry(errorReport, "shield-study-error");
+    try {
+      return this._telemetry(errorReport, { bucket: "shield-study-error" });
+    } catch (error) {
+      // Surface otherwise silent or obscurely reported errors
+      console.error(error.message, error.stack);
+      throw new ExtensionError(error.message);
+    }
   }
 
   /**
@@ -265,17 +298,25 @@ class StudyUtils {
    *   - Calculate the size of a ping that has Pioneer encrypted data
    *
    * @param {Object} payload Non-nested object with key strings, and key values
+   * @param {Object} studyType - the study type
    * @returns {Promise<Number>} The total size of the ping.
    */
-  async calculateTelemetryPingSize(payload) {
-    const toSubmit = {
-      attributes: payload,
-    };
-    return this.studyTypeHandler.getPingSize(toSubmit, "shield-study-addon");
+  async calculateTelemetryPingSize(payload, studyType) {
+    try {
+      const toSubmit = {
+        attributes: payload,
+      };
+      return this.getStudyTypeHandler(studyType).getPingSize(
+        toSubmit,
+        "shield-study-addon",
+      );
+    } catch (error) {
+      // Surface otherwise silent or obscurely reported errors
+      console.error(error.message, error.stack);
+      throw new ExtensionError(error.message);
+    }
   }
 }
 
-// TODO, use the usual es6 exports
 // Actually create the singleton.
-const studyUtils = new StudyUtils();
-this.studyUtils = studyUtils;
+export const studyUtils = new StudyUtils();

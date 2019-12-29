@@ -112,6 +112,8 @@
     parameters:
     - name: payload
       $ref: telemetryPayload
+    - name: studyType
+      $ref: studyTypesEnum
 
     defaultReturn: undefined  # exception if out of policy based on config
     returns:
@@ -131,6 +133,8 @@
     parameters:
     - name: payload
       $ref: telemetryPayload
+    - name: studyType
+      $ref: studyTypesEnum
 
     defaultReturn: undefined
     returns:

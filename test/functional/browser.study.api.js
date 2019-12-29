@@ -191,18 +191,19 @@ function publicApiTests(studyType) {
 
       before(async function reinstallSetupDoTelemetryAndWait() {
         await installAddon();
-        const _ = await addonExec(async callback => {
+        const _ = await addonExec(async (_studyType, callback) => {
           await browser.studyDebug.resetSeenTelemetry();
           await browser.studyDebug.recordSeenTelemetry();
           const samplePing = { foo: "bar" };
-          await browser.study.sendTelemetry(samplePing);
+          await browser.study.sendTelemetry(samplePing, _studyType);
           const _calculatedPingSize = await browser.study.calculateTelemetryPingSize(
             samplePing,
+            _studyType,
           );
           callback({
             calculatedPingSize: _calculatedPingSize,
           });
-        });
+        }, studyType);
         calculatedPingSize = _.calculatedPingSize;
         await delay(1000); // wait a second to telemetry to settle on disk.
       });
