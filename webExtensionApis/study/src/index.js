@@ -7,6 +7,7 @@
 
 import { utilsLogger } from "./logger";
 import { studyUtils } from "./studyUtils";
+import { getDataPermissions } from "./dataPermissions";
 
 /** Implements the study/getApi for `browser.study` API */
 this.study = class extends ExtensionAPI {
@@ -33,10 +34,6 @@ this.study = class extends ExtensionAPI {
   getAPI(context) {
     const { extension } = this;
 
-    const { ExtensionCommon } = ChromeUtils.import(
-      "resource://gre/modules/ExtensionCommon.jsm",
-      {},
-    );
     const { ExtensionUtils } = ChromeUtils.import(
       "resource://gre/modules/ExtensionUtils.jsm",
       {},
@@ -48,10 +45,13 @@ this.study = class extends ExtensionAPI {
     const { ExtensionError } = ExtensionUtils;
 
     // Used for pref naming, telemetry
-    // studyUtils.setExtensionManifest(extension.manifest);
+    studyUtils.setExtensionManifest(extension.manifest);
 
     return {
       study: {
+        /* Object of current dataPermissions (shield enabled true/false, pioneer enabled true/false) */
+        getDataPermissions,
+
         /** Send Telemetry using appropriate shield or pioneer methods.
          *
          *  shield:
@@ -70,6 +70,7 @@ this.study = class extends ExtensionAPI {
          *  TBD fix the parameters here.
          *
          * @param {Object} payload Non-nested object with key strings, and key values
+         * @param {Object} studyType - the study type
          * @returns {undefined}
          */
         sendTelemetry: async function sendTelemetry(payload, studyType) {
@@ -90,7 +91,7 @@ this.study = class extends ExtensionAPI {
           utilsLogger.debug("valid telemetry payload");
 
           try {
-            return studyUtils.telemetry(payload);
+            return studyUtils.telemetry(payload, studyType);
           } catch (error) {
             // Surface otherwise silent or obscurely reported errors
             console.error(error.message, error.stack);
@@ -107,13 +108,15 @@ this.study = class extends ExtensionAPI {
          *   - Calculate the size of a ping that has Pioneer encrypted data
          *
          * @param {Object} payload Non-nested object with key strings, and key values
+         * @param {Object} studyType - the study type
          * @returns {Promise<Number>} The total size of the ping.
          */
         calculateTelemetryPingSize: async function calculateTelemetryPingSize(
           payload,
+          studyType,
         ) {
           try {
-            return studyUtils.calculateTelemetryPingSize(payload);
+            return studyUtils.calculateTelemetryPingSize(payload, studyType);
           } catch (error) {
             // Surface otherwise silent or obscurely reported errors
             console.error(error.message, error.stack);
@@ -172,14 +175,22 @@ this.study = class extends ExtensionAPI {
         },
 
         /* Annotates the supplied survey base url with common survey parameters (study name, variation, updateChannel, fxVersion, add-on version and client id) */
-        fullSurveyUrl: async function fullSurveyUrl(surveyBaseUrl, reason) {
+        fullSurveyUrl: async function fullSurveyUrl(
+          surveyBaseUrl,
+          reason,
+          studyType,
+        ) {
           try {
             utilsLogger.debug(
               "Called fullSurveyUrl(surveyBaseUrl, reason)",
               surveyBaseUrl,
               reason,
             );
-            return studyUtils.fullSurveyUrl(surveyBaseUrl, reason);
+            return studyUtils.fullSurveyUrl({
+              surveyBaseUrl,
+              reason,
+              studyType,
+            });
           } catch (error) {
             // Surface otherwise silent or obscurely reported errors
             console.error(error.message, error.stack);

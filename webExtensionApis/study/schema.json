@@ -273,6 +273,10 @@
           {
             "name": "reason",
             "type": "string"
+          },
+          {
+            "name": "studyType",
+            "$ref": "studyTypesEnum"
           }
         ],
         "returns": [
@@ -347,14 +351,6 @@
         "type": "function",
         "async": true,
         "description": "Empty the array of seen telemetry",
-        "parameters": []
-      },
-      {
-        "name": "getInternalTestingOverrides",
-        "type": "function",
-        "async": true,
-        "description":
-          "Returns an object with the following keys:\n  studyType - to be able to test add-ons with different studyType configurations\nUsed to override study testing flags in getStudySetup().\nThe values are set by the corresponding preference under the `extensions.${widgetId}.test.*` preference branch.\n",
         "parameters": []
       }
     ]

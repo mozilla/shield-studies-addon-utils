@@ -34,6 +34,13 @@ function publicApiTests(studyType) {
       utils.FIREFOX_PREFERENCES,
     );
 
+    // Ensure that shield optout studies are enabled during testing
+    await utils.preferences.set(
+      driver,
+      `app.shield.optoutstudies.enabled`,
+      true,
+    );
+
     // TODO: Possibly configure Normandy here - replaces study utils setup phase
 
     await installAddon();
@@ -159,7 +166,7 @@ function publicApiTests(studyType) {
     });
   });
 
-  describe.skip("getDataPermissions", function() {
+  describe("getDataPermissions", function() {
     it("returns correct and current list of permissions", async () => {
       const dataPermissions = await addonExec(async cb => {
         // this is what runs in the webExtension scope.
@@ -167,10 +174,10 @@ function publicApiTests(studyType) {
         // call back with all the data we care about to Mocha / node
         cb($dataPermissions);
       });
-      console.debug(full(dataPermissions));
+      console.debug({ dataPermissions });
 
       // tests
-      assert(dataPermissions.shield, "shield should be enabled");
+      assert(dataPermissions.shield, "shield optoutstudies should be enabled");
       if (studyType === "pioneer") {
         assert(
           dataPermissions.pioneer,
@@ -211,7 +218,7 @@ function publicApiTests(studyType) {
       it("calculated ping size is as expected", async () => {
         const expectedPingSizes = {
           shield: 20,
-          pioneer: 662,
+          pioneer: 682,
         };
         assert.strictEqual(calculatedPingSize, expectedPingSizes[studyType]);
       });
@@ -231,19 +238,26 @@ function publicApiTests(studyType) {
             const seenTelemetry = await browser.studyDebug.getSeenTelemetry();
             callback({
               sent: _studyPings,
-              seen: seenTelemetry.seenTelemetry.reverse(),
+              seen: seenTelemetry.reverse(),
             }); // Using reverse() to mimic the default sorting of telemetry archive results
           });
           // For debugging tests
-          // console.debug("Pings report: ", utils.telemetry.pingsReport(studyPings.seen));
-          // console.debug("Pings with id and payload: ", utils.telemetry.pingsDebug(studyPings.seen));
+          console.debug(
+            "Pings report: ",
+            utils.telemetry.pingsReport(studyPings.seen),
+          );
+          console.debug(
+            "Pings with id and payload: ",
+            utils.telemetry.pingsDebug(studyPings.seen),
+          );
         });
 
-        it("should have sent at least one shield telemetry ping", async () => {
-          assert(
-            studyPings.sent.length > 0,
-            "at least one shield telemetry ping",
-          );
+        it("should have seen at least one telemetry ping", async () => {
+          assert(studyPings.seen.length > 0, "at least one telemetry ping");
+        });
+
+        it("should have sent at least one telemetry ping", async () => {
+          assert(studyPings.sent.length > 0, "at least one telemetry ping");
         });
 
         it("should have sent expected telemetry", async () => {
@@ -263,7 +277,7 @@ function publicApiTests(studyType) {
           assert.deepStrictEqual(
             observed,
             expected,
-            "telemetry pings as as expected",
+            "telemetry pings as expected",
           );
         });
       });
@@ -310,19 +324,21 @@ function publicApiTests(studyType) {
   describe("api: fullSurveyUrl", function() {
     describe("correctly constructs urls queryArgs", function() {
       it("an example url is correct", async function() {
-        const actual = await addonExec(async callback => {
+        const actual = await addonExec(async (_studyType, callback) => {
           const result = await browser.study.fullSurveyUrl(
             "https://foo.com/survey-foo/",
             "mid-study-survey",
+            _studyType,
           );
           callback(result);
-        });
+        }, studyType);
+        console.debug({ actual });
         const matchesExpectedExceptForVariableArguments =
           actual.indexOf(
-            "https://foo.com/survey-foo/?shield=3&study=test%3Abrowser.study.api",
+            "https://foo.com/survey-foo/?shield=3&study=shield-utils-test-addon%40shield.mozilla.org",
           ) > -1 &&
           actual.indexOf(
-            "&testing=1&reason=mid-study-survey&fullreason=mid-study-survey",
+            "&testing=-1&reason=mid-study-survey&fullreason=mid-study-survey",
           ) > -1;
         assert(matchesExpectedExceptForVariableArguments);
       });

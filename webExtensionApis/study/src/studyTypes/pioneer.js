@@ -222,10 +222,9 @@ class PioneerStudyType {
    * @param {object} studyUtils The studyUtils instance from where this class was instantiated
    */
   constructor(studyUtils) {
-    const studySetup = studyUtils._internals.studySetup;
     const Config = {
-      studyName: studySetup.activeExperimentName,
-      telemetryEnv: studySetup.telemetry.removeTestingFlag ? "prod" : "stage",
+      studyName: studyUtils._extensionManifest.applications.gecko.id,
+      telemetryEnv: "prod", // Currently unconfigurable parameter - defaulting to "prod" rather than "stage"
     };
     this.pioneerUtils = new PioneerUtils(Config);
     this.schemaVersion = 3; // Corresponds to the schema versions used in https://github.com/mozilla-services/mozilla-pipeline-schemas/tree/dev/templates/telemetry/shield-study (and the shield-study-addon, shield-study-error equivalents)

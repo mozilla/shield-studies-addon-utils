@@ -105,7 +105,7 @@ Using AJV, do jsonschema validation of an object. Can be used to validate your a
   * $ref:
   * optional: false
 
-### `browser.study.fullSurveyUrl( surveyBaseUrl, reason )`
+### `browser.study.fullSurveyUrl( surveyBaseUrl, reason, studyType )`
 
 Annotates the supplied survey base url with common survey parameters (study name, variation, updateChannel, fxVersion, add-on version and client id)
 
@@ -118,7 +118,13 @@ Annotates the supplied survey base url with common survey parameters (study name
   * optional: false
 
 * `reason`
+
   * type: reason
+  * $ref:
+  * optional: false
+
+* `studyType`
+  * type: studyType
   * $ref:
   * optional: false
 
@@ -364,15 +370,6 @@ Return array of seen telemetry. Fully populated only if recordSeenTelemetry() ha
 ### `browser.studyDebug.resetSeenTelemetry( )`
 
 Empty the array of seen telemetry
-
-**Parameters**
-
-### `browser.studyDebug.getInternalTestingOverrides( )`
-
-Returns an object with the following keys:
-studyType - to be able to test add-ons with different studyType configurations
-Used to override study testing flags in getStudySetup().
-The values are set by the corresponding preference under the `extensions.${widgetId}.test.*` preference branch.
 
 **Parameters**
 
