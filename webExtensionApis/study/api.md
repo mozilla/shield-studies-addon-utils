@@ -10,7 +10,7 @@ Object of current dataPermissions (shield enabled true/false, pioneer enabled tr
 
 **Parameters**
 
-### `browser.study.sendTelemetry( payload, studyType )`
+### `browser.study.sendTelemetry( payload, telemetryPipeline )`
 
 Send Telemetry using appropriate shield or pioneer methods.
 
@@ -31,12 +31,12 @@ TBD fix the parameters here.
   * $ref:
   * optional: false
 
-* `studyType`
-  * type: studyType
+* `telemetryPipeline`
+  * type: telemetryPipeline
   * $ref:
   * optional: false
 
-### `browser.study.calculateTelemetryPingSize( payload, studyType )`
+### `browser.study.calculateTelemetryPingSize( payload, telemetryPipeline )`
 
 Calculate Telemetry using appropriate shield or pioneer methods.
 
@@ -56,8 +56,8 @@ pioneer:
   * $ref:
   * optional: false
 
-* `studyType`
-  * type: studyType
+* `telemetryPipeline`
+  * type: telemetryPipeline
   * $ref:
   * optional: false
 
@@ -105,7 +105,7 @@ Using AJV, do jsonschema validation of an object. Can be used to validate your a
   * $ref:
   * optional: false
 
-### `browser.study.fullSurveyUrl( surveyBaseUrl, reason, studyType )`
+### `browser.study.fullSurveyUrl( surveyBaseUrl, reason, telemetryPipeline )`
 
 Annotates the supplied survey base url with common survey parameters (study name, variation, updateChannel, fxVersion, add-on version and client id)
 
@@ -123,8 +123,8 @@ Annotates the supplied survey base url with common survey parameters (study name
   * $ref:
   * optional: false
 
-* `studyType`
-  * type: studyType
+* `telemetryPipeline`
+  * type: telemetryPipeline
   * $ref:
   * optional: false
 
@@ -243,11 +243,11 @@ Annotates the supplied survey base url with common survey parameters (study name
 }
 ```
 
-### [4] studyTypesEnum
+### [4] telemetryPipelinesEnum
 
 ```json
 {
-  "id": "studyTypesEnum",
+  "id": "telemetryPipelinesEnum",
   "$schema": "http://json-schema.org/draft-04/schema",
   "type": "string",
   "enum": ["shield", "pioneer"],

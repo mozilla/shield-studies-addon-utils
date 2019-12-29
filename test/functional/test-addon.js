@@ -12,7 +12,7 @@ const KEEPOPEN = process.env.KEEPOPEN;
 const assert = require("assert");
 const utils = require("./utils");
 
-const testAddonTests = function(studyType) {
+const testAddonTests = function(telemetryPipeline) {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
   this.timeout(15000 + KEEPOPEN * 1000 * 3);
 
@@ -22,7 +22,7 @@ const testAddonTests = function(studyType) {
     driver = await utils.setupWebdriver.promiseSetupDriver(
       utils.FIREFOX_PREFERENCES,
     );
-    if (studyType === "pioneer") {
+    if (telemetryPipeline === "pioneer") {
       await utils.setupWebdriver.installPioneerOptInAddon(driver);
     }
     await utils.setupWebdriver.installAddon(driver);
@@ -59,10 +59,10 @@ const testAddonTests = function(studyType) {
   });
 };
 
-describe("Tests verifying that the test add-on loads (studyType: shield)", function() {
+describe("Tests verifying that the test add-on loads (telemetryPipeline: shield)", function() {
   testAddonTests.bind(this)("shield");
 });
 
-describe("Tests verifying that the test add-on loads (studyType: pioneer)", function() {
+describe("Tests verifying that the test add-on loads (telemetryPipeline: pioneer)", function() {
   testAddonTests.bind(this)("pioneer");
 });

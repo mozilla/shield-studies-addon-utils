@@ -143,8 +143,8 @@ studyInfo
 studyInfoObject
 studyName
 studySetup
-studyType
-studyTypesEnum
+telemetryPipeline
+telemetryPipelinesEnum
 StudyUtils
 studyUtils
 StudyUtils.jsm

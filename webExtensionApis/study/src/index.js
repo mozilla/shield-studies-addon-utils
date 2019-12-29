@@ -70,10 +70,13 @@ this.study = class extends ExtensionAPI {
          *  TBD fix the parameters here.
          *
          * @param {Object} payload Non-nested object with key strings, and key values
-         * @param {Object} studyType - the study type
+         * @param {Object} telemetryPipeline - the telemetry pipeline
          * @returns {undefined}
          */
-        sendTelemetry: async function sendTelemetry(payload, studyType) {
+        sendTelemetry: async function sendTelemetry(
+          payload,
+          telemetryPipeline,
+        ) {
           utilsLogger.debug("called sendTelemetry payload");
 
           function throwIfInvalid(obj) {
@@ -91,7 +94,7 @@ this.study = class extends ExtensionAPI {
           utilsLogger.debug("valid telemetry payload");
 
           try {
-            return studyUtils.telemetry(payload, studyType);
+            return studyUtils.telemetry(payload, telemetryPipeline);
           } catch (error) {
             // Surface otherwise silent or obscurely reported errors
             console.error(error.message, error.stack);
@@ -108,15 +111,18 @@ this.study = class extends ExtensionAPI {
          *   - Calculate the size of a ping that has Pioneer encrypted data
          *
          * @param {Object} payload Non-nested object with key strings, and key values
-         * @param {Object} studyType - the study type
+         * @param {Object} telemetryPipeline - the telemetry pipeline
          * @returns {Promise<Number>} The total size of the ping.
          */
         calculateTelemetryPingSize: async function calculateTelemetryPingSize(
           payload,
-          studyType,
+          telemetryPipeline,
         ) {
           try {
-            return studyUtils.calculateTelemetryPingSize(payload, studyType);
+            return studyUtils.calculateTelemetryPingSize(
+              payload,
+              telemetryPipeline,
+            );
           } catch (error) {
             // Surface otherwise silent or obscurely reported errors
             console.error(error.message, error.stack);
@@ -178,7 +184,7 @@ this.study = class extends ExtensionAPI {
         fullSurveyUrl: async function fullSurveyUrl(
           surveyBaseUrl,
           reason,
-          studyType,
+          telemetryPipeline,
         ) {
           try {
             utilsLogger.debug(
@@ -189,7 +195,7 @@ this.study = class extends ExtensionAPI {
             return studyUtils.fullSurveyUrl({
               surveyBaseUrl,
               reason,
-              studyType,
+              telemetryPipeline,
             });
           } catch (error) {
             // Surface otherwise silent or obscurely reported errors

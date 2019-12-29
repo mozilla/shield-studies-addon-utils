@@ -3,8 +3,8 @@
 "use strict";
 
 import { utilsLogger } from "./logger";
-import ShieldStudyType from "./studyTypes/shield";
-import PioneerStudyType from "./studyTypes/pioneer";
+import ShieldTelemetryPipeline from "./telemetryPipelines/shield";
+import PioneerTelemetryPipeline from "./telemetryPipelines/pioneer";
 
 const UTILS_VERSION = require("../../../package.json").version;
 const PACKET_VERSION = 3;
@@ -100,7 +100,7 @@ class StudyUtils {
     this.jsonschema = jsonschema;
 
     this._extensionManifest = {};
-    this.studyTypeHandler = null;
+    this.telemetryPipelineHandler = null;
     this.recordSeenTelemetry = false;
     this.seenTelemetry = [];
   }
@@ -110,33 +110,35 @@ class StudyUtils {
   }
 
   /**
-   * @param {string} studyType - the study type
+   * @param {string} telemetryPipeline - the telemetry pipeline
    * @returns {null}
    */
-  getStudyTypeHandler(studyType) {
-    if (!this.studyTypeHandler) {
-      // Different study types treat data and configuration differently
-      switch (studyType) {
+  getTelemetryPipelineHandler(telemetryPipeline) {
+    if (!this.telemetryPipelineHandler) {
+      // Different telemetry pipelines treat data and configuration differently
+      switch (telemetryPipeline) {
         case "shield":
-          this.studyTypeHandler = new ShieldStudyType(this);
+          this.telemetryPipelineHandler = new ShieldTelemetryPipeline(this);
           break;
         case "pioneer":
-          this.studyTypeHandler = new PioneerStudyType(this);
+          this.telemetryPipelineHandler = new PioneerTelemetryPipeline(this);
           break;
         default:
-          throw new ExtensionError(`Unknown studyType: "${studyType}"`);
+          throw new ExtensionError(
+            `Unknown telemetryPipeline: "${telemetryPipeline}"`,
+          );
       }
     }
-    return this.studyTypeHandler;
+    return this.telemetryPipelineHandler;
   }
 
   /**
    * Gets the telemetry client ID for the user.
-   * @param {string} studyType - the study type
+   * @param {string} telemetryPipeline - the telemetry pipeline
    * @returns {string} - the telemetry client ID
    */
-  async getTelemetryId(studyType) {
-    return this.getStudyTypeHandler(studyType).getTelemetryId();
+  async getTelemetryId(telemetryPipeline) {
+    return this.getTelemetryPipelineHandler(telemetryPipeline).getTelemetryId();
   }
 
   /**
@@ -148,11 +150,11 @@ class StudyUtils {
     return Services.prefs.getStringPref(key, "");
   }
 
-  async fullSurveyUrl({ surveyBaseUrl, reason, studyType }) {
+  async fullSurveyUrl({ surveyBaseUrl, reason, telemetryPipeline }) {
     const study = this._extensionManifest.applications.gecko.id;
     const variation = this._extensionManifest.applications.gecko.id;
     const queryArgs = await this.endingQueryArgs({
-      studyType,
+      telemetryPipeline,
       study,
       variation,
     });
@@ -166,9 +168,9 @@ class StudyUtils {
    * appended to a study ending url
    * @returns {Object} - the query arguments for the study
    */
-  async endingQueryArgs({ studyType, study, variation }) {
+  async endingQueryArgs({ telemetryPipeline, study, variation }) {
     try {
-      const who = await this.getTelemetryId(studyType);
+      const who = await this.getTelemetryId(telemetryPipeline);
       const queryArgs = {
         shield: PACKET_VERSION,
         study,
@@ -191,14 +193,14 @@ class StudyUtils {
    * Validates and submits telemetry pings from StudyUtils.
    * @param {Object} data - the data to send as part of the telemetry packet
    * @param {string} bucket - the type of telemetry packet to be sent
-   * @param {string} studyType - the study type
+   * @param {string} telemetryPipeline - the telemetry pipeline
    * @returns {Promise|boolean} - A promise that resolves with the ping id
    * once the ping is stored or sent, or false if
    *   - there is a validation error,
    *   - the packet is of type "shield-study-error"
    *   - the study's telemetryConfig.send is set to false
    */
-  async _telemetry(data, { bucket, studyType }) {
+  async _telemetry(data, { bucket, telemetryPipeline }) {
     try {
       utilsLogger.debug(`telemetry in:  ${bucket} ${JSON.stringify(data)}`);
 
@@ -242,15 +244,14 @@ class StudyUtils {
           utilsLogger.warn("cannot validate shield-study-error", data, bucket);
           return false; // just die, maybe should have a super escape hatch?
         }
-        return this.telemetryError(errorReport, studyType);
+        return this.telemetryError(errorReport, telemetryPipeline);
       }
       utilsLogger.debug(`telemetry: ${JSON.stringify(payload)}`);
 
       let pingId;
-      pingId = await this.getStudyTypeHandler(studyType).sendTelemetry(
-        bucket,
-        payload,
-      );
+      pingId = await this.getTelemetryPipelineHandler(
+        telemetryPipeline,
+      ).sendTelemetry(bucket, payload);
 
       // Store a copy of the ping if it's a shield-study or error ping, which are few in number, or if we have activated the internal telemetry archive configuration
       if (
@@ -273,17 +274,17 @@ class StudyUtils {
    * Validates and submits telemetry pings from the add-on; mostly from
    * webExtension messages.
    * @param {Object} payload - the data to send as part of the telemetry packet
-   * @param {string} studyType - the study type
+   * @param {string} telemetryPipeline - the telemetry pipeline
    * @returns {Promise|boolean} - see StudyUtils._telemetry
    */
-  async telemetry(payload, studyType) {
+  async telemetry(payload, telemetryPipeline) {
     try {
       utilsLogger.debug(`telemetry ${JSON.stringify(payload)}`);
       const toSubmit = {
         attributes: payload,
       };
       return this._telemetry(toSubmit, {
-        studyType,
+        telemetryPipeline,
         bucket: "shield-study-addon",
       });
     } catch (error) {
@@ -296,14 +297,14 @@ class StudyUtils {
   /**
    * Submits error report telemetry pings.
    * @param {Object} errorReport - the error report, see StudyUtils._telemetry
-   * @param {string} studyType - the study type
+   * @param {string} telemetryPipeline - the telemetry pipeline
    * @returns {Promise|boolean} - see StudyUtils._telemetry
    */
-  telemetryError(errorReport, studyType) {
+  telemetryError(errorReport, telemetryPipeline) {
     try {
       return this._telemetry(errorReport, {
         bucket: "shield-study-error",
-        studyType,
+        telemetryPipeline,
       });
     } catch (error) {
       // Surface otherwise silent or obscurely reported errors
@@ -322,15 +323,15 @@ class StudyUtils {
    *   - Calculate the size of a ping that has Pioneer encrypted data
    *
    * @param {Object} payload Non-nested object with key strings, and key values
-   * @param {Object} studyType - the study type
+   * @param {Object} telemetryPipeline - the telemetry pipeline
    * @returns {Promise<Number>} The total size of the ping.
    */
-  async calculateTelemetryPingSize(payload, studyType) {
+  async calculateTelemetryPingSize(payload, telemetryPipeline) {
     try {
       const toSubmit = {
         attributes: payload,
       };
-      return this.getStudyTypeHandler(studyType).getPingSize(
+      return this.getTelemetryPipelineHandler(telemetryPipeline).getPingSize(
         toSubmit,
         "shield-study-addon",
       );

@@ -12,11 +12,11 @@ This is the home of the [`shield-studies-addon-utils` npm package](https://www.n
 
 ### `shield-study` telemetry
 
-Send correctly formatted `shield-study`, `shield-study-addon` Telemetry, allowing experiments to submit experiment-scoped stringified key-value pairs that are directly available for analysis.
+Validate and send `shield-study`, `shield-study-addon` Telemetry, allowing experiments to submit experiment-scoped stringified key-value pairs that are directly available for analysis.
 
 ### Pioneer telemetry
 
-Send correctly formatted and encrypted Pioneer study Telemetry.
+Validate, encrypt and send `shield-study`, `shield-study-addon` Pioneer Telemetry.
 
 ### Other telemetry helpers
 
@@ -62,19 +62,19 @@ npm install --save shield-studies-addon-utils
 
 [`browser.study` API documentation](./webExtensionApis/study/api.md)
 
-#### Data processing pipelines
+#### Supported telemetry pipelines
 
-Depending on which data processing pipeline the study add-on is configured to use, the pings end up in different destinations:
+Depending on which telemetry pipeline is used, the pings end up in different destinations:
 
 * `shield` - The pings end up in the `shield-study` and `shield-study-addon` Telemetry buckets for instant access to submitted payloads via [STMO](https://sql.telemetry.mozilla.org/).
 * `pioneer` - The pings are encrypted and end up in the Pioneer processing pipeline.
-* TODO: `custom-telemetry-events` - The pings end up in the ordinary destination for custom telemetry events (Not Yet Implemented)
+* TODO: `event-telemetry` - The pings end up in the ordinary destination for event telemetry (Not Yet Implemented)
 
 ### `browser.studyDebug.*`
 
 [`browser.studyDebug` API documentation](./webExtensionApis/study/api.md)
 
-Tools for writing tests, getting and resetting StudyUtils internals.
+Used by the project-internal tests only.
 
 ## Engineering your own study add-on
 
@@ -100,6 +100,6 @@ Tools for writing tests, getting and resetting StudyUtils internals.
 
 * expiry
 * lifecycle telemetry (first seen, installed, exit etc)
-* configurable endings (exit telemetry and exit surveys etc)
+* configurable endings (annotated exit telemetry and launching of exit surveys etc)
 * telemetry testing flag specific to study telemetry (disable telemetry via about:config during testing instead)
 * pref-controlled study-specific study logger (use ordinary add-on-scoped logging instead)

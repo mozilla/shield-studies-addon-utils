@@ -92,7 +92,7 @@
         "failcases": ["1234567890", "1234567890.123", []]
       },
       {
-        "id": "studyTypesEnum",
+        "id": "telemetryPipelinesEnum",
         "$schema": "http://json-schema.org/draft-04/schema",
         "type": "string",
         "enum": ["shield", "pioneer"],
@@ -186,8 +186,8 @@
             "$ref": "telemetryPayload"
           },
           {
-            "name": "studyType",
-            "$ref": "studyTypesEnum"
+            "name": "telemetryPipeline",
+            "$ref": "telemetryPipelinesEnum"
           }
         ],
         "defaultReturn": "undefined",
@@ -205,8 +205,8 @@
             "$ref": "telemetryPayload"
           },
           {
-            "name": "studyType",
-            "$ref": "studyTypesEnum"
+            "name": "telemetryPipeline",
+            "$ref": "telemetryPipelinesEnum"
           }
         ],
         "defaultReturn": "undefined",
@@ -275,8 +275,8 @@
             "type": "string"
           },
           {
-            "name": "studyType",
-            "$ref": "studyTypesEnum"
+            "name": "telemetryPipeline",
+            "$ref": "telemetryPipelinesEnum"
           }
         ],
         "returns": [

@@ -45,7 +45,7 @@
     testcases: [null, 1234567890, 1234567890.123]
     failcases: ['1234567890', '1234567890.123', []]
 
-  - id: studyTypesEnum
+  - id: telemetryPipelinesEnum
     $schema: "http://json-schema.org/draft-04/schema"
     type: string
     enum: ['shield', 'pioneer']
@@ -112,8 +112,8 @@
     parameters:
     - name: payload
       $ref: telemetryPayload
-    - name: studyType
-      $ref: studyTypesEnum
+    - name: telemetryPipeline
+      $ref: telemetryPipelinesEnum
 
     defaultReturn: undefined  # exception if out of policy based on config
     returns:
@@ -133,8 +133,8 @@
     parameters:
     - name: payload
       $ref: telemetryPayload
-    - name: studyType
-      $ref: studyTypesEnum
+    - name: telemetryPipeline
+      $ref: telemetryPipelinesEnum
 
     defaultReturn: undefined
     returns:
@@ -192,8 +192,8 @@
       type: string
     - name: reason
       type: string
-    - name: studyType
-      $ref: studyTypesEnum
+    - name: telemetryPipeline
+      $ref: telemetryPipelinesEnum
 
     # aValidation
     returns:

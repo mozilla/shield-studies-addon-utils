@@ -217,7 +217,7 @@ class PioneerUtils {
   }
 }
 
-class PioneerStudyType {
+class PioneerTelemetryPipeline {
   /**
    * @param {object} studyUtils The studyUtils instance from where this class was instantiated
    */
@@ -340,4 +340,4 @@ class PioneerStudyType {
   }
 }
 
-export default PioneerStudyType;
+export default PioneerTelemetryPipeline;

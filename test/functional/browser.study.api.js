@@ -19,7 +19,7 @@ function full(myObject) {
 // eslint-disable-next-line no-unused-vars
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
-function publicApiTests(studyType) {
+function publicApiTests(telemetryPipeline) {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
   this.timeout(30000 + KEEPOPEN * 1000 * 2);
 
@@ -59,7 +59,7 @@ function publicApiTests(studyType) {
       await utils.setupWebdriver.uninstallAddon(driver, addonId);
       addonId = null;
     }
-    if (studyType === "pioneer") {
+    if (telemetryPipeline === "pioneer") {
       await utils.setupWebdriver.installPioneerOptInAddon(driver);
     }
     addonId = await utils.setupWebdriver.installAddon(driver);
@@ -178,7 +178,7 @@ function publicApiTests(studyType) {
 
       // tests
       assert(dataPermissions.shield, "shield optoutstudies should be enabled");
-      if (studyType === "pioneer") {
+      if (telemetryPipeline === "pioneer") {
         assert(
           dataPermissions.pioneer,
           "user should have opted in for pioneer",
@@ -198,19 +198,19 @@ function publicApiTests(studyType) {
 
       before(async function reinstallSetupDoTelemetryAndWait() {
         await installAddon();
-        const _ = await addonExec(async (_studyType, callback) => {
+        const _ = await addonExec(async (_telemetryPipeline, callback) => {
           await browser.studyDebug.resetSeenTelemetry();
           await browser.studyDebug.recordSeenTelemetry();
           const samplePing = { foo: "bar" };
-          await browser.study.sendTelemetry(samplePing, _studyType);
+          await browser.study.sendTelemetry(samplePing, _telemetryPipeline);
           const _calculatedPingSize = await browser.study.calculateTelemetryPingSize(
             samplePing,
-            _studyType,
+            _telemetryPipeline,
           );
           callback({
             calculatedPingSize: _calculatedPingSize,
           });
-        }, studyType);
+        }, telemetryPipeline);
         calculatedPingSize = _.calculatedPingSize;
         await delay(1000); // wait a second to telemetry to settle on disk.
       });
@@ -220,7 +220,10 @@ function publicApiTests(studyType) {
           shield: 20,
           pioneer: 682,
         };
-        assert.strictEqual(calculatedPingSize, expectedPingSizes[studyType]);
+        assert.strictEqual(
+          calculatedPingSize,
+          expectedPingSizes[telemetryPipeline],
+        );
       });
 
       describe("telemetry archive / controller effects", function() {
@@ -262,7 +265,7 @@ function publicApiTests(studyType) {
 
         it("should have sent expected telemetry", async () => {
           const observed = utils.telemetry.summarizePings(
-            studyType === "shield" ? studyPings.sent : studyPings.seen,
+            telemetryPipeline === "shield" ? studyPings.sent : studyPings.seen,
           );
           const expected = [
             [
@@ -324,14 +327,14 @@ function publicApiTests(studyType) {
   describe("api: fullSurveyUrl", function() {
     describe("correctly constructs urls queryArgs", function() {
       it("an example url is correct", async function() {
-        const actual = await addonExec(async (_studyType, callback) => {
+        const actual = await addonExec(async (_telemetryPipeline, callback) => {
           const result = await browser.study.fullSurveyUrl(
             "https://foo.com/survey-foo/",
             "mid-study-survey",
-            _studyType,
+            _telemetryPipeline,
           );
           callback(result);
-        }, studyType);
+        }, telemetryPipeline);
         console.debug({ actual });
         const matchesExpectedExceptForVariableArguments =
           actual.indexOf(
@@ -346,10 +349,10 @@ function publicApiTests(studyType) {
   });
 }
 
-describe("PUBLIC API `browser.study` (studyType: shield)", function() {
+describe("PUBLIC API `browser.study` (telemetryPipeline: shield)", function() {
   publicApiTests.call(this, "shield");
 });
 
-describe("PUBLIC API `browser.study` (studyType: pioneer)", function() {
+describe("PUBLIC API `browser.study` (telemetryPipeline: pioneer)", function() {
   publicApiTests.call(this, "pioneer");
 });
