@@ -1,3 +1,4 @@
+/* eslint no-console: ["warn", { allow: ["info", "warn", "error"] }] */
 /* eslint-env commonjs */
 
 "use strict";
@@ -111,7 +112,7 @@ class StudyUtils {
 
   /**
    * @param {string} telemetryPipeline - the telemetry pipeline
-   * @returns {null}
+   * @returns {Object} The instance of the appropriate handler class
    */
   getTelemetryPipelineHandler(telemetryPipeline) {
     if (!this.telemetryPipelineHandler) {
@@ -248,8 +249,7 @@ class StudyUtils {
       }
       utilsLogger.debug(`telemetry: ${JSON.stringify(payload)}`);
 
-      let pingId;
-      pingId = await this.getTelemetryPipelineHandler(
+      const pingId = await this.getTelemetryPipelineHandler(
         telemetryPipeline,
       ).sendTelemetry(bucket, payload);
 
