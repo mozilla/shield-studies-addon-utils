@@ -3126,7 +3126,9 @@ class StudyUtils {
           this.telemetryPipelineHandler = new __WEBPACK_IMPORTED_MODULE_2__telemetryPipelines_pioneer__["a" /* default */](this);
           break;
         default:
-          throw new ExtensionError(`Unknown telemetryPipeline: "${telemetryPipeline}"`);
+          throw new ExtensionError(
+            `Unknown telemetryPipeline: "${telemetryPipeline}"`,
+          );
       }
     }
     return this.telemetryPipelineHandler;
@@ -3249,10 +3251,9 @@ class StudyUtils {
       __WEBPACK_IMPORTED_MODULE_0__logger__["a" /* utilsLogger */].debug(`telemetry: ${JSON.stringify(payload)}`);
 
       let pingId;
-      pingId = await this.getTelemetryPipelineHandler(telemetryPipeline).sendTelemetry(
-        bucket,
-        payload,
-      );
+      pingId = await this.getTelemetryPipelineHandler(
+        telemetryPipeline,
+      ).sendTelemetry(bucket, payload);
 
       // Store a copy of the ping if it's a shield-study or error ping, which are few in number, or if we have activated the internal telemetry archive configuration
       if (
@@ -3324,7 +3325,7 @@ class StudyUtils {
    *   - Calculate the size of a ping that has Pioneer encrypted data
    *
    * @param {Object} payload Non-nested object with key strings, and key values
-   * @param {Object} telemetryPipeline - the telemetry pipeline
+   * @param {string} telemetryPipeline - the telemetry pipeline
    * @returns {Promise<Number>} The total size of the ping.
    */
   async calculateTelemetryPingSize(payload, telemetryPipeline) {
@@ -11770,10 +11771,13 @@ this.study = class extends ExtensionAPI {
          *  TBD fix the parameters here.
          *
          * @param {Object} payload Non-nested object with key strings, and key values
-         * @param {Object} telemetryPipeline - the telemetry pipeline
+         * @param {string} telemetryPipeline - the telemetry pipeline
          * @returns {undefined}
          */
-        sendTelemetry: async function sendTelemetry(payload, telemetryPipeline) {
+        sendTelemetry: async function sendTelemetry(
+          payload,
+          telemetryPipeline,
+        ) {
           __WEBPACK_IMPORTED_MODULE_0__logger__["a" /* utilsLogger */].debug("called sendTelemetry payload");
 
           function throwIfInvalid(obj) {
@@ -11808,7 +11812,7 @@ this.study = class extends ExtensionAPI {
          *   - Calculate the size of a ping that has Pioneer encrypted data
          *
          * @param {Object} payload Non-nested object with key strings, and key values
-         * @param {Object} telemetryPipeline - the telemetry pipeline
+         * @param {string} telemetryPipeline - the telemetry pipeline
          * @returns {Promise<Number>} The total size of the ping.
          */
         calculateTelemetryPingSize: async function calculateTelemetryPingSize(
@@ -11816,7 +11820,10 @@ this.study = class extends ExtensionAPI {
           telemetryPipeline,
         ) {
           try {
-            return __WEBPACK_IMPORTED_MODULE_1__studyUtils__["a" /* studyUtils */].calculateTelemetryPingSize(payload, telemetryPipeline);
+            return __WEBPACK_IMPORTED_MODULE_1__studyUtils__["a" /* studyUtils */].calculateTelemetryPingSize(
+              payload,
+              telemetryPipeline,
+            );
           } catch (error) {
             // Surface otherwise silent or obscurely reported errors
             console.error(error.message, error.stack);
