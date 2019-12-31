@@ -1,7 +1,7 @@
 {
   "name": "shield-studies-addon-utils",
   "description": "Utilities for Mozilla Firefox study add-ons.",
-  "version": "6.0.0-rc1",
+  "version": "6.0.0",
   "author": "Mozilla",
   "bin": {
     "copyStudyUtils": "bin/copyStudyUtils.js",
