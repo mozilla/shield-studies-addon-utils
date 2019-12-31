@@ -70,7 +70,7 @@ this.study = class extends ExtensionAPI {
          *  TBD fix the parameters here.
          *
          * @param {Object} payload Non-nested object with key strings, and key values
-         * @param {Object} telemetryPipeline - the telemetry pipeline
+         * @param {string} telemetryPipeline - the telemetry pipeline
          * @returns {undefined}
          */
         sendTelemetry: async function sendTelemetry(
@@ -111,7 +111,7 @@ this.study = class extends ExtensionAPI {
          *   - Calculate the size of a ping that has Pioneer encrypted data
          *
          * @param {Object} payload Non-nested object with key strings, and key values
-         * @param {Object} telemetryPipeline - the telemetry pipeline
+         * @param {string} telemetryPipeline - the telemetry pipeline
          * @returns {Promise<Number>} The total size of the ping.
          */
         calculateTelemetryPingSize: async function calculateTelemetryPingSize(

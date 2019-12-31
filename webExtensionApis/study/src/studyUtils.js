@@ -323,7 +323,7 @@ class StudyUtils {
    *   - Calculate the size of a ping that has Pioneer encrypted data
    *
    * @param {Object} payload Non-nested object with key strings, and key values
-   * @param {Object} telemetryPipeline - the telemetry pipeline
+   * @param {string} telemetryPipeline - the telemetry pipeline
    * @returns {Promise<Number>} The total size of the ping.
    */
   async calculateTelemetryPingSize(payload, telemetryPipeline) {
