@@ -12,7 +12,7 @@ const defaultConfig = {
   run: {
     firefox: process.env.FIREFOX_BINARY || "nightly",
     browserConsole: true,
-    startUrl: ["about:debugging"],
+    startUrl: ["about:debugging#/runtime/this-firefox"],
     pref: ["shieldStudy.logLevel=All"],
   },
 };

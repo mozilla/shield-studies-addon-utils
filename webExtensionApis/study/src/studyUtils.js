@@ -1,60 +1,27 @@
+/* eslint no-console: ["warn", { allow: ["info", "warn", "error"] }] */
 /* eslint-env commonjs */
 
 "use strict";
 
-import sampling from "./sampling";
 import { utilsLogger } from "./logger";
-import makeWidgetId from "./makeWidgetId";
-import ShieldStudyType from "./studyTypes/shield";
-import PioneerStudyType from "./studyTypes/pioneer";
-
-/*
-* Supports the `browser.study` webExtensionExperiment api.
-*
-* - Conversion of v4 "StudyUtils.jsm".
-* - Contains the 'dangerous' code.
-* - Creates and exports the `studyUtils` singleton
-* - does all the actuall privileged work including Telemetry
-*
-* See API.md at:
-* https://github.com/mozilla/shield-studies-addon-utils/blob/develop/docs/api.md
-*
-* Note: There are a number of methods that won't work if the
-* setup method has not executed (they perform a check with the
-* `throwIfNotSetup` method). The setup method ensures that the
-* studySetup data passed in is valid per the studySetup schema.
-*
-* Tests for this module are at /test-addon.
-*/
+import ShieldTelemetryPipeline from "./telemetryPipelines/shield";
+import PioneerTelemetryPipeline from "./telemetryPipelines/pioneer";
 
 const UTILS_VERSION = require("../../../package.json").version;
 const PACKET_VERSION = 3;
-
-const Ajv = require("ajv");
 
 const { Services } = ChromeUtils.import(
   "resource://gre/modules/Services.jsm",
   {},
 );
-const { Preferences } = ChromeUtils.import(
-  "resource://gre/modules/Preferences.jsm",
-  {},
-);
-
-Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
-
 const { ExtensionUtils } = ChromeUtils.import(
   "resource://gre/modules/ExtensionUtils.jsm",
   {},
 );
-// eslint-disable-next-line no-undef
+/* eslint-disable no-undef */
 const { ExtensionError } = ExtensionUtils;
 
-// telemetry utils
-const { TelemetryEnvironment } = ChromeUtils.import(
-  "resource://gre/modules/TelemetryEnvironment.jsm",
-  null,
-);
+Cu.importGlobalProperties(["URL", "crypto", "URLSearchParams"]);
 
 /**
  * Telemetry Probe JSON schema validation (via AJV at runtime)
@@ -76,52 +43,6 @@ const schemas = {
   "shield-study-error": require("shield-study-schemas/schemas-client/shield-study-error.schema.json"), // eslint-disable-line max-len
 };
 import jsonschema from "./jsonschema";
-
-/**
- * Schemas for enforcing objects relating to the public `browser.study` api
- */
-class Guard {
-  /**
-   * @param {object} identifiedSchemas a jsonschema with ids
-   *
-   */
-  constructor(identifiedSchemas) {
-    utilsLogger.debug("wanting guard");
-    const ajv = new Ajv({
-      // important:  these options make ajv behave like 04, not draft-07
-      schemaId: "auto", // id UNLESS $id is defined. (draft 5)
-      meta: require("ajv/lib/refs/json-schema-draft-04.json"),
-      extendRefs: true, // optional, current default is to 'fail', spec behaviour is to 'ignore'
-      unknownFormats: "ignore", // optional, current default is true (fail)
-      validateSchema: false, // used by addSchema.
-
-      // schemas used by this *particular guard*
-      // schemas: identifiedSchemas,
-      /* NOTE:  adding these at constructor isn't validating against 04 */
-    });
-
-    for (const s of identifiedSchemas) {
-      utilsLogger.debug(`adding schemas ${s}`);
-
-      ajv.addSchema(s);
-    }
-    this.ajv = ajv;
-    utilsLogger.debug("Ajv schemas", Object.keys(this.ajv._schemas));
-  }
-
-  it(schemaId, arg, msg = null) {
-    utilsLogger.debug("about to guard", schemaId, arg);
-    const valid = this.ajv.validate(schemaId, arg);
-    if (!valid) {
-      throw new ExtensionError(
-        `GuardError: ${schemaId} ${JSON.stringify(
-          this.ajv.errors,
-        )} ${JSON.stringify(arg)} ${msg}`,
-      );
-    }
-  }
-}
-const guard = new Guard(require("../schema.json")[0].types);
 
 /**  Simple spread/rest based merge, using Object.assign.
  *
@@ -169,170 +90,20 @@ class StudyUtils {
   /**
    * Create a StudyUtils instance to power the `browser.study` API
    *
-   * About `this._internals`:
-   * - variation:  (chosen variation, `setup` )
-   * - isEnding: bool  `endStudy`
-   * - isSetup: bool   `setup`
-   * - isFirstRun: bool `setup`, based on pref
-   * - studySetup: bool  `setup` the config
-   * - seenTelemetry: array of seen telemetry. Fully populated only if studySetup.telemetry.internalTelemetryArchive is true
-   * - prefs: object of all created prefs and their names
-   * - endingRequested: string of ending name
-   * - endingReturns: object with useful ending instructions
-   *
-   * Returned by `studyDebug.getInternals()` for testing
-   * Reset by `studyDebug.reset`  and `studyUtils.reset`
-   *
-   * About: `this._extensionManifest`
-   * - mirrors the extensionManifest at the time of api creation
-   * - used by uninstall, and to name the firstRunTimestamp pref
-   *
+   * - `this._extensionManifest`: mirrors the extensionManifest at the time of api creation
+   * - `this.seenTelemetry`: array of seen telemetry. Fully populated only if this.recordSeenTelemetry is true
    */
   constructor() {
-    // Expose sampling methods onto the exported studyUtils singleton
-    this.sampling = sampling;
     // expose schemas
     this.schemas = schemas;
+
     // expose jsonschema validation methods
     this.jsonschema = jsonschema;
 
     this._extensionManifest = {};
-
-    // internals, also used by `studyDebug.getInternals()`
-    // either setup() or reset() will create, using extensionManifest
-    this._internals = {};
-  }
-
-  _createInternals() {
-    if (!this._extensionManifest) {
-      throw new ExtensionError(
-        "_createInternals needs `setExtensionManifest`. This should be done by `getApi`.",
-      );
-    }
-
-    const widgetId = makeWidgetId(
-      this._extensionManifest.applications.gecko.id,
-    );
-
-    const internals = {
-      widgetId,
-      variation: undefined,
-      studySetup: undefined,
-      isFirstRun: false,
-      isSetup: false,
-      isEnding: false,
-      isEnded: false,
-      seenTelemetry: [],
-      prefs: {
-        firstRunTimestamp: `shield.${widgetId}.firstRunTimestamp`,
-      },
-      endingRequested: undefined,
-      endingReturned: undefined,
-    };
-    Object.seal(internals);
-    return internals;
-  }
-
-  /**
-   * Checks if the StudyUtils.setup method has been called
-   * @param {string} name - the name of a StudyUtils method
-   * @returns {void}
-   */
-  throwIfNotSetup(name = "unknown") {
-    if (!this._internals.isSetup)
-      throw new ExtensionError(
-        name + ": this method can't be used until `setup` is called",
-      );
-  }
-
-  /**
-   * Validates the studySetup object passed in from the add-on.
-   * @param {Object} studySetup - the studySetup object, see schema.studySetup.json
-   * @returns {StudyUtils} - the StudyUtils class instance
-   */
-  async setup(studySetup) {
-    if (!this._internals) {
-      throw new ExtensionError("StudyUtils internals are not initiated");
-    }
-
-    utilsLogger.debug(`setting up! -- ${JSON.stringify(studySetup)}`);
-
-    if (this._internals.isSetup) {
-      throw new ExtensionError("StudyUtils is already setup");
-    }
-    guard.it("studySetup", studySetup, "(in studySetup)");
-    this._internals.studySetup = studySetup;
-
-    // Different study types treat data and configuration differently
-    if (studySetup.studyType === "shield") {
-      this.studyType = new ShieldStudyType(this);
-    }
-    if (studySetup.studyType === "pioneer") {
-      this.studyType = new PioneerStudyType(this);
-    }
-
-    function getVariationByName(name, variations) {
-      if (!name) return null;
-      const chosen = variations.filter(x => x.name === name)[0];
-      if (!chosen) {
-        throw new ExtensionError(
-          `setup error: testing.variationName "${name}" not in ${JSON.stringify(
-            variations,
-          )}`,
-        );
-      }
-      return chosen;
-    }
-    // variation:  decide and set
-    const variation =
-      getVariationByName(
-        studySetup.testing.variationName,
-        studySetup.weightedVariations,
-      ) ||
-      (await this._deterministicVariation(
-        studySetup.activeExperimentName,
-        studySetup.weightedVariations,
-      ));
-    utilsLogger.debug(`setting up: variation ${variation.name}`);
-
-    this._internals.variation = variation;
-    this._internals.isSetup = true;
-
-    // isFirstRun?  ever seen before?
-    const firstRunTimestamp = this.getFirstRunTimestamp();
-    // 'firstSeen' is the first telemetry we attempt to send.  needs 'isSetup'
-    if (firstRunTimestamp !== null) {
-      this._internals.isFirstRun = false;
-    } else {
-      // 'enter' telemetry, and firstSeen
-      await studyUtils.firstSeen();
-    }
-
-    // Note: is allowed  to enroll is handled at API.
-    // FIXME: 5.1 maybe do it here?
-    return this;
-  }
-
-  /**
-   * Resets the state of the study. Suggested use is for testing.
-   * @returns {Object} internals internals
-   */
-  reset() {
-    this._internals = this._createInternals();
-    this.studyType = null;
-    this.resetFirstRunTimestamp();
-  }
-
-  /**
-   * Gets the variation for the StudyUtils instance.
-   * @returns {Object} - the study variation for this user
-   */
-  getVariation() {
-    this.throwIfNotSetup("getvariation");
-    utilsLogger.debug(
-      `getVariation: ${JSON.stringify(this._internals.variation)}`,
-    );
-    return this._internals.variation;
+    this.telemetryPipelineHandler = null;
+    this.recordSeenTelemetry = false;
+    this.seenTelemetry = [];
   }
 
   setExtensionManifest(extensionManifest) {
@@ -340,68 +111,35 @@ class StudyUtils {
   }
 
   /**
-   * @returns {any} the firstRunTimestamp as a number in case the preference is set, or null if the preference is not set
+   * @param {string} telemetryPipeline - the telemetry pipeline
+   * @returns {Object} The instance of the appropriate handler class
    */
-  getFirstRunTimestamp() {
-    if (
-      typeof this._internals.studySetup.testing.firstRunTimestamp !==
-        "undefined" &&
-      this._internals.studySetup.testing.firstRunTimestamp !== null
-    ) {
-      return Number(this._internals.studySetup.testing.firstRunTimestamp);
-    }
-    const firstRunTimestampPreferenceValue = Services.prefs.getStringPref(
-      this._internals.prefs.firstRunTimestamp,
-      null,
-    );
-    return firstRunTimestampPreferenceValue !== null
-      ? Number(firstRunTimestampPreferenceValue)
-      : null;
-  }
-
-  setFirstRunTimestamp(timestamp) {
-    const pref = this._internals.prefs.firstRunTimestamp;
-    return Services.prefs.setStringPref(pref, "" + timestamp);
-  }
-
-  resetFirstRunTimestamp() {
-    const pref = this._internals.prefs.firstRunTimestamp;
-    Preferences.reset(pref);
-  }
-
-  /** Calculate time left in study given `studySetup.expire.days` and firstRunTimestamp
-   *
-   * Safe to use with `browser.alarms.create{ delayInMinutes, }`
-   *
-   * A value of 0 means "the past / now".
-   *
-   * @return {Number} delayInMinutes Either the time left or Number.MAX_SAFE_INTEGER
-   */
-  getDelayInMinutes() {
-    if (this._internals.studySetup.testing.expired === true) {
-      return 0;
-    }
-    const toMinutes = 1 / (1000 * 60);
-    const days = this._internals.studySetup.expire.days;
-    let delayInMs = Number.MAX_SAFE_INTEGER; // approx 286,000 years
-    if (days) {
-      // days in ms
-      const ms = days * 86400 * 1000;
-      const firstrun = this.getFirstRunTimestamp();
-      if (firstrun === null) {
-        return null;
+  getTelemetryPipelineHandler(telemetryPipeline) {
+    if (!this.telemetryPipelineHandler) {
+      // Different telemetry pipelines treat data and configuration differently
+      switch (telemetryPipeline) {
+        case "shield":
+          this.telemetryPipelineHandler = new ShieldTelemetryPipeline(this);
+          break;
+        case "pioneer":
+          this.telemetryPipelineHandler = new PioneerTelemetryPipeline(this);
+          break;
+        default:
+          throw new ExtensionError(
+            `Unknown telemetryPipeline: "${telemetryPipeline}"`,
+          );
       }
-      delayInMs = Math.max(firstrun + ms - Date.now(), 0);
     }
-    return delayInMs * toMinutes;
+    return this.telemetryPipelineHandler;
   }
 
   /**
    * Gets the telemetry client ID for the user.
+   * @param {string} telemetryPipeline - the telemetry pipeline
    * @returns {string} - the telemetry client ID
    */
-  async getTelemetryId() {
-    return this.studyType.getTelemetryId();
+  async getTelemetryId(telemetryPipeline) {
+    return this.getTelemetryPipelineHandler(telemetryPipeline).getTelemetryId();
   }
 
   /**
@@ -413,266 +151,14 @@ class StudyUtils {
     return Services.prefs.getStringPref(key, "");
   }
 
-  /**
-   * Packages information about the study into an object.
-   * @returns {Object} - study information, see schema.studySetup.json
-   */
-  info() {
-    utilsLogger.debug("getting info");
-    this.throwIfNotSetup("info");
-
-    const studyInfo = {
-      activeExperimentName: this._internals.studySetup.activeExperimentName,
-      isFirstRun: this._internals.isFirstRun,
-      firstRunTimestamp: this.getFirstRunTimestamp(),
-      variation: this.getVariation(),
-      shieldId: this.getShieldId(),
-      delayInMinutes: this.getDelayInMinutes(),
-    };
-    const now = new Date();
-    const diff = Number(now) - studyInfo.firstRunTimestamp;
-    utilsLogger.debug(
-      "Study info date information: now, new Date(firstRunTimestamp), firstRunTimestamp, diff (in minutes), delayInMinutes",
-      now,
-      new Date(studyInfo.firstRunTimestamp),
-      studyInfo.firstRunTimestamp,
-      diff / 1000 / 60,
-      studyInfo.delayInMinutes,
-    );
-    guard.it("studyInfoObject", studyInfo, "(in studyInfo)");
-    return studyInfo;
-  }
-
-  /**
-   * Get the telemetry configuration for the study.
-   * @returns {Object} - the telemetry configuration, see schema.studySetup.json
-   */
-  get telemetryConfig() {
-    this.throwIfNotSetup("telemetryConfig");
-    return this._internals.studySetup.telemetry;
-  }
-
-  /**
-   * Deterministically selects and returns the study variation for the user.
-   * @param {string} activeExperimentName name to use as part of the hash
-   * @param {Object[]} weightedVariations - see schema.weightedVariations.json
-   * @param {Number} fraction - a number (0 <= fraction < 1); can be set explicitly for testing
-   * @returns {Object} - the study variation for this user
-   */
-  async _deterministicVariation(
-    activeExperimentName,
-    weightedVariations,
-    fraction = null,
-  ) {
-    // this is the standard arm choosing method, used by both shield and pioneer studies
-    if (fraction === null) {
-      // hash the studyName and telemetryId to get the same branch every time.
-      const clientId = await this.getTelemetryId();
-      fraction = await this.sampling.hashFraction(
-        activeExperimentName + clientId,
-        12,
-      );
-    }
-    utilsLogger.debug(`_deterministicVariation`, weightedVariations);
-    return this.sampling.chooseWeighted(weightedVariations, fraction);
-  }
-
-  /**
-   * Sends an 'enter' telemetry ping for the study; should be called on add-on
-   * startup for the reason ADDON_INSTALL. For more on study states like 'enter'
-   * see ABOUT.md at github.com/mozilla/shield-studies-addon-template
-   *
-   * Side effects:
-   * - sends 'enter'
-   * - sets this._internals.prefs.firstRunTimestamp to Date.now()
-   *
-   * @returns {void}
-   */
-  async firstSeen() {
-    this.throwIfNotSetup("firstSeen uses telemetry.");
-    utilsLogger.debug(`attempting firstSeen`);
-    this._internals.isFirstRun = true;
-    await this._telemetry({ study_state: "enter" }, "shield-study");
-    this.setFirstRunTimestamp(Date.now());
-  }
-
-  /**
-   * Marks the study's telemetry pings as being part of this experimental
-   * cohort in a way that downstream data pipeline tools
-   * (like ExperimentsViewer) can use it.
-   * @returns {void}
-   */
-  setActive() {
-    this.throwIfNotSetup("setActive uses telemetry.");
-    const info = this.info();
-    utilsLogger.debug(
-      "marking TelemetryEnvironment",
-      info.activeExperimentName,
-      info.variation.name,
-    );
-    TelemetryEnvironment.setExperimentActive(
-      info.activeExperimentName,
-      info.variation.name,
-    );
-  }
-
-  /**
-   * Removes the study from the active list of telemetry experiments
-   * @returns {void}
-   */
-  unsetActive() {
-    this.throwIfNotSetup("unsetActive uses telemetry.");
-    const info = this.info();
-    utilsLogger.debug(
-      "unmarking TelemetryEnvironment",
-      info.activeExperimentName,
-      info.variation.name,
-    );
-    TelemetryEnvironment.setExperimentInactive(info.activeExperimentName);
-  }
-
-  /**
-   * Adds the study to the active list of telemetry experiments and sends the
-   * "installed" telemetry ping if applicable
-   * @param {string} reason - The reason the add-on has started up
-   * @returns {void}
-   */
-  async startup() {
-    this.throwIfNotSetup("startup");
-    const isFirstRun = this._internals.isFirstRun;
-    utilsLogger.debug(`startup.  setting active. isFirstRun? ${isFirstRun}`);
-    this.setActive();
-    if (isFirstRun) {
-      await this._telemetry({ study_state: "installed" }, "shield-study");
-    }
-  }
-
-  /**
-   * Ends the study:
-   *  - Removes the study from the active list of telemetry experiments
-   *  - Sends a telemetry ping about the nature of the ending
-   *    (positive, neutral, negative)
-   *  - Sends an exit telemetry ping
-   * @param {string} endingName - The reason the study is ending, see
-   *    schema.studySetup.json
-   * @returns {Object} endingReturned _internals.endingReturned
-   */
-  async endStudy(endingName) {
-    this.throwIfNotSetup("endStudy");
-
-    // also handle default endings.
-    const alwaysHandle = [
-      "ineligible",
-      "expired",
-      "user-disable",
-      "install-failure",
-      "individual-opt-out",
-      "general-opt-out",
-      "recipe-not-seen",
-      "uninstalled",
-      "uninstalled-sideload",
-      "unknown",
-    ];
-    let ending = this._internals.studySetup.endings[endingName];
-    if (!ending) {
-      // a 'no-action' ending is okay for the 'always handle'
-      if (alwaysHandle.includes(endingName)) {
-        ending = {};
-      } else {
-        throw new ExtensionError(`${endingName} isn't known ending`);
-      }
-    }
-
-    // throw if already ending
-    if (this._internals.isEnding) {
-      utilsLogger.debug("endStudy, already ending!");
-      throw new ExtensionError(
-        `endStudy, requested:  ${endingName}, but already ending ${
-          this._internals.endingRequested
-        }`,
-      );
-    }
-
-    // if not already ending, claim it.  We are first!
-    this._internals.isEnding = true;
-    this._internals.endingRequested = endingName;
-
-    utilsLogger.debug(`endStudy ${endingName}`);
-    await this.unsetActive();
-
-    // do the work to end the studyUtils involvement
-
-    // 1. Telemetry for ending
-    const { fullname } = ending;
-    let finalName = endingName;
-    switch (endingName) {
-      // handle the 'formal' endings (defined in parquet)
-      case "ineligible":
-      case "expired":
-      case "user-disable":
-      case "ended-positive":
-      case "ended-neutral":
-      case "ended-negative":
-        await this._telemetry(
-          {
-            study_state: endingName,
-            study_state_fullname: fullname || endingName,
-          },
-          "shield-study",
-        );
-        break;
-      default:
-        (finalName = ending.category || "ended-neutral"),
-        // call all 'unknowns' as "ended-neutral"
-        await this._telemetry(
-          {
-            study_state: finalName,
-            study_state_fullname: endingName,
-          },
-          "shield-study",
-        );
-        break;
-    }
-    await this._telemetry({ study_state: "exit" }, "shield-study");
-
-    // 2. create ending instructions for the webExt to use
-    const out = {
-      shouldUninstall: true,
-      urls: [],
-      endingName,
-    };
-
-    // baseUrls: needs to be appended with query arguments before use,
-    // exactUrls: used as is
-    const { baseUrls, exactUrls } = ending;
-    if (exactUrls) {
-      out.urls.push(...exactUrls);
-    }
-    const qa = await this.endingQueryArgs();
-    qa.reason = finalName;
-    qa.fullreason = endingName;
-
-    if (baseUrls) {
-      for (const baseUrl of baseUrls) {
-        const fullUrl = mergeQueryArgs(baseUrl, qa);
-        out.urls.push(fullUrl);
-      }
-    }
-
-    out.queryArgs = qa;
-
-    // 3. Temporarily store information about the ending for test purposes
-    this._internals.endingReturned = out;
-    this._internals.isEnded = true; // done!
-
-    // 4. Make sure that future add-on installations are treated as new studies rather than a continuation of the previous one
-    this.resetFirstRunTimestamp();
-
-    return out;
-  }
-
-  async fullSurveyUrl(surveyBaseUrl, reason) {
-    const queryArgs = await this.endingQueryArgs();
+  async fullSurveyUrl({ surveyBaseUrl, reason, telemetryPipeline }) {
+    const study = this._extensionManifest.applications.gecko.id;
+    const variation = this._extensionManifest.applications.gecko.id;
+    const queryArgs = await this.endingQueryArgs({
+      telemetryPipeline,
+      study,
+      variation,
+    });
     queryArgs.reason = reason;
     queryArgs.fullreason = reason;
     return mergeQueryArgs(surveyBaseUrl, queryArgs);
@@ -683,147 +169,179 @@ class StudyUtils {
    * appended to a study ending url
    * @returns {Object} - the query arguments for the study
    */
-  async endingQueryArgs() {
-    this.throwIfNotSetup("endingQueryArgs");
-    const info = this.info();
-    const who = await this.getTelemetryId();
-    const queryArgs = {
-      shield: PACKET_VERSION,
-      study: info.activeExperimentName,
-      variation: info.variation.name,
-      updateChannel: Services.appinfo.defaultUpdateChannel,
-      fxVersion: Services.appinfo.version,
-      addon: this._extensionManifest.version, // addon version
-      who, // telemetry clientId
-    };
-    queryArgs.testing = Number(!this.telemetryConfig.removeTestingFlag);
-    return queryArgs;
+  async endingQueryArgs({ telemetryPipeline, study, variation }) {
+    try {
+      const who = await this.getTelemetryId(telemetryPipeline);
+      const queryArgs = {
+        shield: PACKET_VERSION,
+        study,
+        variation,
+        updateChannel: Services.appinfo.defaultUpdateChannel,
+        fxVersion: Services.appinfo.version,
+        addon: this._extensionManifest.version, // addon version
+        who, // telemetry clientId
+      };
+      queryArgs.testing = "-1"; // Currently unconfigurable but surveygizmo-expected parameter - filling with "-1" as placeholder
+      return queryArgs;
+    } catch (error) {
+      // Surface otherwise silent or obscurely reported errors
+      console.error(error.message, error.stack);
+      throw new ExtensionError(error.message);
+    }
   }
 
   /**
    * Validates and submits telemetry pings from StudyUtils.
    * @param {Object} data - the data to send as part of the telemetry packet
    * @param {string} bucket - the type of telemetry packet to be sent
+   * @param {string} telemetryPipeline - the telemetry pipeline
    * @returns {Promise|boolean} - A promise that resolves with the ping id
    * once the ping is stored or sent, or false if
    *   - there is a validation error,
    *   - the packet is of type "shield-study-error"
    *   - the study's telemetryConfig.send is set to false
    */
-  async _telemetry(data, bucket = "shield-study-addon") {
-    this.throwIfNotSetup("_telemetry");
-    utilsLogger.debug(`telemetry in:  ${bucket} ${JSON.stringify(data)}`);
-    const info = this.info();
-    utilsLogger.debug(`telemetry INFO: ${JSON.stringify(info)}`);
-
-    const payload = {
-      version: PACKET_VERSION,
-      study_name: info.activeExperimentName,
-      branch: info.variation.name,
-      addon_version: this._extensionManifest.version,
-      shield_version: UTILS_VERSION,
-      type: bucket,
-      data,
-      testing: !this.telemetryConfig.removeTestingFlag,
-    };
-
-    let validation;
+  async _telemetry(data, { bucket, telemetryPipeline }) {
     try {
-      validation = jsonschema.validate(payload, schemas[bucket]);
-    } catch (err) {
-      // Catch failures of unknown origin (could be library, add-on, system...)
-      // if validation broke, GIVE UP.
-      utilsLogger.error(err);
-      return false;
-    }
-    /*
-    * Handle validation errors by sending a "shield-study-error"
-    * telemetry ping with the error report.
-    * If the invalid payload is itself of type "shield-study-error",
-    * throw an error (to avoid a possible infinite loop).
-    */
-    if (validation.errors.length) {
-      const errorReport = {
-        error_id: "jsonschema-validation",
-        error_source: "addon",
-        severity: "fatal",
-        message: JSON.stringify(validation.errors),
+      utilsLogger.debug(`telemetry in:  ${bucket} ${JSON.stringify(data)}`);
+
+      const study_name = this._extensionManifest.applications.gecko.id;
+      const branch = this._extensionManifest.applications.gecko.id;
+      const testing = false; // Currently unconfigurable schema-expected parameter - defaulting to false
+      const payload = {
+        version: PACKET_VERSION,
+        study_name,
+        branch,
+        addon_version: this._extensionManifest.version,
+        shield_version: UTILS_VERSION,
+        type: bucket,
+        data,
+        testing,
       };
-      if (bucket === "shield-study-error") {
-        utilsLogger.warn("cannot validate shield-study-error", data, bucket);
-        return false; // just die, maybe should have a super escape hatch?
+
+      let validation;
+      try {
+        validation = jsonschema.validate(payload, schemas[bucket]);
+      } catch (err) {
+        // Catch failures of unknown origin (could be library, add-on, system...)
+        // if validation broke, GIVE UP.
+        utilsLogger.error(err);
+        return false;
       }
-      return this.telemetryError(errorReport);
+      /*
+      * Handle validation errors by sending a "shield-study-error"
+      * telemetry ping with the error report.
+      * If the invalid payload is itself of type "shield-study-error",
+      * throw an error (to avoid a possible infinite loop).
+      */
+      if (validation.errors.length) {
+        const errorReport = {
+          error_id: "jsonschema-validation",
+          error_source: "addon",
+          severity: "fatal",
+          message: JSON.stringify(validation.errors),
+        };
+        if (bucket === "shield-study-error") {
+          utilsLogger.warn("cannot validate shield-study-error", data, bucket);
+          return false; // just die, maybe should have a super escape hatch?
+        }
+        return this.telemetryError(errorReport, telemetryPipeline);
+      }
+      utilsLogger.debug(`telemetry: ${JSON.stringify(payload)}`);
+
+      const pingId = await this.getTelemetryPipelineHandler(
+        telemetryPipeline,
+      ).sendTelemetry(bucket, payload);
+
+      // Store a copy of the ping if it's a shield-study or error ping, which are few in number, or if we have activated the internal telemetry archive configuration
+      if (
+        bucket === "shield-study" ||
+        bucket === "shield-study-error" ||
+        this.recordSeenTelemetry
+      ) {
+        this.seenTelemetry.push({ id: pingId, payload });
+      }
+
+      return pingId;
+    } catch (error) {
+      // Surface otherwise silent or obscurely reported errors
+      console.error(error.message, error.stack);
+      throw new ExtensionError(error.message);
     }
-    utilsLogger.debug(`telemetry: ${JSON.stringify(payload)}`);
-
-    let pingId;
-
-    // during development, don't actually send
-    if (!this.telemetryConfig.send) {
-      utilsLogger.debug("NOT sending.  `telemetryConfig.send` is false");
-      pingId = false;
-    } else {
-      pingId = await this.studyType.sendTelemetry(bucket, payload);
-    }
-
-    // Store a copy of the ping if it's a shield-study or error ping, which are few in number, or if we have activated the internal telemetry archive configuration
-    if (
-      bucket === "shield-study" ||
-      bucket === "shield-study-error" ||
-      this.telemetryConfig.internalTelemetryArchive
-    ) {
-      this._internals.seenTelemetry.push({ id: pingId, payload });
-    }
-
-    return pingId;
   }
 
   /**
    * Validates and submits telemetry pings from the add-on; mostly from
    * webExtension messages.
    * @param {Object} payload - the data to send as part of the telemetry packet
+   * @param {string} telemetryPipeline - the telemetry pipeline
    * @returns {Promise|boolean} - see StudyUtils._telemetry
    */
-  async telemetry(payload) {
-    this.throwIfNotSetup("telemetry");
-    utilsLogger.debug(`telemetry ${JSON.stringify(payload)}`);
-    const toSubmit = {
-      attributes: payload,
-    };
-    return this._telemetry(toSubmit, "shield-study-addon");
+  async telemetry(payload, telemetryPipeline) {
+    try {
+      utilsLogger.debug(`telemetry ${JSON.stringify(payload)}`);
+      const toSubmit = {
+        attributes: payload,
+      };
+      return this._telemetry(toSubmit, {
+        telemetryPipeline,
+        bucket: "shield-study-addon",
+      });
+    } catch (error) {
+      // Surface otherwise silent or obscurely reported errors
+      console.error(error.message, error.stack);
+      throw new ExtensionError(error.message);
+    }
   }
 
   /**
    * Submits error report telemetry pings.
    * @param {Object} errorReport - the error report, see StudyUtils._telemetry
+   * @param {string} telemetryPipeline - the telemetry pipeline
    * @returns {Promise|boolean} - see StudyUtils._telemetry
    */
-  telemetryError(errorReport) {
-    return this._telemetry(errorReport, "shield-study-error");
+  telemetryError(errorReport, telemetryPipeline) {
+    try {
+      return this._telemetry(errorReport, {
+        bucket: "shield-study-error",
+        telemetryPipeline,
+      });
+    } catch (error) {
+      // Surface otherwise silent or obscurely reported errors
+      console.error(error.message, error.stack);
+      throw new ExtensionError(error.message);
+    }
   }
 
-  /** Calculate Telemetry using appropriate shield or pioneer methods.
+  /**
+   * Calculate Telemetry using appropriate shield or pioneer methods.
    *
    *  shield:
    *   - Calculate the size of a ping
    *
-   *   pioneer:
+   *  pioneer:
    *   - Calculate the size of a ping that has Pioneer encrypted data
    *
    * @param {Object} payload Non-nested object with key strings, and key values
+   * @param {string} telemetryPipeline - the telemetry pipeline
    * @returns {Promise<Number>} The total size of the ping.
    */
-  async calculateTelemetryPingSize(payload) {
-    this.throwIfNotSetup("calculateTelemetryPingSize");
-    const toSubmit = {
-      attributes: payload,
-    };
-    return this.studyType.getPingSize(toSubmit, "shield-study-addon");
+  async calculateTelemetryPingSize(payload, telemetryPipeline) {
+    try {
+      const toSubmit = {
+        attributes: payload,
+      };
+      return this.getTelemetryPipelineHandler(telemetryPipeline).getPingSize(
+        toSubmit,
+        "shield-study-addon",
+      );
+    } catch (error) {
+      // Surface otherwise silent or obscurely reported errors
+      console.error(error.message, error.stack);
+      throw new ExtensionError(error.message);
+    }
   }
 }
 
-// TODO, use the usual es6 exports
 // Actually create the singleton.
-const studyUtils = new StudyUtils();
-this.studyUtils = studyUtils;
+export const studyUtils = new StudyUtils();

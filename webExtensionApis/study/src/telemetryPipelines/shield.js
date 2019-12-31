@@ -15,7 +15,7 @@ const { ClientID } = ChromeUtils.import(
 // eslint-disable-next-line no-undef
 // const { ExtensionError } = ExtensionUtils;
 
-class ShieldStudyType {
+class ShieldTelemetryPipeline {
   /**
    * @param {object} studyUtils The studyUtils instance from where this class was instantiated
    */
@@ -56,4 +56,4 @@ class ShieldStudyType {
   }
 }
 
-export default ShieldStudyType;
+export default ShieldTelemetryPipeline;
